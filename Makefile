@@ -1,32 +1,40 @@
-CC = gcc
-TARGET = arduino-demo
-OBJ_PATH = ./obj
-OBJECTS = src/timer/src/timer.o src/os/src/os.o src/os/cfg/os_cfg.o
-INCLUDES = -Isrc/timer/api -Isrc/timer/cfg -Isrc/os/api -Isrc/os/cfg
+OBJ=obj
+OUT=out
+FNAME=a
+CFLAGS=-Os -g0 -Wall
+INCLUDES=\
+	src/timer/api \
+	src/timer/cfg \
+	src/os/api \
+	src/os/cfg \
 
-# Generic targets
 all: clean prepare $(TARGET)
 
-$(TARGET): $(OBJECTS)
-	$(CC) $(OBJ_PATH)/*.o -o $@
+avr: CFLAGS += -DTARGET=ARDUINO -mmcu=atmega328p
+avr: CC = avr-gcc
+avr: timer os elf
+	avr-objcopy -O ihex $(OUT)/$(TARGET)/$(FNAME).elf $(OUT)/$(TARGET)/$(FNAME).hex
+	
+linux: CFLAGS += -DTARGET=LINUX_x86
+linux: CC = gcc
+linux: timer os elf
 
 clean:
-	@-rm -rf $(OBJ_PATH) $(TARGET)
-	
+	@echo "Cleaning workspace"
+	@rm -Rf $(OBJ)
+
 prepare:
-	@mkdir -p $(OBJ_PATH)
-	
-# Compilation
+	@echo "Preparing workspace"
+	@mkdir -p $(OBJ) $(OUT)/$(TARGET)
+
+# Each software component must be created here
+timer: src/timer/src/timer.o
+os: src/os/src/os.o src/os/cfg/os_cfg.o
+
+# Generic rules for compiling objects
 %.o: %.c
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $(OBJ_PATH)/$(@F) $<
+	$(CC) $(addprefix -I,$(INCLUDES)) $(CFLAGS) -c -o $(OBJ)/$(@F) $<
 
-# Serial monitor
-monitor: stop
-	@xterm -e "$(SERIAL_MONITOR) $(SERIAL_TTY) $(SERIAL_BAUD_RATE)" &
-
-stop:
-	@-killall -q $(SERIAL_MONITOR) 2>/dev/null; true
-
-# Upload to Arduino
-upload: stop
-	avrdude -c arduino -p $(ARCH) -P $(SERIAL_TTY) -U flash:w:$(TARGET)
+# Link all objects into the final ELF
+elf:
+	$(CC) $(OBJ)/*.o -o $(OUT)/$(TARGET)/$(FNAME).elf
