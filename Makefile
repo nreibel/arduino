@@ -1,23 +1,25 @@
+CC=avr-gcc
+OBJCOPY=avr-objcopy
 OBJ=obj
 OUT=out
 FNAME=a
-CFLAGS=-Os -g0 -Wall
+CFLAGS=-Os -g0 -Wall -mmcu=$(ARCH)
+ARCH=atmega328p
+SERIAL_TTY = /dev/ttyACM0
 INCLUDES=\
 	src/timer/api \
 	src/timer/cfg \
 	src/os/api \
 	src/os/cfg \
+	src/app/api \
 
-all: clean prepare $(TARGET)
+all: clean prepare hex
 
-avr: CFLAGS += -DTARGET=ARDUINO -mmcu=atmega328p
-avr: CC = avr-gcc
-avr: timer os elf
-	avr-objcopy -O ihex $(OUT)/$(TARGET)/$(FNAME).elf $(OUT)/$(TARGET)/$(FNAME).hex
+elf: timer os app
+	$(CC) $(CFLAGS) $(OBJ)/*.o -o $(OUT)/$(FNAME).elf
 	
-linux: CFLAGS += -DTARGET=LINUX_x86
-linux: CC = gcc
-linux: timer os elf
+hex: elf
+	$(OBJCOPY) -O ihex $(OUT)/$(FNAME).elf $(OUT)/$(FNAME).hex
 
 clean:
 	@echo "Cleaning workspace"
@@ -25,9 +27,13 @@ clean:
 
 prepare:
 	@echo "Preparing workspace"
-	@mkdir -p $(OBJ) $(OUT)/$(TARGET)
+	@mkdir -p $(OBJ) $(OUT)
+
+upload:
+	avrdude -c arduino -p $(ARCH) -P $(SERIAL_TTY) -U flash:w:$(OUT)/$(FNAME).hex
 
 # Each software component must be created here
+app: src/app/src/app.o
 timer: src/timer/src/timer.o
 os: src/os/src/os.o src/os/cfg/os_cfg.o
 
@@ -36,5 +42,3 @@ os: src/os/src/os.o src/os/cfg/os_cfg.o
 	$(CC) $(addprefix -I,$(INCLUDES)) $(CFLAGS) -c -o $(OBJ)/$(@F) $<
 
 # Link all objects into the final ELF
-elf:
-	$(CC) $(OBJ)/*.o -o $(OUT)/$(TARGET)/$(FNAME).elf

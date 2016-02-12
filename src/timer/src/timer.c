@@ -1,12 +1,12 @@
-#include "types.h"
-#include "timer.h"
 #include "timer_prv.h"
+#include "os.h"
 
 /* Holds the status of each timer channel */
 typedef struct {
-	uint32 triggerValue;
-	uint32 timeElapsed;
+	uint32   triggerTime;
+	uint32   lastTrigger;
 	Callback callback;
+	boolean  channelEnabled;
 } TimerConfig;
 
 static TimerConfig timerCfg[NbrOfTimerChannels];
@@ -18,56 +18,95 @@ TimerStatus Timer_Init(uint8 timerChannel, uint32 triggerValue, Callback cbk)
 
 	if (timerChannel < NbrOfTimerChannels)
 	{
-		timerCfg[timerChannel].triggerValue = triggerValue;
-		timerCfg[timerChannel].timeElapsed = 0;
-		timerCfg[timerChannel].callback = cbk;
+		timerCfg[timerChannel].channelEnabled = TRUE;
+		timerCfg[timerChannel].triggerTime    = triggerValue;
+		timerCfg[timerChannel].lastTrigger    = Os_GetCurrentTimeMs();
+		timerCfg[timerChannel].callback       = cbk;
 		status = TIMER_OK;
 	}
 
 	return status;
 }
 
-/* Uninitializes a specific timer channel */
-TimerStatus Timer_DeInit(uint8 timerChannel)
-{
-	return Timer_Init(timerChannel, 0, NULL_PTR);
-}
-
 /* Initialization of the cyclic task */
 void Timer_CyclicTaskInit(void)
 {
-	int i;
+	uint8 i;
 
 	for (i = 0 ; i < NbrOfTimerChannels ; i++)
 	{
-		timerCfg[i].triggerValue = 0;
-		timerCfg[i].timeElapsed = 0;
-		timerCfg[i].callback = NULL_PTR;
+		timerCfg[i].channelEnabled = FALSE;
+		timerCfg[i].triggerTime    = 0;
+		timerCfg[i].lastTrigger    = 0;
+		timerCfg[i].callback       = NULL_PTR;
 	}
 }
 
-/* Cyclic task that updates each channels every millisecond */
-void Timer_CyclicTask1ms(void)
+/*
+ * The cyclic functions checks every timer associated with a callback.
+ * Timers not associated with a callback must be checked periodically.
+ */
+void Timer_CyclicTask(void)
 {
-	int i;
+	uint8 i;
+	boolean isElapsed = FALSE;
+	TimerStatus retval = TIMER_NOT_OK;
 
 	for (i = 0 ; i < NbrOfTimerChannels ; i++)
 	{
-		if (timerCfg[i].triggerValue > 0)
+		/* Only check the timer that have an automatic callback */
+		if (timerCfg[i].channelEnabled && timerCfg[i].callback != NULL_PTR)
 		{
-			if (timerCfg[i].timeElapsed >= timerCfg[i].triggerValue)
+			retval = Timer_IsChannelElapsed(i, &isElapsed);
+			if (retval == TIMER_OK && isElapsed)
 			{
-				if (timerCfg[i].callback != NULL_PTR)
-				{
-					timerCfg[i].callback();
-				}
-
-				timerCfg[i].timeElapsed = 0;
-			}
-			else
-			{
-				timerCfg[i].timeElapsed++;
+				timerCfg[i].callback();
 			}
 		}
 	}
+}
+
+/*
+ * Checks if a timer has expired.
+ * If the timer has expired and this function is called, it is re-triggered.
+ * Do NOT call this function with a channel timer used for a callback, it might re-trigger the timer without executing the callback
+ */
+TimerStatus Timer_IsChannelElapsed(uint8 channel, boolean *isElapsed)
+{
+	TimerStatus status = TIMER_NOT_OK;
+	uint32 currentTime = Os_GetCurrentTimeMs();
+	uint32 timeElapsed = 0;
+
+	if (channel < NbrOfTimerChannels)
+	{
+		if (timerCfg[channel].channelEnabled)
+		{
+			*isElapsed = FALSE;
+
+			// Handle timer overflow
+			if (currentTime < timerCfg[channel].lastTrigger)
+			{
+				timeElapsed = currentTime + (0xFFFFFFFF - timerCfg[channel].lastTrigger) + 1;
+			}
+			else
+			{
+				timeElapsed = currentTime - timerCfg[channel].lastTrigger;
+			}
+
+			// If timer elapsed, trigger it again by setting the last trigger time to the current time
+			if (timeElapsed >= timerCfg[channel].triggerTime)
+			{
+				timerCfg[channel].lastTrigger = currentTime;
+				*isElapsed = TRUE;
+			}
+
+			status = TIMER_OK;
+		}
+		else
+		{
+			status = TIMER_NOT_STARTED;
+		}
+	}
+
+	return status;
 }

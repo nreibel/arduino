@@ -8,13 +8,7 @@
 #ifndef SRC_OS_CFG_OS_CFG_H_
 #define SRC_OS_CFG_OS_CFG_H_
 
-/* ALl supported targets */
-#define LINUX_x86 1
-#define ARDUINO   2
-
-#ifndef TARGET
-#error You must define a target
-#endif
-
+void Os_Cfg_Init(void);
+uint32 Os_Cfg_GetTimeElapsed();
 
 #endif /* SRC_OS_CFG_OS_CFG_H_ */

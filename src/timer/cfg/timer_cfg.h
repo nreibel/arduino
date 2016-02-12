@@ -1,10 +1,3 @@
-/*
- * timer.h
- *
- *  Created on: 9 févr. 2016
- *      Author: reiboul
- */
-
 #ifndef SRC_TIMER_API_TIMER_CFG_H_
 #define SRC_TIMER_API_TIMER_CFG_H_
 
