@@ -6,16 +6,20 @@ FNAME=a
 CFLAGS=-Os -g0 -Wall -mmcu=$(ARCH)
 ARCH=atmega328p
 SERIAL_TTY = /dev/ttyACM0
+SERIAL_MONITOR = screen
+SERIAL_BAUD_RATE = 19200
 INCLUDES=\
 	src/timer/api \
 	src/timer/cfg \
 	src/os/api \
 	src/os/cfg \
+	src/serial/api \
+	src/serial/cfg \
 	src/app/api \
 
 all: clean prepare hex
 
-elf: timer os app
+elf: timer os serial app
 	$(CC) $(CFLAGS) $(OBJ)/*.o -o $(OUT)/$(FNAME).elf
 	
 hex: elf
@@ -36,9 +40,15 @@ upload:
 app: src/app/src/app.o
 timer: src/timer/src/timer.o
 os: src/os/src/os.o src/os/cfg/os_cfg.o
+serial: src/serial/src/serial.o
 
 # Generic rules for compiling objects
 %.o: %.c
 	$(CC) $(addprefix -I,$(INCLUDES)) $(CFLAGS) -c -o $(OBJ)/$(@F) $<
 
-# Link all objects into the final ELF
+# Serial monitor
+monitor: stop
+	xterm -e "$(SERIAL_MONITOR) $(SERIAL_TTY) $(SERIAL_BAUD_RATE)" &
+
+stop:
+	@-killall -q $(SERIAL_MONITOR) 2>/dev/null; true

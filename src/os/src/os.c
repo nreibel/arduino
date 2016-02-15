@@ -1,5 +1,4 @@
 #include "os.h"
-
 #include "app.h"
 #include "timer_prv.h"
 #include "types.h"
@@ -9,7 +8,7 @@
 uint32 Os_GetCurrentTimeMs()
 {
 	// Call user function
-	return Os_Cfg_GetTimeElapsed();
+	return Os_Cfg_GetCurrentTimeMs();
 }
 
 int main(void)

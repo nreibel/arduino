@@ -10,7 +10,7 @@ ISR(TIMER0_COMPA_vect)
 	currentTimeMs++;
 }
 
-uint32 Os_Cfg_GetTimeElapsed()
+uint32 Os_Cfg_GetCurrentTimeMs()
 {
 	return currentTimeMs;
 }
