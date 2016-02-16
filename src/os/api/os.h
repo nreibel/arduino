@@ -3,6 +3,6 @@
 
 #include "types.h"
 
-uint32 Os_GetCurrentTimeMs();
+uint32_t Os_GetCurrentTimeMs();
 
 #endif /* OS_API_OS_H_ */

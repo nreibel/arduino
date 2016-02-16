@@ -24,10 +24,10 @@ void Serial_Print ( const char* buffer )
 
 void Serial_Init()
 {
-	uint16 ubrr = ((CLOCK_SPEED/16)/BAUD_RATE)-1;
+	uint16_t ubrr = ((CLOCK_SPEED/16)/BAUD_RATE)-1;
 
-	UBRR0H = (uint8) (ubrr >> 8);
-	UBRR0L = (uint8) (ubrr & 0xFF);
+	UBRR0H = (uint8_t) (ubrr >> 8);
+	UBRR0L = (uint8_t) (ubrr & 0xFF);
 
 	UCSR0B = BIT(4) | BIT(3); // Enable receiver and transmitter
 	UCSR0C = 0x06; // Frame format: 8 bits, no parity bit, 1 stop bit

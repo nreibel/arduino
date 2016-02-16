@@ -3,8 +3,8 @@
 
 /* Holds the status of each timer channel */
 typedef struct {
-	uint32   triggerTime;
-	uint32   lastTrigger;
+	uint32_t   triggerTime;
+	uint32_t   lastTrigger;
 	Callback callback;
 	boolean  channelEnabled;
 } TimerConfig;
@@ -12,7 +12,7 @@ typedef struct {
 static TimerConfig timerCfg[NbrOfTimerChannels];
 
 /* Initializes a specific timer channel with a trigger value and a callback each time the trigger expires */
-TimerStatus Timer_Init(uint8 timerChannel, uint32 triggerValue, Callback cbk)
+TimerStatus Timer_Init(uint8_t timerChannel, uint32_t triggerValue, Callback cbk)
 {
 	TimerStatus status = TIMER_NOT_OK;
 
@@ -31,7 +31,7 @@ TimerStatus Timer_Init(uint8 timerChannel, uint32 triggerValue, Callback cbk)
 /* Initialization of the cyclic task */
 void Timer_CyclicTaskInit(void)
 {
-	uint8 i;
+	uint8_t i;
 
 	for (i = 0 ; i < NbrOfTimerChannels ; i++)
 	{
@@ -48,7 +48,7 @@ void Timer_CyclicTaskInit(void)
  */
 void Timer_CyclicTask(void)
 {
-	uint8 i;
+	uint8_t i;
 	boolean isElapsed = FALSE;
 	TimerStatus retval = TIMER_NOT_OK;
 
@@ -71,11 +71,11 @@ void Timer_CyclicTask(void)
  * If the timer has expired and this function is called, it is re-triggered.
  * Do NOT call this function with a channel timer used for a callback, it might re-trigger the timer without executing the callback
  */
-TimerStatus Timer_IsChannelElapsed(uint8 channel, boolean *isElapsed)
+TimerStatus Timer_IsChannelElapsed(uint8_t channel, boolean *isElapsed)
 {
 	TimerStatus status = TIMER_NOT_OK;
-	uint32 currentTime = Os_GetCurrentTimeMs();
-	uint32 timeElapsed = 0;
+	uint32_t currentTime = Os_GetCurrentTimeMs();
+	uint32_t timeElapsed = 0;
 
 	if (channel < NbrOfTimerChannels)
 	{

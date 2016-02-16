@@ -3,14 +3,14 @@
 #include "avr/io.h"
 #include "avr/interrupt.h"
 
-static volatile uint32 currentTimeMs = 0;
+static volatile uint32_t currentTimeMs = 0;
 
 ISR(TIMER0_COMPA_vect)
 {
 	currentTimeMs++;
 }
 
-uint32 Os_Cfg_GetCurrentTimeMs()
+uint32_t Os_Cfg_GetCurrentTimeMs()
 {
 	return currentTimeMs;
 }

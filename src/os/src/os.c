@@ -5,7 +5,7 @@
 #include "os_cfg.h"
 #include "avr/io.h"
 
-uint32 Os_GetCurrentTimeMs()
+uint32_t Os_GetCurrentTimeMs()
 {
 	// Call user function
 	return Os_Cfg_GetCurrentTimeMs();
