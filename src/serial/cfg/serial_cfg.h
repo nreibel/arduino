@@ -8,6 +8,8 @@
 #ifndef SRC_SERIAL_CFG_SERIAL_CFG_H_
 #define SRC_SERIAL_CFG_SERIAL_CFG_H_
 
-#define UBRR 51 // 19200bps @ 16mHz
+/* Used for calculating UBRR */
+#define CLOCK_SPEED (16000000)
+#define BAUD_RATE   (19200)
 
 #endif /* SRC_SERIAL_CFG_SERIAL_CFG_H_ */

@@ -2,7 +2,8 @@
 #define OS_API_TYPES_H_
 
 typedef unsigned long int uint32;
-typedef unsigned short int uint8;
+typedef unsigned int      uint16;
+typedef unsigned char     uint8;
 
 typedef void (*Callback)(void);
 

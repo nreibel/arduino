@@ -9,6 +9,7 @@
 #include "serial_cfg.h"
 #include "avr/io.h"
 #include "bits.h"
+#include "types.h"
 
 void Serial_Print ( const char* buffer )
 {
@@ -23,8 +24,10 @@ void Serial_Print ( const char* buffer )
 
 void Serial_Init()
 {
-	UBRR0H = (uint8) (UBRR >> 8);
-	UBRR0L = (uint8) (UBRR & 0xFF);
+	uint16 ubrr = ((CLOCK_SPEED/16)/BAUD_RATE)-1;
+
+	UBRR0H = (uint8) (ubrr >> 8);
+	UBRR0L = (uint8) (ubrr & 0xFF);
 
 	UCSR0B = BIT(4) | BIT(3); // Enable receiver and transmitter
 	UCSR0C = 0x06; // Frame format: 8 bits, no parity bit, 1 stop bit
