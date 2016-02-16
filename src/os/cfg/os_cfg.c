@@ -1,6 +1,5 @@
 #include "os.h"
 #include "timer.h"
-#include "avr/io.h"
 #include "avr/interrupt.h"
 
 static volatile uint32_t currentTimeMs = 0;

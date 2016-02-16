@@ -1,3 +1,4 @@
+#include "timer.h"
 #include "timer_prv.h"
 #include "timer_cfg.h"
 #include "os.h"
@@ -87,7 +88,7 @@ TimerStatus Timer_IsChannelElapsed(TimerChannel channel, boolean *isElapsed)
 			// Handle timer overflow
 			if (currentTime < timerCfg[channel].lastTrigger)
 			{
-				timeElapsed = currentTime + (0xFFFFFFFF - timerCfg[channel].lastTrigger) + 1;
+				timeElapsed = currentTime + (UINT32_MAX - timerCfg[channel].lastTrigger) + 1;
 			}
 			else
 			{

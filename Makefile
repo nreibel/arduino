@@ -15,11 +15,13 @@ INCLUDES=\
 	src/os/cfg \
 	src/serial/api \
 	src/serial/cfg \
+	src/port/api \
+	src/port/cfg \
 	src/app/api \
 
 all: clean prepare hex
 
-elf: timer os serial app
+elf: timer os serial port app
 	$(CC) $(CFLAGS) $(OBJ)/*.o -o $(OUT)/$(FNAME).elf
 	
 hex: elf
@@ -41,6 +43,7 @@ app: src/app/src/app.o
 timer: src/timer/src/timer.o
 os: src/os/src/os.o src/os/cfg/os_cfg.o
 serial: src/serial/src/serial.o
+port: src/port/src/port.o src/port/cfg/port_cfg.o
 
 # Generic rules for compiling objects
 %.o: %.c

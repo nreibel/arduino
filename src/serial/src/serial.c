@@ -13,12 +13,10 @@
 
 void Serial_Print ( const char* buffer )
 {
-	// Send string
-	char* ptr = (char*) buffer;
-	while ( *ptr != 0 )
+	while ( *buffer != 0 )
 	{
 		while ( !IS_SET_BIT(UCSR0A, 5) ); // Wait for empty transmit buffer
-		UDR0 = *(ptr++);
+		UDR0 = *(buffer++);
 	}
 }
 

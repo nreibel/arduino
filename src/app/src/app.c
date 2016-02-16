@@ -1,9 +1,9 @@
+#include "os.h"
+#include "app_prv.h"
 #include "timer.h"
 #include "timer_cfg.h"
-#include "avr/io.h"
-#include "bits.h"
-#include "app_prv.h"
 #include "serial.h"
+#include "port.h"
 
 static boolean ledOn = FALSE;
 
@@ -13,8 +13,7 @@ void App_Init()
 
 	Serial_Init();
 
-	// Set PB as output
-	SET_BIT(DDRB, 5);
+	Port_SetPinDataDirection(Port_B, Pin_5, Output);
 }
 
 
@@ -24,13 +23,13 @@ void App_MainCyclic(void)
 	if (ledOn)
 	{
 		Serial_Print("Setting LED to OFF!\n\r");
-		RESET_BIT(PORTB, 5);
+		Port_SetPinValue(Port_B, Pin_5, Low);
 		ledOn = FALSE;
 	}
 	else
 	{
 		Serial_Print("Setting LED to ON!\n\r");
-		SET_BIT(PORTB, 5);
+		Port_SetPinValue(Port_B, Pin_5, High);
 		ledOn = TRUE;
 	}
 }

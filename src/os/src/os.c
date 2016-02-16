@@ -1,9 +1,7 @@
 #include "os.h"
 #include "app.h"
 #include "timer_prv.h"
-#include "types.h"
 #include "os_cfg.h"
-#include "avr/io.h"
 
 uint32_t Os_GetCurrentTimeMs()
 {
