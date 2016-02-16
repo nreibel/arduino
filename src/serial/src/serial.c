@@ -11,13 +11,54 @@
 #include "bits.h"
 #include "types.h"
 
-void Serial_Print ( const char* buffer )
+typedef enum {
+	Serial_Uninitialized,
+	Serial_Ready,
+	Serial_Writing
+} TransmitState;
+
+static TransmitState transmitStateMachine = Serial_Uninitialized;
+static char *transmitBuffer = NULL_PTR;
+
+Std_ReturnType Serial_IsReady()
 {
-	while ( *buffer != 0 )
+	Std_ReturnType retval = Status_Not_OK;
+
+	if (transmitStateMachine == Serial_Ready)
+	{
+		retval = Status_OK;
+	}
+
+	return retval;
+}
+
+void Serial_BackgroundTask()
+{
+	if (transmitStateMachine == Serial_Writing)
 	{
 		while ( !IS_SET_BIT(UCSR0A, 5) ); // Wait for empty transmit buffer
-		UDR0 = *(buffer++);
+		UDR0 = *(transmitBuffer++);
+
+		if (*transmitBuffer == 0)
+		{
+			transmitBuffer = NULL_PTR;
+			transmitStateMachine = Serial_Ready;
+		}
 	}
+}
+
+Std_ReturnType Serial_Print ( const char * buffer )
+{
+	Std_ReturnType retval = Status_Not_OK;
+
+	if(transmitStateMachine == Serial_Ready)
+	{
+		transmitBuffer = (char*) buffer;
+		transmitStateMachine = Serial_Writing;
+		retval = Status_Pending;
+	}
+
+	return retval;
 }
 
 void Serial_Init()
@@ -29,4 +70,6 @@ void Serial_Init()
 
 	UCSR0B = BIT(4) | BIT(3); // Enable receiver and transmitter
 	UCSR0C = 0x06; // Frame format: 8 bits, no parity bit, 1 stop bit
+
+	transmitStateMachine = Serial_Ready;
 }

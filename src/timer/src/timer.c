@@ -14,9 +14,9 @@ typedef struct {
 static TimerConfig timerCfg[NbrOfTimerChannels];
 
 /* Initializes a specific timer channel with a trigger value and a callback each time the trigger expires */
-TimerStatus Timer_Init(TimerChannel timerChannel, uint32_t triggerValue, Callback cbk)
+Std_ReturnType Timer_Init(TimerChannel timerChannel, uint32_t triggerValue, Callback cbk)
 {
-	TimerStatus status = TIMER_NOT_OK;
+	Std_ReturnType status = Status_Not_OK;
 
 	if (timerChannel < NbrOfTimerChannels)
 	{
@@ -24,7 +24,7 @@ TimerStatus Timer_Init(TimerChannel timerChannel, uint32_t triggerValue, Callbac
 		timerCfg[timerChannel].triggerTime    = triggerValue;
 		timerCfg[timerChannel].lastTrigger    = Os_GetCurrentTimeMs();
 		timerCfg[timerChannel].callback       = cbk;
-		status = TIMER_OK;
+		status = Status_OK;
 	}
 
 	return status;
@@ -52,7 +52,7 @@ void Timer_CyclicTask(void)
 {
 	TimerChannel i;
 	boolean isElapsed = FALSE;
-	TimerStatus retval = TIMER_NOT_OK;
+	Std_ReturnType retval = Status_Not_OK;
 
 	for (i = 0 ; i < NbrOfTimerChannels ; i++)
 	{
@@ -60,7 +60,7 @@ void Timer_CyclicTask(void)
 		if (timerCfg[i].channelEnabled && timerCfg[i].callback != NULL_PTR)
 		{
 			retval = Timer_IsChannelElapsed(i, &isElapsed);
-			if (retval == TIMER_OK && isElapsed)
+			if (retval == Status_OK && isElapsed)
 			{
 				timerCfg[i].callback();
 			}
@@ -73,9 +73,9 @@ void Timer_CyclicTask(void)
  * If the timer has expired and this function is called, it is re-triggered.
  * Do NOT call this function with a channel timer used for a callback, it might re-trigger the timer without executing the callback
  */
-TimerStatus Timer_IsChannelElapsed(TimerChannel channel, boolean *isElapsed)
+Std_ReturnType Timer_IsChannelElapsed(TimerChannel channel, boolean *isElapsed)
 {
-	TimerStatus status = TIMER_NOT_OK;
+	Std_ReturnType status = Status_Not_OK;
 	uint32_t currentTime = Os_GetCurrentTimeMs();
 	uint32_t timeElapsed = 0;
 
@@ -102,11 +102,7 @@ TimerStatus Timer_IsChannelElapsed(TimerChannel channel, boolean *isElapsed)
 				*isElapsed = TRUE;
 			}
 
-			status = TIMER_OK;
-		}
-		else
-		{
-			status = TIMER_NOT_STARTED;
+			status = Status_OK;
 		}
 	}
 

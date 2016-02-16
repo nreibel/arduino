@@ -8,9 +8,7 @@
 #ifndef SRC_OS_CFG_OS_CFG_H_
 #define SRC_OS_CFG_OS_CFG_H_
 
-#include "types.h"
-
-void Os_Cfg_Init(void);
-uint32_t Os_Cfg_GetCurrentTimeMs();
+extern void Os_Cfg_Init();
+extern void Os_Cfg_ExecuteBackgroundTasks();
 
 #endif /* SRC_OS_CFG_OS_CFG_H_ */

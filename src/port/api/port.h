@@ -14,7 +14,7 @@ typedef enum
 {
 	Low,
 	High
-} PinValue;
+} PinState;
 
 typedef enum
 {
@@ -34,7 +34,7 @@ Std_ReturnType Port_SetValue            (Port port, uint8_t portValue);
 Std_ReturnType Port_GetValue            (Port port, uint8_t* portValue);
 
 Std_ReturnType Port_SetPinDataDirection (Port port, Pin pin, DataDirection direction);
-Std_ReturnType Port_SetPinValue         (Port port, Pin pin, PinValue pinValue);
-Std_ReturnType Port_GetPinValue         (Port port, Pin pin, PinValue* pinValue);
+Std_ReturnType Port_SetPinState         (Port port, Pin pin, PinState pinState);
+Std_ReturnType Port_GetPinState         (Port port, Pin pin, PinState* pinState);
 
 #endif /* SRC_PORT_API_PORT_H_ */

@@ -20,8 +20,9 @@ typedef enum {
 
 typedef enum
 {
-	Not_OK = 0,
-	OK
+	Status_Not_OK = 0,
+	Status_Pending,
+	Status_OK
 } Std_ReturnType;
 
 #endif /* OS_API_TYPES_H_ */

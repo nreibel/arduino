@@ -1,12 +1,14 @@
 #include "os.h"
+
 #include "app.h"
 #include "timer_prv.h"
 #include "os_cfg.h"
 
-uint32_t Os_GetCurrentTimeMs()
+extern uint32_t Os_GetCurrentTimeMs();
+
+void Os_EnableInterrupts()
 {
-	// Call user function
-	return Os_Cfg_GetCurrentTimeMs();
+	asm("sei");
 }
 
 int main(void)
@@ -23,6 +25,7 @@ int main(void)
 	/* Run main loop */
 	while(1)
 	{
+		Os_Cfg_ExecuteBackgroundTasks();
 		Timer_CyclicTask();
 	}
 
