@@ -5,6 +5,6 @@ typedef enum
 {
 	Timer_MainTask = 0,
 	NbrOfTimerChannels
-} TimerChannels;
+} TimerChannel;
 
 #endif /* SRC_TIMER_API_TIMER_H_ */

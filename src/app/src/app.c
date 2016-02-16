@@ -20,14 +20,16 @@ void App_Init()
 
 void App_MainCyclic(void)
 {
-	Serial_Print("Hello, world!\n\r");
+
 	if (ledOn)
 	{
+		Serial_Print("Setting LED to OFF!\n\r");
 		RESET_BIT(PORTB, 5);
 		ledOn = FALSE;
 	}
 	else
 	{
+		Serial_Print("Setting LED to ON!\n\r");
 		SET_BIT(PORTB, 5);
 		ledOn = TRUE;
 	}
