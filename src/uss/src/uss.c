@@ -8,7 +8,10 @@
 #include "avr/interrupt.h"
 #include "avr/io.h"
 
+/* Ticks to us ratio is set by timer prescaler */
 #define TICKS_TO_US(ticks) ((ticks)/2)
+
+/* us to cm is given by HC-SR04 spec */
 #define TICKS_TO_CM(ticks) (TICKS_TO_US(ticks)/58)
 
 typedef enum {
@@ -19,8 +22,7 @@ typedef enum {
 	MeasurementAvailable,
 } Uss_InternalState;
 
-volatile static Uss_InternalState ussStateMachine = Uninitialized;
-volatile static uint16_t lastMeasurementTimerTicks;
+volatile static Uss_InternalState ussStateMachine  = Uninitialized;
 
 ISR(INT1_vect)
 {
@@ -33,8 +35,7 @@ ISR(INT1_vect)
 		break;
 	case MeasuringEcho:
 		TCCR1B = 0x0;        // Stop timer
-		RESET_BIT(EIMSK, 1); // Disable interrupts on pin INT1
-		lastMeasurementTimerTicks = TCNT1;
+		RESET_BIT(EIMSK, 1); // Disable INT1 interrupt
 		ussStateMachine = MeasurementAvailable;
 		break;
 	default:
@@ -57,7 +58,7 @@ Std_ReturnType USS_GetDistance(uint16_t *distance)
 	switch(ussStateMachine)
 	{
 	case MeasurementAvailable:
-		*distance = TICKS_TO_CM(lastMeasurementTimerTicks);
+		*distance = TICKS_TO_CM(TCNT1);
 		retval = Status_OK;
 		break;
 	case WaitForEcho:
@@ -71,25 +72,30 @@ Std_ReturnType USS_GetDistance(uint16_t *distance)
 	return retval;
 }
 
+
 Std_ReturnType USS_TriggerMeasurement()
 {
 	Std_ReturnType retval = Status_Not_OK;
 
 	if (ussStateMachine == Ready || ussStateMachine == MeasurementAvailable)
 	{
+		// Init timer 1
+		TCCR1A = 0x0; // Normal mode
+		TCCR1B = 0x2; // Set prescaler to 8 = 2 ticks/us
+
+		// Start sending trigger
 		Port_SetPinState(Port_D, Pin_2, High);
 
-		// Init timer 1
-		TCCR1A = 0x0; // Normal port operation
-		TCCR1B = 0x2; // Set prescaler to 8 = 2 ticks/us
-		TCNT1  = 0;   // Reset timer value
+		// Wait 15us
+		TCNT1 = 0;
+		while(TCNT1 < 30);
 
-		while(TCNT1 < 30); // Wait 15us
-
+		// Stop sending trigger
 		Port_SetPinState(Port_D, Pin_2, Low);
 
-		EICRA = 0xC;       // Interrupt on rising edge of INT1
-		SET_BIT(EIMSK, 1); // Enable interrupt on INT1
+		// Enable interrupt on rising edge of INT1
+		EICRA = 0xC;
+		SET_BIT(EIMSK, INT1);
 
 		ussStateMachine = WaitForEcho;
 		retval = Status_OK;

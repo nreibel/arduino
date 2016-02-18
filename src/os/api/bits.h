@@ -1,10 +1,3 @@
-/*
- * bits.h
- *
- *  Created on: 12 févr. 2016
- *      Author: reiboul
- */
-
 #ifndef SRC_OS_API_BITS_H_
 #define SRC_OS_API_BITS_H_
 
@@ -12,10 +5,10 @@
 #define BIT(x)              (1 << (x))
 
 // Set bit b in r
-#define SET_BIT(r, b)        SET_MASK(r, BIT(b))
+#define SET_BIT(r, b)        (r |= BIT(b))
 
 // Reset bit b in r
-#define RESET_BIT(r, b)      RESET_MASK(r, BIT(b))
+#define RESET_BIT(r, b)      (r &= ~BIT(b))
 
 // Set bits of m in r
 #define SET_MASK(r, m)      (r |= (m))

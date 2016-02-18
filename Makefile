@@ -18,11 +18,15 @@ INCLUDES=\
 	src/port/api \
 	src/port/cfg \
 	src/uss/api \
+	src/stack/api \
+	src/pwm/api \
+	src/math/api \
 	src/app/api \
+	src/app/cfg \
 
 all: clean prepare hex
 
-elf: timer os serial port uss app
+elf: timer os port uss pwm stack math app
 	$(CC) $(CFLAGS) $(OBJ)/*.o -o $(OUT)/$(FNAME).elf
 	
 hex: elf
@@ -40,12 +44,15 @@ upload:
 	avrdude -c arduino -p $(ARCH) -P $(SERIAL_TTY) -U flash:w:$(OUT)/$(FNAME).hex
 
 # Each software component must be created here
-app: src/app/src/app.o
+app: src/app/src/app.o src/app/cfg/app_cfg.o
 timer: src/timer/src/timer.o
 os: src/os/src/os.o src/os/cfg/os_cfg.o
 serial: src/serial/src/serial.o
 port: src/port/src/port.o src/port/cfg/port_cfg.o
 uss: src/uss/src/uss.o
+pwm: src/pwm/src/pwm.o
+stack: src/stack/src/stack.o
+math: src/math/src/math.o
 
 # Generic rules for compiling objects
 %.o: %.c
