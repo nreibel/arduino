@@ -30,6 +30,7 @@ typedef enum
 } Pin;
 
 Std_ReturnType Port_SetDataDirection    (Port port, uint8_t direction);
+Std_ReturnType Port_GetDataDirection    (Port port, uint8_t* direction);
 Std_ReturnType Port_SetValue            (Port port, uint8_t portValue);
 Std_ReturnType Port_GetValue            (Port port, uint8_t* portValue);
 

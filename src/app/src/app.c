@@ -8,16 +8,39 @@
 #include "stdio.h"
 #include "avr/io.h"
 #include "bits.h"
-#include "pwm.h"
 #include "stack.h"
+#include "serial.h"
 #include "math.h"
+#include "stdio.h"
 
+#if LCD_ENABLED == ON
+#include "lcd.h"
+#endif
+
+#if BUZZER_ENABLED == ON
+#include "pwm.h"
 static BuzzerState buzzerState = Off;
+#endif
+
+#if SERIAL_DEBUG_ENABLED == ON
+static char serial_buffer[10];
+#endif
 
 void App_Init()
 {
 	USS_Init();
+
+#if LCD_ENABLED == ON
+	LCD_Init();
+#endif
+
+#if SERIAL_DEBUG_ENABLED == ON
+	Serial_Init();
+#endif
+
+#if BUZZER_ENABLED == ON
 	PWM_Init();
+#endif
 
 	/* Set LED pin as OUTPUT */
 	Port_SetPinDataDirection(App_Cfg_Port_LED, App_Cfg_Pin_LED, Output);
@@ -25,12 +48,15 @@ void App_Init()
 	/* Set up tasks */
 	Timer_InitTask(Timer_BlinkTask, 500, &Task_Blink);
 	Timer_InitTask(Timer_MainTask,  100, &Task_MainCyclic);
-	Timer_InitTask(Timer_BuzzTask,  100, &Task_Buzzer);
 
 	/* Start all tasks */
 	Timer_Enable(Timer_BlinkTask);
 	Timer_Enable(Timer_MainTask);
+
+#if BUZZER_ENABLED == ON
+	Timer_InitTask(Timer_BuzzTask,  100, &Task_Buzzer);
 	Timer_Enable(Timer_BuzzTask);
+#endif
 
 	USS_TriggerMeasurement();
 }
@@ -62,6 +88,8 @@ void Task_MainCyclic(void)
 		Stack_Push(stack, distance);
 
 		average = Math_Average_u16(stack->buffer, stack->size);
+
+#if BUZZER_ENABLED == ON
 		if (average < 15)
 		{
 			buzzerState = Continuous;
@@ -76,6 +104,15 @@ void Task_MainCyclic(void)
 		{
 			buzzerState = Off;
 		}
+#endif
+
+#if SERIAL_DEBUG_ENABLED == ON
+		if ( Serial_IsReady() == Status_OK )
+		{
+			sprintf(serial_buffer, "%d cm\n\r", average);
+			Serial_Print(serial_buffer);
+		}
+#endif
 
 		/* Trigger next acquisition */
 		USS_TriggerMeasurement();
@@ -84,6 +121,7 @@ void Task_MainCyclic(void)
 
 /* Controls the buzzer */
 
+#if BUZZER_ENABLED == ON
 void Task_Buzzer(void)
 {
 	static boolean isOn = FALSE;
@@ -99,3 +137,4 @@ void Task_Buzzer(void)
 		isOn = FALSE;
 	}
 }
+#endif

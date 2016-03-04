@@ -31,5 +31,5 @@ void Os_Cfg_Init()
 
 void Os_Cfg_ExecuteBackgroundTasks()
 {
-	// Serial_BackgroundTask();
+	Serial_BackgroundTask();
 }

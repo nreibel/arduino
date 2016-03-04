@@ -23,10 +23,12 @@ INCLUDES=\
 	src/math/api \
 	src/app/api \
 	src/app/cfg \
+	src/lcd/api \
+	src/lcd/cfg \
 
 all: clean prepare hex
 
-elf: timer os port uss pwm stack math app
+elf: timer os port serial uss pwm lcd stack math app
 	$(CC) $(CFLAGS) $(OBJ)/*.o -o $(OUT)/$(FNAME).elf
 	
 hex: elf
@@ -53,6 +55,8 @@ uss: src/uss/src/uss.o
 pwm: src/pwm/src/pwm.o
 stack: src/stack/src/stack.o
 math: src/math/src/math.o
+lcd: src/lcd/src/lcd.o
+
 
 # Generic rules for compiling objects
 %.o: %.c

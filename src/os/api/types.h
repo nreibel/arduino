@@ -10,6 +10,9 @@ typedef enum {
 	TRUE = 1
 } boolean;
 
+#define ON  1
+#define OFF 0
+
 #define NULL_PTR ((void*)0)
 
 #define READ_PTR(addr, type)        (*((type*)(addr)))

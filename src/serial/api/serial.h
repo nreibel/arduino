@@ -3,6 +3,7 @@
 
 #include "types.h"
 
+void Serial_Init();
 Std_ReturnType Serial_IsReady();
 Std_ReturnType Serial_Print( const char *buffer );
 

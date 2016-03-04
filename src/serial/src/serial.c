@@ -1,15 +1,8 @@
-/*
- * serial.c
- *
- *  Created on: 16 févr. 2016
- *      Author: reiboul
- */
-
 #include "serial.h"
 #include "serial_cfg.h"
 #include "avr/io.h"
 #include "bits.h"
-#include "types.h"
+
 
 typedef enum {
 	Serial_Uninitialized,
@@ -20,7 +13,7 @@ typedef enum {
 static TransmitState transmitStateMachine = Serial_Uninitialized;
 static char *transmitBuffer = NULL_PTR;
 
-Std_ReturnType Serial_IsReady()
+Std_ReturnType Serial_IsReady(void)
 {
 	Std_ReturnType retval = Status_Not_OK;
 
@@ -47,7 +40,7 @@ void Serial_BackgroundTask()
 	}
 }
 
-Std_ReturnType Serial_Print ( const char * buffer )
+Std_ReturnType Serial_Print ( const char *buffer )
 {
 	Std_ReturnType retval = Status_Not_OK;
 
@@ -61,7 +54,7 @@ Std_ReturnType Serial_Print ( const char * buffer )
 	return retval;
 }
 
-void Serial_Init()
+void Serial_Init ( void )
 {
 	uint16_t ubrr = ((CLOCK_SPEED/16)/BAUD_RATE)-1;
 

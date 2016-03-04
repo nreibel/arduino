@@ -1,14 +1,28 @@
 #include "port.h"
 #include "bits.h"
 
-Std_ReturnType Port_SetDataDirection(Port port, uint8_t portValue)
+Std_ReturnType Port_SetDataDirection(Port port, uint8_t direction)
 {
 	Std_ReturnType status = Status_Not_OK;
 
 	if (port < NbrOfPorts )
 	{
 		/* Write DDRx */
-		WRITE_PU8(Port_Cfg_BaseAddr[port] + 1, portValue);
+		WRITE_PU8(Port_Cfg_BaseAddr[port] + 1, direction);
+		status = Status_OK;
+	}
+
+	return status;
+}
+
+Std_ReturnType Port_GetDataDirection(Port port, uint8_t* direction)
+{
+	Std_ReturnType status = Status_Not_OK;
+
+	if ( port < NbrOfPorts )
+	{
+		/* Read PINx */
+		*direction = READ_PU8(Port_Cfg_BaseAddr[port] + 1);
 		status = Status_OK;
 	}
 

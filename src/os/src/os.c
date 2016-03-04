@@ -11,6 +11,12 @@ void Os_EnableInterrupts()
 	asm("sei");
 }
 
+void Os_Sleep(uint32_t ms)
+{
+	uint32_t begin = Os_GetCurrentTimeMs();
+	while (Os_GetCurrentTimeMs() < begin + ms);
+}
+
 int main(void)
 {
 	/* Initialize timer */
