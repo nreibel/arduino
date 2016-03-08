@@ -1,5 +1,5 @@
 #include "uss.h"
-
+#include "uss_prv.h"
 #include "os.h"
 #include "types.h"
 #include "port.h"
@@ -45,8 +45,8 @@ ISR(INT1_vect)
 
 void USS_Init()
 {
-	Port_SetPinDataDirection(Port_D, Pin_2, Output);
-	Port_SetPinDataDirection(Port_D, Pin_3, Input);
+	Port_SetPinDataDirection(pinTrigger, Output);
+	Port_SetPinDataDirection(pinEcho, Input);
 	ussStateMachine = Ready;
 	Os_EnableInterrupts();
 }
@@ -84,14 +84,14 @@ Std_ReturnType USS_TriggerMeasurement()
 		TCCR1B = 0x2; // Set prescaler to 8 = 2 ticks/us
 
 		// Start sending trigger
-		Port_SetPinState(Port_D, Pin_2, High);
+		Port_SetPinState(pinTrigger, High);
 
 		// Wait 15us
 		TCNT1 = 0;
 		while(TCNT1 < 30);
 
 		// Stop sending trigger
-		Port_SetPinState(Port_D, Pin_2, Low);
+		Port_SetPinState(pinTrigger, Low);
 
 		// Enable interrupt on rising edge of INT1
 		EICRA = 0xC;

@@ -1,11 +1,9 @@
 #include "lcd.h"
 #include "lcd_cfg.h"
+#include "lcd_prv.h"
 #include "port.h"
 #include "bits.h"
 #include "os.h"
-
-Std_ReturnType Write_Byte(uint8_t data, PinState rs);
-Std_ReturnType Write_Half_Byte(uint8_t data, PinState rs);
 
 Std_ReturnType LCD_Init()
 {
@@ -18,35 +16,126 @@ Std_ReturnType LCD_Init()
 		SET_MASK(port_ddr, 0xF);
 		Port_SetDataDirection(Port_Data, port_ddr);
 
-		Port_SetPinDataDirection(Port_EN, Pin_EN, Output);
-		Port_SetPinDataDirection(Port_RS, Pin_RS, Output);
+		Port_SetPinDataDirection(pin_EN, Output);
+		Port_SetPinDataDirection(pin_RS, Output);
 
 		retval = Status_OK;
 	}
 
-	// Function set
+	/* Give time for hardware to init*/
+	Os_Sleep(15);
+
+	/* First write sets data width*/
 	Write_Half_Byte(0x2, Low);
+	Os_Sleep(4);
 
-	LCD_FunctionSet(DataLength_4bits, DisplayType_5x8, 2);
-
-	// Turn display ON, set cursor blinking
-	Write_Byte(0x0F, Low);
-
-	// Set the entry mode
-	Write_Byte(0x06, Low);
-
-	// Change the cursor position to the 2nd line, 4th position from the left
-	LCD_SetCursor(1, 2);
-
-	// Enter a character "H" into the display
-	Write_Byte(0x48, High);
-
-	// Enter a character "e" into the display
-	Write_Byte(0x65, High);
+	LCD_FunctionSet(DataWidth_4_Bits, CharacterFont_5x8, DisplayLines_2_Line);
+	LCD_DisplayControl(TRUE, TRUE, TRUE);
+	LCD_ClearDisplay();
+	LCD_SetEntryMode(LeftToRight, FALSE);
+	LCD_ReturnHome();
 
 	return retval;
 }
 
+Std_ReturnType LCD_PrintString(char* chr)
+{
+	Std_ReturnType retval = Status_OK;
+
+	while(*chr != 0 && retval == Status_OK)
+	{
+		retval = LCD_Print(*chr);
+		chr++;
+	}
+
+	return retval;
+}
+
+Std_ReturnType LCD_Print(char chr)
+{
+	Std_ReturnType retval = Status_OK;
+
+	if (chr < 0x20 || chr > 0x7F)
+	{
+		retval = Status_Not_OK;
+	}
+
+	if (retval == Status_OK)
+	{
+		retval = Write_Byte(chr, High);
+	}
+
+	return retval;
+}
+
+Std_ReturnType LCD_ClearDisplay()
+{
+	Std_ReturnType retval = Status_OK;
+
+	uint8_t data = 0x01;
+
+	if (retval == Status_OK)
+	{
+		retval = Write_Byte(data, Low);
+	}
+
+	return retval;
+}
+
+Std_ReturnType LCD_ReturnHome()
+{
+	Std_ReturnType retval = Status_OK;
+
+	uint8_t data = 0x02;
+
+	if (retval == Status_OK)
+	{
+		retval = Write_Byte(data, Low);
+	}
+
+	return retval;
+}
+
+Std_ReturnType LCD_SetEntryMode(CursorMoveDirection direction, boolean automaticDisplayShift)
+{
+	Std_ReturnType retval = Status_OK;
+
+	uint8_t data = 0x40;
+
+	switch(direction)
+	{
+	case RightToLeft: RESET_BIT(data, 1); break;
+	case LeftToRight:   SET_BIT(data, 1); break;
+	default: retval = Status_Not_OK; /* Invalid data */
+	}
+
+	if (automaticDisplayShift == TRUE) SET_BIT(data, 0);
+
+	if (retval == Status_OK)
+	{
+		retval = Write_Byte(data, Low);
+	}
+
+	return retval;
+}
+
+Std_ReturnType LCD_DisplayControl(boolean displayOn, boolean cursonOn, boolean cursorBlinking)
+{
+	Std_ReturnType retval = Status_OK;
+
+	uint8_t data = 0x08;
+
+	if (displayOn      == TRUE) SET_BIT(data, 2);
+	if (cursonOn       == TRUE) SET_BIT(data, 1);
+	if (cursorBlinking == TRUE) SET_BIT(data, 0);
+
+	if (retval == Status_OK)
+	{
+		retval = Write_Byte(data, Low);
+	}
+
+	return retval;
+}
 
 Std_ReturnType LCD_SetCursor(uint8_t line, uint8_t pos)
 {
@@ -78,30 +167,30 @@ Std_ReturnType LCD_SetCursor(uint8_t line, uint8_t pos)
 	return retval;
 }
 
-Std_ReturnType LCD_FunctionSet(DataLength dl, DisplayType ft, uint8_t nbrOfLines)
+Std_ReturnType LCD_FunctionSet(InterfaceDataWidth dataWidth, CharacterFont characterFont, DisplayLines displayLines)
 {
 	Std_ReturnType retval = Status_OK;
 
 	uint8_t data = 0x20;
 
-	switch(dl)
+	switch(dataWidth)
 	{
-	case DataLength_4bits: RESET_BIT(data, 4); break;
-	case DataLength_8bits:   SET_BIT(data, 4); break;
+	case DataWidth_4_Bits: RESET_BIT(data, 4); break;
+	case DataWidth_8_Bits:   SET_BIT(data, 4); break;
 	default: retval = Status_Not_OK; /* Invalid data */
 	}
 
-	switch(nbrOfLines)
+	switch(displayLines)
 	{
-	case 1: RESET_BIT(data, 3); break;
-	case 2:   SET_BIT(data, 3); break;
+	case DisplayLines_1_Line: RESET_BIT(data, 3); break;
+	case DisplayLines_2_Line:   SET_BIT(data, 3); break;
 	default: retval = Status_Not_OK; /* Invalid data */
 	}
 
-	switch(ft)
+	switch(characterFont)
 	{
-	case DisplayType_5x8: RESET_BIT(data, 2); break;
-	case DisplayType_5x10:  SET_BIT(data, 2); break;
+	case CharacterFont_5x8: RESET_BIT(data, 2); break;
+	case CharacterFont_5x10:  SET_BIT(data, 2); break;
 	default: retval = Status_Not_OK; /* Invalid data */
 	}
 
@@ -148,12 +237,13 @@ Std_ReturnType Write_Half_Byte(uint8_t data, PinState rs)
 		retval = Status_OK;
 	}
 
-	Port_SetPinState(Port_RS, Pin_RS, rs);
+	/* Set RS pin */
+	Port_SetPinState(pin_RS, rs);
 
-	// Send trigger for
-	Port_SetPinState(Port_EN, Pin_EN, High);
+	/* Send trigger for 2ms */
+	Port_SetPinState(pin_EN, High);
 	Os_Sleep(2);
-	Port_SetPinState(Port_EN, Pin_EN, Low);
+	Port_SetPinState(pin_EN, Low);
 
 	return retval;
 }

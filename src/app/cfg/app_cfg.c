@@ -2,5 +2,7 @@
 #include "port.h"
 
 /* Output of status LED */
-Port App_Cfg_Port_LED = Port_B;
-Pin  App_Cfg_Pin_LED  = Pin_5;
+PinDef Pin_LED = {Port_B, Pin_5};
+
+/* Enable sensor and accessories */
+PinDef Pin_POWER = {Port_D, Pin_6};

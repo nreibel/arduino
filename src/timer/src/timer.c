@@ -40,7 +40,7 @@ Std_ReturnType Timer_InitTask(TimerChannel channel, uint32_t triggerValue, Callb
 
 	if (channel < NbrOfTimerChannels)
 	{
-		timerCfg[channel].status      = Disabled;
+		timerCfg[channel].status      = Enabled;
 		timerCfg[channel].triggerTime = triggerValue;
 		timerCfg[channel].lastTrigger = Os_GetCurrentTimeMs();
 		timerCfg[channel].callback    = cbk;

@@ -6,6 +6,7 @@ typedef enum
 	Timer_MainTask = 0,
 	Timer_BlinkTask,
 	Timer_BuzzTask,
+	Timer_LCD_Refresh,
 	NbrOfTimerChannels
 } TimerChannel;
 

@@ -57,24 +57,24 @@ Std_ReturnType Port_GetValue(Port port, uint8_t* portValue)
 	return status;
 }
 
-Std_ReturnType Port_SetPinDataDirection(Port port, Pin pin, DataDirection direction)
+Std_ReturnType Port_SetPinDataDirection(PinDef pinDef, DataDirection direction)
 {
 	Std_ReturnType status = Status_Not_OK;
 	uint8_t portValue;
 
-	if (port < NbrOfPorts && pin < NbrOfPins )
+	if (pinDef.port < NbrOfPorts && pinDef.pin < NbrOfPins )
 	{
 		/* Read DDRx */
-		portValue = READ_PU8(Port_Cfg_BaseAddr[port] + 1);
+		portValue = READ_PU8(Port_Cfg_BaseAddr[pinDef.port] + 1);
 
 		switch (direction)
 		{
 		case Input:
-			RESET_BIT(portValue, pin);
+			RESET_BIT(portValue, pinDef.pin);
 			status = Status_OK;
 			break;
 		case Output:
-			SET_BIT(portValue, pin);
+			SET_BIT(portValue, pinDef.pin);
 			status = Status_OK;
 			break;
 		default:
@@ -84,55 +84,55 @@ Std_ReturnType Port_SetPinDataDirection(Port port, Pin pin, DataDirection direct
 		if (status == Status_OK)
 		{
 			/* Write DDRx */
-			WRITE_PU8(Port_Cfg_BaseAddr[port]+1, portValue);
+			WRITE_PU8(Port_Cfg_BaseAddr[pinDef.port]+1, portValue);
 		}
 	}
 
 	return status;
 }
 
-Std_ReturnType Port_SetPinState(Port port, Pin pin, PinState pinValue)
+Std_ReturnType Port_SetPinState(PinDef pinDef, PinState pinValue)
 {
 	Std_ReturnType status = Status_Not_OK;
 	uint8_t portValue;
 
-	if ( port < NbrOfPorts && pin < NbrOfPins )
+	if ( pinDef.port < NbrOfPorts && pinDef.pin < NbrOfPins )
 	{
-		status = Port_GetValue(port, &portValue);
+		status = Port_GetValue(pinDef.port, &portValue);
 		if (status == Status_OK)
 		{
 			switch(pinValue)
 			{
 			case Low:
-				RESET_BIT(portValue, pin);
+				RESET_BIT(portValue, pinDef.pin);
 				status = Status_OK;
 				break;
 			case High:
-				SET_BIT(portValue, pin);
+				SET_BIT(portValue, pinDef.pin);
 				status = Status_OK;
 				break;
 			default:
 				break;
 			}
 
-			status = Port_SetValue(port, portValue);
+			status = Port_SetValue(pinDef.port, portValue);
 		}
 	}
 
 	return status;
 }
 
-Std_ReturnType Port_GetPinState(Port port, Pin pin, PinState *pinValue)
+Std_ReturnType Port_GetPinState(PinDef pinDef, PinState *pinValue)
 {
 	Std_ReturnType status = Status_Not_OK;
 	uint8_t portValue;
 
-	if ( port < NbrOfPorts && pin < NbrOfPins )
+	if ( pinDef.port < NbrOfPorts && pinDef.pin < NbrOfPins )
 	{
-		status = Port_GetValue(port, &portValue);
+		status = Port_GetValue(pinDef.port, &portValue);
 		if ( status == Status_OK )
 		{
-			if (IS_SET_BIT(portValue, pin))
+			if (IS_SET_BIT(portValue, pinDef.pin))
 			{
 				*pinValue = High;
 			}

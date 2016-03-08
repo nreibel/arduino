@@ -1,20 +1,20 @@
 #include "os.h"
+#include "app.h"
 #include "app_prv.h"
 #include "app_cfg.h"
 #include "timer.h"
-#include "timer_cfg.h"
 #include "port.h"
 #include "uss.h"
 #include "stdio.h"
-#include "avr/io.h"
 #include "bits.h"
 #include "stack.h"
-#include "serial.h"
 #include "math.h"
-#include "stdio.h"
 
 #if LCD_ENABLED == ON
 #include "lcd.h"
+static boolean requestRefresh = FALSE;
+static uint16_t lcdLastValue = 0;
+static char lcd_buffer[10];
 #endif
 
 #if BUZZER_ENABLED == ON
@@ -23,11 +23,17 @@ static BuzzerState buzzerState = Off;
 #endif
 
 #if SERIAL_DEBUG_ENABLED == ON
+#include "serial.h"
 static char serial_buffer[10];
 #endif
 
 void App_Init()
 {
+	/* Power on accessories/sensors */
+	Port_SetPinDataDirection(Pin_POWER, Output);
+	Port_SetPinState(Pin_POWER, High);
+
+	/* Init ultrasound */
 	USS_Init();
 
 #if LCD_ENABLED == ON
@@ -42,35 +48,24 @@ void App_Init()
 	PWM_Init();
 #endif
 
-	/* Set LED pin as OUTPUT */
-	Port_SetPinDataDirection(App_Cfg_Port_LED, App_Cfg_Pin_LED, Output);
+	Port_SetPinDataDirection(Pin_LED, Output);
 
 	/* Set up tasks */
-	Timer_InitTask(Timer_BlinkTask, 500, &Task_Blink);
-	Timer_InitTask(Timer_MainTask,  100, &Task_MainCyclic);
-
-	/* Start all tasks */
-	Timer_Enable(Timer_BlinkTask);
-	Timer_Enable(Timer_MainTask);
+	Timer_InitTask(Timer_BlinkTask,   500,  &Task_Blink);
+	Timer_InitTask(Timer_MainTask,    100,  &Task_MainCyclic);
 
 #if BUZZER_ENABLED == ON
 	Timer_InitTask(Timer_BuzzTask,  100, &Task_Buzzer);
-	Timer_Enable(Timer_BuzzTask);
+#endif
+
+#if LCD_ENABLED == ON
+	Timer_InitTask(Timer_LCD_Refresh, 500, &Task_LCD_Refresh);
 #endif
 
 	USS_TriggerMeasurement();
 }
 
-/* Blinks a LED to indicate status */
-void Task_Blink()
-{
-	static PinState pinState = Low;
-
-	pinState = (pinState == Low ? High : Low);
-	Port_SetPinState(App_Cfg_Port_LED, App_Cfg_Pin_LED, pinState);
-}
-
-/* Main task : read USS sensor and set buzzing mode */
+/* Main task : read USS sensor */
 void Task_MainCyclic(void)
 {
 	static Stack *stack = NULL_PTR;
@@ -114,14 +109,44 @@ void Task_MainCyclic(void)
 		}
 #endif
 
+#if LCD_ENABLED == ON
+		if (average != lcdLastValue)
+		{
+			sprintf(lcd_buffer, "%d cm", average);
+			lcdLastValue = average;
+			requestRefresh = TRUE;
+		}
+#endif
+
 		/* Trigger next acquisition */
 		USS_TriggerMeasurement();
 	}
 }
 
-/* Controls the buzzer */
+#if LCD_ENABLED == ON
+void Task_LCD_Refresh()
+{
+	if (requestRefresh == TRUE)
+	{
+		LCD_ClearDisplay();
+		LCD_ReturnHome();
+		LCD_PrintString(lcd_buffer);
+		requestRefresh = FALSE;
+	}
+}
+#endif
+
+/* Blinks a LED to indicate status */
+void Task_Blink()
+{
+	static PinState pinState = Low;
+
+	pinState = (pinState == Low ? High : Low);
+	Port_SetPinState(Pin_LED, pinState);
+}
 
 #if BUZZER_ENABLED == ON
+/* Controls the buzzer */
 void Task_Buzzer(void)
 {
 	static boolean isOn = FALSE;

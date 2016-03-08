@@ -18,8 +18,10 @@ INCLUDES=\
 	src/port/api \
 	src/port/cfg \
 	src/uss/api \
+	src/uss/cfg \
 	src/stack/api \
 	src/pwm/api \
+	src/pwm/cfg \
 	src/math/api \
 	src/app/api \
 	src/app/cfg \
@@ -51,8 +53,8 @@ timer: src/timer/src/timer.o
 os: src/os/src/os.o src/os/cfg/os_cfg.o
 serial: src/serial/src/serial.o
 port: src/port/src/port.o src/port/cfg/port_cfg.o
-uss: src/uss/src/uss.o
-pwm: src/pwm/src/pwm.o
+uss: src/uss/src/uss.o src/uss/cfg/uss_cfg.o
+pwm: src/pwm/src/pwm.o src/pwm/cfg/pwm_cfg.o
 stack: src/stack/src/stack.o
 math: src/math/src/math.o
 lcd: src/lcd/src/lcd.o

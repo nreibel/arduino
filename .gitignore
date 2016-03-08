@@ -1,5 +1,5 @@
- obj/*
- out/*
- .cproject
- .directory
- .project
+obj/
+out/
+.cproject
+.directory
+.project
