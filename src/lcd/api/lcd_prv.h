@@ -4,7 +4,15 @@
 extern PinDef pin_RS;
 extern PinDef pin_EN;
 
-Std_ReturnType Write_Byte(uint8_t data, PinState rs);
-Std_ReturnType Write_Half_Byte(uint8_t data, PinState rs);
+typedef enum {
+	Uninitialized,
+	Ready,
+	Busy
+} LcdStatus;
+
+void LCD_CyclicTask();
+Std_ReturnType LCD_Write_Char(char chr);
+Std_ReturnType LCD_WriteByte(uint8_t data, PinState rs);
+Std_ReturnType LCD_WriteNibble(uint8_t data, PinState rs);
 
 #endif /* SRC_LCD_API_LCD_PRV_H_ */

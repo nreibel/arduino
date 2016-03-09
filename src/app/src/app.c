@@ -12,9 +12,7 @@
 
 #if LCD_ENABLED == ON
 #include "lcd.h"
-static boolean requestRefresh = FALSE;
 static uint16_t lcdLastValue = 0;
-static char lcd_buffer[10];
 #endif
 
 #if BUZZER_ENABLED == ON
@@ -51,15 +49,15 @@ void App_Init()
 	Port_SetPinDataDirection(Pin_LED, Output);
 
 	/* Set up tasks */
-	Timer_InitTask(Timer_BlinkTask,   500,  &Task_Blink);
-	Timer_InitTask(Timer_MainTask,    100,  &Task_MainCyclic);
+	Timer_InitTask(Timer_BlinkTask, 500, &Task_Blink);
+	Timer_InitTask(Timer_MainTask,  100, &Task_MainCyclic);
 
 #if BUZZER_ENABLED == ON
-	Timer_InitTask(Timer_BuzzTask,  100, &Task_Buzzer);
+	Timer_InitTask(Timer_BuzzTask, 100, &Task_Buzzer);
 #endif
 
 #if LCD_ENABLED == ON
-	Timer_InitTask(Timer_LCD_Refresh, 500, &Task_LCD_Refresh);
+	Timer_InitTask(Timer_LCD_Refresh, 500, &LCD_CyclicTask);
 #endif
 
 	USS_TriggerMeasurement();
@@ -112,9 +110,14 @@ void Task_MainCyclic(void)
 #if LCD_ENABLED == ON
 		if (average != lcdLastValue)
 		{
-			sprintf(lcd_buffer, "%d cm", average);
 			lcdLastValue = average;
-			requestRefresh = TRUE;
+
+			char* buffer = NULL_PTR;
+			if (LCD_GetBuffer(&buffer) == Status_OK)
+			{
+				sprintf(buffer, "%d cm", average);
+				LCD_RequestRefresh();
+			}
 		}
 #endif
 
@@ -122,19 +125,6 @@ void Task_MainCyclic(void)
 		USS_TriggerMeasurement();
 	}
 }
-
-#if LCD_ENABLED == ON
-void Task_LCD_Refresh()
-{
-	if (requestRefresh == TRUE)
-	{
-		LCD_ClearDisplay();
-		LCD_ReturnHome();
-		LCD_PrintString(lcd_buffer);
-		requestRefresh = FALSE;
-	}
-}
-#endif
 
 /* Blinks a LED to indicate status */
 void Task_Blink()

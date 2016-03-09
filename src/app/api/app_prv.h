@@ -27,7 +27,7 @@ void Task_Buzzer(void);
 #endif
 
 #if LCD_ENABLED == ON
-void Task_LCD_Refresh(void);
+void LCD_CyclicTask(void);
 #endif
 
 #endif /* SRC_APP_API_APP_PRV_H_ */

@@ -2,7 +2,6 @@
 #include "os_prv.h"
 #include "app.h"
 #include "timer.h"
-#include "os_cfg.h"
 
 void Os_EnableInterrupts()
 {

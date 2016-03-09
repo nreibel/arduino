@@ -11,6 +11,11 @@
 #include "serial.h"
 #endif
 
+
+#if LCD_ENABLED == ON
+#include "lcd.h"
+#endif
+
 static volatile uint32_t currentTimeMs = 0;
 
 ISR(TIMER2_COMPA_vect)
@@ -47,5 +52,9 @@ void Os_Cfg_ExecuteBackgroundTasks()
 {
 #if SERIAL_DEBUG_ENABLED == ON
 	Serial_BackgroundTask();
+#endif
+
+#if LCD_ENABLED == ON
+	LCD_BackgroundTask();
 #endif
 }

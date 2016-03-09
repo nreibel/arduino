@@ -23,8 +23,8 @@ typedef enum
 
 typedef enum
 {
-	LeftToRight,
-	RightToLeft,
+	Increment,
+	Decrement,
 } CursorMoveDirection;
 
 Std_ReturnType LCD_Init();
@@ -35,7 +35,8 @@ Std_ReturnType LCD_DisplayControl(boolean displayOn, boolean cursonOn, boolean c
 Std_ReturnType LCD_FunctionSet(InterfaceDataWidth dataWidth, CharacterFont characterFont, DisplayLines displayLines);
 Std_ReturnType LCD_SetCursor(uint8_t line, uint8_t pos);
 
-Std_ReturnType LCD_Print(char chr);
-Std_ReturnType LCD_PrintString(char* chr);
+Std_ReturnType LCD_GetBuffer(char** buffer_ptr);
+void LCD_RequestRefresh();
+void LCD_BackgroundTask();
 
 #endif /* SRC_LCD_API_LCD_H_ */

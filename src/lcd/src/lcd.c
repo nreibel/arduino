@@ -1,9 +1,91 @@
+#include "timer.h"
 #include "lcd.h"
 #include "lcd_cfg.h"
 #include "lcd_prv.h"
 #include "port.h"
 #include "bits.h"
 #include "os.h"
+#include "avr/io.h"
+
+static boolean requestRefresh = FALSE;
+static LcdStatus lcdState = Uninitialized;
+static char buffer[33] = {0};
+
+void LCD_RequestRefresh()
+{
+	requestRefresh = TRUE;
+}
+
+Std_ReturnType LCD_GetBuffer(char** buffer_ptr)
+{
+	Std_ReturnType retval = Status_Not_OK;
+
+	if (lcdState == Ready && requestRefresh == FALSE)
+	{
+		*buffer_ptr = buffer;
+		retval = Status_OK;
+	}
+	else if (lcdState == Busy)
+	{
+		retval = Status_Pending;
+	}
+
+	if (retval != Status_OK)
+	{
+		*buffer_ptr = NULL_PTR;
+	}
+
+	return retval;
+}
+
+/*
+ * The cyclic task periodically checks if a screen refresh is requested.
+ * Actual printing is done by the background task.
+ * This function dictates the refresh rate of the screen.
+ */
+void LCD_CyclicTask()
+{
+	if (lcdState == Ready && requestRefresh == TRUE)
+	{
+		LCD_ClearDisplay();
+		LCD_ReturnHome();
+		requestRefresh = FALSE;
+
+		/* Signals the background task to start writing */
+		lcdState = Busy;
+	}
+}
+
+/*
+ * The background task is in charge of writing data to the screen
+ */
+void LCD_BackgroundTask()
+{
+	static char* ptr = buffer;
+
+	if ( lcdState == Busy )
+	{
+
+		if ( *ptr == 0 || ptr == buffer + 32 )
+		{
+			/* Cleanup and prepare for next refresh */
+			ptr = buffer;
+			lcdState = Ready;
+		}
+		else
+		{
+			/* Jump to next line */
+			if (ptr == buffer + 16)
+			{
+				LCD_SetCursor(2, 0);
+			}
+
+			/* Write the next character */
+			LCD_Write_Char( *ptr );
+			ptr++;
+		}
+	}
+}
 
 Std_ReturnType LCD_Init()
 {
@@ -26,32 +108,23 @@ Std_ReturnType LCD_Init()
 	Os_Sleep(15);
 
 	/* First write sets data width*/
-	Write_Half_Byte(0x2, Low);
+	LCD_WriteNibble(0x2, Low);
 	Os_Sleep(4);
 
 	LCD_FunctionSet(DataWidth_4_Bits, CharacterFont_5x8, DisplayLines_2_Line);
-	LCD_DisplayControl(TRUE, TRUE, TRUE);
+	LCD_DisplayControl(TRUE, FALSE, FALSE);
+	LCD_SetEntryMode(Increment, FALSE);
 	LCD_ClearDisplay();
-	LCD_SetEntryMode(LeftToRight, FALSE);
 	LCD_ReturnHome();
 
-	return retval;
-}
+	Timer_InitTask(Timer_LCD_Refresh, 500, &LCD_CyclicTask);
 
-Std_ReturnType LCD_PrintString(char* chr)
-{
-	Std_ReturnType retval = Status_OK;
-
-	while(*chr != 0 && retval == Status_OK)
-	{
-		retval = LCD_Print(*chr);
-		chr++;
-	}
+	lcdState = Ready;
 
 	return retval;
 }
 
-Std_ReturnType LCD_Print(char chr)
+Std_ReturnType LCD_Write_Char(char chr)
 {
 	Std_ReturnType retval = Status_OK;
 
@@ -62,7 +135,7 @@ Std_ReturnType LCD_Print(char chr)
 
 	if (retval == Status_OK)
 	{
-		retval = Write_Byte(chr, High);
+		retval = LCD_WriteByte(chr, High);
 	}
 
 	return retval;
@@ -76,7 +149,7 @@ Std_ReturnType LCD_ClearDisplay()
 
 	if (retval == Status_OK)
 	{
-		retval = Write_Byte(data, Low);
+		retval = LCD_WriteByte(data, Low);
 	}
 
 	return retval;
@@ -90,7 +163,7 @@ Std_ReturnType LCD_ReturnHome()
 
 	if (retval == Status_OK)
 	{
-		retval = Write_Byte(data, Low);
+		retval = LCD_WriteByte(data, Low);
 	}
 
 	return retval;
@@ -100,12 +173,12 @@ Std_ReturnType LCD_SetEntryMode(CursorMoveDirection direction, boolean automatic
 {
 	Std_ReturnType retval = Status_OK;
 
-	uint8_t data = 0x40;
+	uint8_t data = 0x04;
 
 	switch(direction)
 	{
-	case RightToLeft: RESET_BIT(data, 1); break;
-	case LeftToRight:   SET_BIT(data, 1); break;
+	case Decrement: RESET_BIT(data, 1); break;
+	case Increment:   SET_BIT(data, 1); break;
 	default: retval = Status_Not_OK; /* Invalid data */
 	}
 
@@ -113,7 +186,7 @@ Std_ReturnType LCD_SetEntryMode(CursorMoveDirection direction, boolean automatic
 
 	if (retval == Status_OK)
 	{
-		retval = Write_Byte(data, Low);
+		retval = LCD_WriteByte(data, Low);
 	}
 
 	return retval;
@@ -131,7 +204,7 @@ Std_ReturnType LCD_DisplayControl(boolean displayOn, boolean cursonOn, boolean c
 
 	if (retval == Status_OK)
 	{
-		retval = Write_Byte(data, Low);
+		retval = LCD_WriteByte(data, Low);
 	}
 
 	return retval;
@@ -161,7 +234,7 @@ Std_ReturnType LCD_SetCursor(uint8_t line, uint8_t pos)
 
 	if (retval == Status_OK)
 	{
-		retval = Write_Byte(data, Low);
+		retval = LCD_WriteByte(data, Low);
 	}
 
 	return retval;
@@ -196,23 +269,23 @@ Std_ReturnType LCD_FunctionSet(InterfaceDataWidth dataWidth, CharacterFont chara
 
 	if (retval == Status_OK)
 	{
-		retval = Write_Byte(data, Low);
+		retval = LCD_WriteByte(data, Low);
 	}
 
 	return retval;
 }
 
-Std_ReturnType Write_Byte(uint8_t data, PinState rs)
+Std_ReturnType LCD_WriteByte(uint8_t data, PinState rs)
 {
 	Std_ReturnType retval = Status_Not_OK;
 	Std_ReturnType retval_high_nibble = Status_Not_OK;
 	Std_ReturnType retval_low_nibble = Status_Not_OK;
 
 	// Write high nibble
-	retval_high_nibble = Write_Half_Byte( HIGH_NIBBLE(data), rs );
+	retval_high_nibble = LCD_WriteNibble( HIGH_NIBBLE(data), rs );
 
 	// Write low nibble
-	retval_low_nibble = Write_Half_Byte( LOW_NIBBLE(data), rs );
+	retval_low_nibble = LCD_WriteNibble( LOW_NIBBLE(data), rs );
 
 	if (retval_high_nibble == Status_OK && retval_low_nibble == Status_OK)
 	{
@@ -222,28 +295,27 @@ Std_ReturnType Write_Byte(uint8_t data, PinState rs)
 	return retval;
 }
 
-Std_ReturnType Write_Half_Byte(uint8_t data, PinState rs)
+Std_ReturnType LCD_WriteNibble(uint8_t data, PinState rs)
 {
 	Std_ReturnType retval = Status_Not_OK;
 
 	uint8_t portVal;
+
+	Port_SetPinState(pin_EN, High);
 
 	if (Status_OK == Port_GetValue(Port_Data, &portVal))
 	{
 		RESET_MASK(portVal, 0xF);
 		SET_MASK(portVal, data & 0xF);
 		Port_SetValue(Port_Data, portVal);
-
 		retval = Status_OK;
 	}
 
-	/* Set RS pin */
 	Port_SetPinState(pin_RS, rs);
 
-	/* Send trigger for 2ms */
-	Port_SetPinState(pin_EN, High);
-	Os_Sleep(2);
+	Os_Sleep(1);
 	Port_SetPinState(pin_EN, Low);
+	Os_Sleep(1);
 
 	return retval;
 }
