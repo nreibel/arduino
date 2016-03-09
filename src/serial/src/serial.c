@@ -1,14 +1,8 @@
 #include "serial.h"
 #include "serial_cfg.h"
+#include "serial_prv.h"
 #include "avr/io.h"
 #include "bits.h"
-
-
-typedef enum {
-	Serial_Uninitialized,
-	Serial_Ready,
-	Serial_Writing
-} TransmitState;
 
 static TransmitState transmitStateMachine = Serial_Uninitialized;
 static char *transmitBuffer = NULL_PTR;

@@ -3,7 +3,7 @@
 
 #define STACK_SIZE 4
 
-#define SERIAL_DEBUG_ENABLED ON
+#define SERIAL_DEBUG_ENABLED OFF
 #define BUZZER_ENABLED       OFF
 #define LCD_ENABLED          ON
 

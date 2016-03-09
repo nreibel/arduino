@@ -1,9 +1,15 @@
 #include "os.h"
 #include "timer.h"
-#include "serial_prv.h"
 #include "bits.h"
 #include "avr/io.h"
 #include "avr/interrupt.h"
+
+#include "app.h"
+#include "app_cfg.h"
+
+#if SERIAL_DEBUG_ENABLED == ON
+#include "serial.h"
+#endif
 
 static volatile uint32_t currentTimeMs = 0;
 
@@ -12,9 +18,14 @@ ISR(TIMER2_COMPA_vect)
 	currentTimeMs++;
 }
 
-uint32_t Os_GetCurrentTimeMs()
+uint32_t Os_Cfg_GetCurrentTimeMs()
 {
 	return currentTimeMs;
+}
+
+void Os_Cfg_EnableInterrupts()
+{
+	asm("sei");
 }
 
 void Os_Cfg_Init()
@@ -27,9 +38,14 @@ void Os_Cfg_Init()
 	SET_BIT(TIMSK2, OCIE2A); // Enable interrupt on Compare Match A
 
 	Os_EnableInterrupts();
+
+	/* Initialization of the application */
+	App_Init();
 }
 
 void Os_Cfg_ExecuteBackgroundTasks()
 {
+#if SERIAL_DEBUG_ENABLED == ON
 	Serial_BackgroundTask();
+#endif
 }

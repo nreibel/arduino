@@ -1,4 +1,5 @@
 #include "port.h"
+#include "port_prv.h"
 #include "bits.h"
 
 Std_ReturnType Port_SetDataDirection(Port port, uint8_t direction)
@@ -8,7 +9,7 @@ Std_ReturnType Port_SetDataDirection(Port port, uint8_t direction)
 	if (port < NbrOfPorts )
 	{
 		/* Write DDRx */
-		WRITE_PU8(Port_Cfg_BaseAddr[port] + 1, direction);
+		WRITE_PU8(Port_Cfg_BaseAddr[port] + OFFSET_DDR, direction);
 		status = Status_OK;
 	}
 
@@ -21,8 +22,8 @@ Std_ReturnType Port_GetDataDirection(Port port, uint8_t* direction)
 
 	if ( port < NbrOfPorts )
 	{
-		/* Read PINx */
-		*direction = READ_PU8(Port_Cfg_BaseAddr[port] + 1);
+		/* Read DDRx */
+		*direction = READ_PU8(Port_Cfg_BaseAddr[port] + OFFSET_DDR);
 		status = Status_OK;
 	}
 
@@ -36,7 +37,7 @@ Std_ReturnType Port_SetValue(Port port, uint8_t portValue)
 	if ( port < NbrOfPorts )
 	{
 		/* Write PORTx */
-		WRITE_PU8(Port_Cfg_BaseAddr[port] + 2, portValue);
+		WRITE_PU8(Port_Cfg_BaseAddr[port] + OFFSET_PORT, portValue);
 		status = Status_OK;
 	}
 
@@ -50,7 +51,7 @@ Std_ReturnType Port_GetValue(Port port, uint8_t* portValue)
 	if ( port < NbrOfPorts )
 	{
 		/* Read PINx */
-		*portValue = READ_PU8(Port_Cfg_BaseAddr[port] + 0);
+		*portValue = READ_PU8(Port_Cfg_BaseAddr[port] + OFFSET_PIN);
 		status = Status_OK;
 	}
 
@@ -65,26 +66,29 @@ Std_ReturnType Port_SetPinDataDirection(PinDef pinDef, DataDirection direction)
 	if (pinDef.port < NbrOfPorts && pinDef.pin < NbrOfPins )
 	{
 		/* Read DDRx */
-		portValue = READ_PU8(Port_Cfg_BaseAddr[pinDef.port] + 1);
+		status = Port_GetDataDirection(pinDef.port, &portValue);
 
-		switch (direction)
+		if (status == Status_OK)
 		{
-		case Input:
-			RESET_BIT(portValue, pinDef.pin);
-			status = Status_OK;
-			break;
-		case Output:
-			SET_BIT(portValue, pinDef.pin);
-			status = Status_OK;
-			break;
-		default:
-			break;
+			switch (direction)
+			{
+			case Input:
+				RESET_BIT(portValue, pinDef.pin);
+				status = Status_OK;
+				break;
+			case Output:
+				SET_BIT(portValue, pinDef.pin);
+				status = Status_OK;
+				break;
+			default:
+				status = Status_Not_OK;
+				break;
+			}
 		}
 
 		if (status == Status_OK)
 		{
-			/* Write DDRx */
-			WRITE_PU8(Port_Cfg_BaseAddr[pinDef.port]+1, portValue);
+			status = Port_SetDataDirection(pinDef.port, portValue);
 		}
 	}
 
@@ -99,6 +103,7 @@ Std_ReturnType Port_SetPinState(PinDef pinDef, PinState pinValue)
 	if ( pinDef.port < NbrOfPorts && pinDef.pin < NbrOfPins )
 	{
 		status = Port_GetValue(pinDef.port, &portValue);
+
 		if (status == Status_OK)
 		{
 			switch(pinValue)
@@ -112,9 +117,13 @@ Std_ReturnType Port_SetPinState(PinDef pinDef, PinState pinValue)
 				status = Status_OK;
 				break;
 			default:
+				status = Status_Not_OK;
 				break;
 			}
+		}
 
+		if (status == Status_OK)
+		{
 			status = Port_SetValue(pinDef.port, portValue);
 		}
 	}

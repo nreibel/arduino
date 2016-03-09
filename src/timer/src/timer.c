@@ -3,20 +3,6 @@
 #include "timer_cfg.h"
 #include "os.h"
 
-typedef enum {
-	Uninitialized,
-	Disabled,
-	Enabled
-} TimerStatus;
-
-/* Holds the status of each timer channel */
-typedef struct {
-	uint32_t    triggerTime;
-	uint32_t    lastTrigger;
-	Callback    callback;
-	TimerStatus status;
-} TimerConfig;
-
 static TimerConfig timerCfg[NbrOfTimerChannels];
 
 /* Initialization of the cyclic task */

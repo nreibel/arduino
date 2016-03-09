@@ -1,7 +1,10 @@
 #ifndef SRC_SERIAL_API_SERIAL_PRV_H_
 #define SRC_SERIAL_API_SERIAL_PRV_H_
 
-void Serial_Init();
-void Serial_BackgroundTask();
+typedef enum {
+	Serial_Uninitialized,
+	Serial_Ready,
+	Serial_Writing
+} TransmitState;
 
 #endif /* SRC_SERIAL_API_SERIAL_PRV_H_ */

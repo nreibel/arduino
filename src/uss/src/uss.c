@@ -8,20 +8,6 @@
 #include "avr/interrupt.h"
 #include "avr/io.h"
 
-/* Ticks to us ratio is set by timer prescaler */
-#define TICKS_TO_US(ticks) ((ticks)/2)
-
-/* us to cm is given by HC-SR04 spec */
-#define TICKS_TO_CM(ticks) (TICKS_TO_US(ticks)/58)
-
-typedef enum {
-	Uninitialized,
-	Ready,
-	WaitForEcho,
-	MeasuringEcho,
-	MeasurementAvailable,
-} Uss_InternalState;
-
 volatile static Uss_InternalState ussStateMachine  = Uninitialized;
 
 ISR(INT1_vect)

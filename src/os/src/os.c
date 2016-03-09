@@ -1,14 +1,17 @@
 #include "os.h"
-
+#include "os_prv.h"
 #include "app.h"
-#include "timer_prv.h"
+#include "timer.h"
 #include "os_cfg.h"
-
-extern uint32_t Os_GetCurrentTimeMs();
 
 void Os_EnableInterrupts()
 {
-	asm("sei");
+	Os_Cfg_EnableInterrupts();
+}
+
+uint32_t Os_GetCurrentTimeMs()
+{
+	return Os_Cfg_GetCurrentTimeMs();
 }
 
 void Os_Sleep(uint32_t ms)
@@ -24,9 +27,6 @@ int main(void)
 
 	/* Perform project-specific initialization */
 	Os_Cfg_Init();
-
-	/* Initialization of the application */
-	App_Init();
 
 	/* Run main loop */
 	while(1)
