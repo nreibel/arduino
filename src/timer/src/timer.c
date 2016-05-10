@@ -20,7 +20,7 @@ void Timer_CyclicTaskInit(void)
 }
 
 /* Initializes a specific timer channel with a trigger value and a callback each time the trigger expires */
-Std_ReturnType Timer_InitTask(TimerChannel channel, uint32_t triggerValue, Callback cbk)
+Std_ReturnType Timer_StartTask(TimerChannel channel, uint32_t triggerValue, Callback cbk)
 {
 	Std_ReturnType status = Status_Not_OK;
 
@@ -30,6 +30,23 @@ Std_ReturnType Timer_InitTask(TimerChannel channel, uint32_t triggerValue, Callb
 		timerCfg[channel].triggerTime = triggerValue;
 		timerCfg[channel].lastTrigger = Os_GetCurrentTimeMs();
 		timerCfg[channel].callback    = cbk;
+		status = Status_OK;
+	}
+
+	return status;
+}
+
+/* Initializes a specific timer channel with a trigger value */
+Std_ReturnType Timer_StartTimer(TimerChannel channel, uint32_t triggerValue)
+{
+	Std_ReturnType status = Status_Not_OK;
+
+	if (channel < NbrOfTimerChannels)
+	{
+		timerCfg[channel].status      = Enabled;
+		timerCfg[channel].triggerTime = triggerValue;
+		timerCfg[channel].lastTrigger = Os_GetCurrentTimeMs();
+		timerCfg[channel].callback    = NULL_PTR;
 		status = Status_OK;
 	}
 

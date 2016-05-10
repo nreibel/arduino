@@ -117,8 +117,6 @@ Std_ReturnType LCD_Init()
 	LCD_ClearDisplay();
 	LCD_ReturnHome();
 
-	Timer_InitTask(Timer_LCD_Refresh, 500, &LCD_CyclicTask);
-
 	lcdState = Ready;
 
 	return retval;

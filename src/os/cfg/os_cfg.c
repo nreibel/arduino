@@ -3,18 +3,8 @@
 #include "bits.h"
 #include "avr/io.h"
 #include "avr/interrupt.h"
-
 #include "app.h"
-#include "app_cfg.h"
-
-#if SERIAL_DEBUG_ENABLED == ON
 #include "serial.h"
-#endif
-
-
-#if LCD_ENABLED == ON
-#include "lcd.h"
-#endif
 
 static volatile uint32_t currentTimeMs = 0;
 
@@ -50,11 +40,5 @@ void Os_Cfg_Init()
 
 void Os_Cfg_ExecuteBackgroundTasks()
 {
-#if SERIAL_DEBUG_ENABLED == ON
 	Serial_BackgroundTask();
-#endif
-
-#if LCD_ENABLED == ON
-	LCD_BackgroundTask();
-#endif
 }

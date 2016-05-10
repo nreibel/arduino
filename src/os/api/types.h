@@ -10,6 +10,8 @@ typedef enum {
 	TRUE = 1
 } boolean;
 
+#define NOT(b) ((b) == FALSE ? TRUE : FALSE)
+
 #define ON  1
 #define OFF 0
 

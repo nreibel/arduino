@@ -25,4 +25,7 @@
 // Test bit of value r at index x
 #define IS_SET_BIT(r, x)     ((r) & BIT(x))
 
+#define INCREMENT_MOD(x, m)  (x = (x + 1) % (m))
+#define DECREMENT_MOD(x, m)  (x = (x + m - 1) % (m))
+
 #endif /* SRC_OS_API_BITS_H_ */

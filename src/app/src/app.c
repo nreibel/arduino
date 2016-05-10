@@ -4,152 +4,263 @@
 #include "app_cfg.h"
 #include "timer.h"
 #include "port.h"
-#include "uss.h"
-#include "stdio.h"
-#include "bits.h"
-#include "stack.h"
-#include "math.h"
-
-#if LCD_ENABLED == ON
-#include "lcd.h"
-static uint16_t lcdLastValue = 0;
-#endif
-
-#if BUZZER_ENABLED == ON
-#include "pwm.h"
-static BuzzerState buzzerState = Off;
-#endif
-
-#if SERIAL_DEBUG_ENABLED == ON
 #include "serial.h"
-static char serial_buffer[10];
-#endif
+#include "bits.h"
+#include "avr/io.h"
+
+static WhammyMode whammyMode  = Whammy_2_Oct_Up;
+static boolean    chordsMode  = TRUE;
+static boolean    bypassMode  = TRUE;
 
 void App_Init()
 {
-	/* Power on accessories/sensors */
-	Port_SetPinDataDirection(Pin_POWER, Output);
-	Port_SetPinState(Pin_POWER, High);
+	Port_SetPinDataDirection(Pin_LED,     Output);
+	Port_SetPinDataDirection(Pin_BtnUp,   Input);
+	Port_SetPinDataDirection(Pin_BtnDown, Input);
+	Port_SetPinDataDirection(Pin_Preset,  Input);
 
-	/* Init ultrasound */
-	USS_Init();
-
-#if LCD_ENABLED == ON
-	LCD_Init();
-#endif
-
-#if SERIAL_DEBUG_ENABLED == ON
 	Serial_Init();
-#endif
 
-#if BUZZER_ENABLED == ON
-	PWM_Init();
-#endif
+	// Set default channel at boot
+	Whammy_ProgramChange(whammyMode, chordsMode, bypassMode);
 
-	Port_SetPinDataDirection(Pin_LED, Output);
-
-	/* Set up tasks */
-	Timer_InitTask(Timer_BlinkTask, 500, &Task_Blink);
-	Timer_InitTask(Timer_MainTask,  100, &Task_MainCyclic);
-
-#if BUZZER_ENABLED == ON
-	Timer_InitTask(Timer_BuzzTask, 100, &Task_Buzzer);
-#endif
-
-#if LCD_ENABLED == ON
-	Timer_InitTask(Timer_LCD_Refresh, 500, &LCD_CyclicTask);
-#endif
-
-	USS_TriggerMeasurement();
+	// Set up tasks
+	Timer_StartTask(Timer_MainTask, 10, &Task_MainCyclic);
 }
 
-/* Main task : read USS sensor */
-void Task_MainCyclic(void)
+// Send MIDI Program Change command through Serial
+void Whammy_ProgramChange(WhammyMode newProgram, boolean chordsMode, boolean bypass)
 {
-	static Stack *stack = NULL_PTR;
-	static uint16_t distance;
-	static uint16_t average;
-
-	if (stack == NULL_PTR)
+	if (bypass == TRUE)
 	{
-		stack = Stack_Create(STACK_SIZE);
-		Stack_Init(stack, 500);
+		newProgram += WHAMMY_CHANNEL_BYPASS_OFFSET;
 	}
 
-	if ( USS_GetDistance(&distance) == Status_OK )
+	if (chordsMode == TRUE)
 	{
-		Stack_Push(stack, distance);
+		newProgram += WHAMMY_CHORDS_MODE_OFFSET;
+		Port_SetPinState(Pin_LED, High);
+	}
+	else
+	{
+		Port_SetPinState(Pin_LED, Low);
+	}
 
-		average = Math_Average_u16(stack->buffer, stack->size);
+	static char midiMessage[2] = {0xC0, 0x0};
+	midiMessage[1] = newProgram;
 
-#if BUZZER_ENABLED == ON
-		if (average < 15)
+	Serial_Print(midiMessage, 2);
+}
+
+void EEPROM_write(unsigned int ucAddress, unsigned char ucData)
+{
+	/* Wait for completion of previous write */
+	while ( EECR & (1<<EEPE) );
+
+	/* Set Programming mode */
+	EECR = (0<<EEPM1)|(0<<EEPM0);
+
+	/* Set up address and data registers */
+	EEAR = ucAddress;
+	EEDR = ucData;
+
+	/* Write logical one to EEMPE */
+	EECR |= (1<<EEMPE);
+
+	/* Start eeprom write by setting EEPE */
+	EECR |= (1<<EEPE);
+}
+
+unsigned char EEPROM_read(unsigned int ucAddress)
+{
+	/* Wait for completion of previous write */
+	while(EECR & (1<<EEPE));
+
+	/* Set up address register */
+	EEAR = ucAddress;
+
+	/* Start eeprom read by writing EERE */
+	EECR |= (1<<EERE);
+
+	/* Return data from data register */
+	return EEDR;
+}
+
+
+typedef enum {
+	Idle,
+	ProgramChanged,
+	ProgramChangeEnd,
+	PresetPressed,
+	PresetPressEnd,
+	SavePreset,
+	BlinkLed,
+	RestorePreset,
+} MainState;
+
+// Main task
+void Task_MainCyclic(void)
+{
+	static MainState state = Idle;
+
+	PinState upState     = Low;
+	PinState downState   = Low;
+	PinState presetState = Low;
+
+	Port_GetPinState(Pin_BtnUp,   &upState);
+	Port_GetPinState(Pin_BtnDown, &downState);
+	Port_GetPinState(Pin_Preset,  &presetState);
+
+	switch(state)
+	{
+	case Idle:
+	{
+		// Program UP
+		if (upState == High)
 		{
-			buzzerState = Continuous;
+			INCREMENT_MOD(whammyMode, WHAMMY_MAX_MODE);
+
+			// We looped back to the first mode
+			if (whammyMode == Whammy_2_Oct_Up)
+			{
+				chordsMode = NOT(chordsMode);
+			}
+
+			state = ProgramChanged;
 		}
-		else if (average < 100)
+		// Program DOWN
+		else if (downState == High)
 		{
-			int interval = 10 * (average - 10);
-			Timer_SetTriggerTime(Timer_BuzzTask, interval);
-			buzzerState = Beep;
+			DECREMENT_MOD(whammyMode, WHAMMY_MAX_MODE);
+
+			// We looped back to the last mode
+			if (whammyMode == Harmony_Oct_Up_Oct_Down)
+			{
+				chordsMode = NOT(chordsMode);
+			}
+
+			state = ProgramChanged;
+		}
+		// Preset pressed
+		else if (presetState == High)
+		{
+			Timer_StartTimer(Timer_ButtonPress, SAVE_PRESET_DELAY);
+			state = PresetPressed;
+		}
+
+		break;
+	}
+
+	case ProgramChanged:
+	{
+		bypassMode = TRUE;
+		Whammy_ProgramChange(whammyMode, chordsMode, bypassMode);
+		state = ProgramChangeEnd;
+
+		break;
+	}
+
+	case ProgramChangeEnd:
+	{
+		// Wait for button released and serial ready before next cycle
+		if (upState == Low && downState == Low && Serial_IsReady() == Status_OK)
+		{
+			state = Idle;
+		}
+
+		break;
+	}
+
+	case PresetPressed:
+	{
+		boolean timerElapsed = FALSE;
+
+		// Button timer has elapsed : save preset
+		if ( Status_OK == Timer_IsElapsed(Timer_ButtonPress, &timerElapsed) && timerElapsed == TRUE )
+		{
+			Timer_Disable(Timer_ButtonPress);
+			state = SavePreset;
+		}
+		// Button released before timer elapsed : restore preset
+		else if ( presetState == Low )
+		{
+			Timer_Disable(Timer_ButtonPress);
+			state = RestorePreset;
+		}
+
+		break;
+	}
+
+	case RestorePreset:
+	{
+		boolean    savedChordsMode  = EEPROM_read(0);
+		WhammyMode savedCurrentMode = EEPROM_read(1);
+
+		if (savedChordsMode == chordsMode && savedCurrentMode == whammyMode)
+		{
+			// Toggle active preset
+			bypassMode = NOT(bypassMode);
 		}
 		else
 		{
-			buzzerState = Off;
+			// Restore saved preset
+			bypassMode  = FALSE;
+			whammyMode = savedCurrentMode;
+			chordsMode  = savedChordsMode;
 		}
-#endif
 
-#if SERIAL_DEBUG_ENABLED == ON
-		if ( Serial_IsReady() == Status_OK )
-		{
-			sprintf(serial_buffer, "%d cm\n\r", average);
-			Serial_Print(serial_buffer);
-		}
-#endif
+		Whammy_ProgramChange(whammyMode, chordsMode, bypassMode);
 
-#if LCD_ENABLED == ON
-		if (average != lcdLastValue)
-		{
-			lcdLastValue = average;
+		state = PresetPressEnd;
 
-			char* buffer = NULL_PTR;
-			if (LCD_GetBuffer(&buffer) == Status_OK)
-			{
-				sprintf(buffer, "%d cm", average);
-				LCD_RequestRefresh();
-			}
-		}
-#endif
-
-		/* Trigger next acquisition */
-		USS_TriggerMeasurement();
+		break;
 	}
-}
 
-/* Blinks a LED to indicate status */
-void Task_Blink()
-{
-	static PinState pinState = Low;
-
-	pinState = (pinState == Low ? High : Low);
-	Port_SetPinState(Pin_LED, pinState);
-}
-
-#if BUZZER_ENABLED == ON
-/* Controls the buzzer */
-void Task_Buzzer(void)
-{
-	static boolean isOn = FALSE;
-
-	if ((buzzerState == Continuous || buzzerState == Beep) &&  isOn == FALSE)
+	case SavePreset:
 	{
-		PWM_SetPWM(127);
-		isOn = TRUE;
+		EEPROM_write(0, chordsMode);
+		EEPROM_write(1, whammyMode);
+
+		state = BlinkLed;
+
+		break;
 	}
-	else if ((buzzerState == Off || buzzerState == Beep) && isOn == TRUE)
+
+	case BlinkLed:
 	{
-		PWM_StopPWM();
-		isOn = FALSE;
+		int cpt;
+		PinState ledStatus    = Low;
+		boolean  timerElapsed = FALSE;
+
+		Timer_StartTimer(Timer_LedBlink, LED_BLINK_DELAY);
+		Port_GetPinState(Pin_LED, &ledStatus);
+
+		for (cpt = 0 ; cpt < 2*NUMBER_OF_BLINKS ; cpt++)
+		{
+			// Wait for timer elapsed
+			while (Timer_IsElapsed(Timer_LedBlink, &timerElapsed) == Status_OK && timerElapsed != TRUE);
+
+			ledStatus = (ledStatus == Low ? High : Low);
+			Port_SetPinState(Pin_LED, ledStatus);
+		}
+
+		Timer_Disable(Timer_LedBlink);
+
+		state = PresetPressEnd;
+
+		break;
+	}
+
+	case PresetPressEnd:
+	{
+		// Wait for button release and serial ready before next cycle
+		if (presetState == Low && Serial_IsReady() == Status_OK)
+		{
+			state = Idle;
+		}
+
+		break;
+	}
+
 	}
 }
-#endif

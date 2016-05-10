@@ -7,7 +7,7 @@ CFLAGS=-Os -g0 -Wall -mmcu=$(ARCH)
 ARCH=atmega328p
 SERIAL_TTY = /dev/ttyACM0
 SERIAL_MONITOR = screen
-SERIAL_BAUD_RATE = 19200
+SERIAL_BAUD_RATE = 9600
 INCLUDES=\
 	src/timer/api \
 	src/timer/cfg \
@@ -30,7 +30,7 @@ INCLUDES=\
 
 all: clean prepare hex
 
-elf: timer os port serial uss pwm lcd stack math app
+elf: timer os serial port app
 	$(CC) $(CFLAGS) $(OBJ)/*.o -o $(OUT)/$(FNAME).elf
 	
 hex: elf

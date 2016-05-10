@@ -5,7 +5,9 @@
 #include "bits.h"
 
 static TransmitState transmitStateMachine = Serial_Uninitialized;
-static char *transmitBuffer = NULL_PTR;
+
+static char* transmitBuffer = NULL_PTR;
+static int   transmitLength = 0;
 
 Std_ReturnType Serial_IsReady(void)
 {
@@ -23,24 +25,29 @@ void Serial_BackgroundTask()
 {
 	if (transmitStateMachine == Serial_Writing)
 	{
-		while ( !IS_SET_BIT(UCSR0A, 5) ); // Wait for empty transmit buffer
-		UDR0 = *(transmitBuffer++);
-
-		if (*transmitBuffer == 0)
+		// Check for empty transmit buffer
+		if (IS_SET_BIT(UCSR0A, 5))
 		{
-			transmitBuffer = NULL_PTR;
-			transmitStateMachine = Serial_Ready;
+			UDR0 = *(transmitBuffer++);
+			transmitLength--;
+
+			if (transmitLength == 0)
+			{
+				transmitBuffer = NULL_PTR;
+				transmitStateMachine = Serial_Ready;
+			}
 		}
 	}
 }
 
-Std_ReturnType Serial_Print ( const char *buffer )
+Std_ReturnType Serial_Print ( const char *buffer, int length )
 {
 	Std_ReturnType retval = Status_Not_OK;
 
-	if(transmitStateMachine == Serial_Ready)
+	if(transmitStateMachine == Serial_Ready && length > 0)
 	{
 		transmitBuffer = (char*) buffer;
+		transmitLength = length;
 		transmitStateMachine = Serial_Writing;
 		retval = Status_Pending;
 	}
