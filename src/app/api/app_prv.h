@@ -7,7 +7,15 @@
 extern PinDef Pin_LED;
 extern PinDef Pin_BtnUp;
 extern PinDef Pin_BtnDown;
-extern PinDef Pin_Preset;
+extern PinDef Pin_Preset1;
+extern PinDef Pin_Preset2;
+extern PinDef Pin_Preset3;
+extern PinDef Pin_Preset4;
+
+typedef struct {
+	WhammyMode whammyMode;
+	boolean    chordsMode;
+} EEPROM_Data;
 
 void Task_MainCyclic(void);
 

@@ -5,6 +5,7 @@
 #include "avr/interrupt.h"
 #include "app.h"
 #include "serial.h"
+#include "eeprom.h"
 
 static volatile uint32_t currentTimeMs = 0;
 
@@ -41,4 +42,5 @@ void Os_Cfg_Init()
 void Os_Cfg_ExecuteBackgroundTasks()
 {
 	Serial_BackgroundTask();
+	EEPROM_BackgroundTask();
 }

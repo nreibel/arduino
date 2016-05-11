@@ -9,13 +9,13 @@ static TransmitState transmitStateMachine = Serial_Uninitialized;
 static char* transmitBuffer = NULL_PTR;
 static int   transmitLength = 0;
 
-Std_ReturnType Serial_IsReady(void)
+boolean Serial_IsReady(void)
 {
-	Std_ReturnType retval = Status_Not_OK;
+	boolean retval = FALSE;
 
 	if (transmitStateMachine == Serial_Ready)
 	{
-		retval = Status_OK;
+		retval = TRUE;
 	}
 
 	return retval;
@@ -55,9 +55,9 @@ Std_ReturnType Serial_Print ( const char *buffer, int length )
 	return retval;
 }
 
-void Serial_Init ( void )
+void Serial_Init ( int baudRate )
 {
-	uint16_t ubrr = ((CLOCK_SPEED/16)/BAUD_RATE)-1;
+	uint16_t ubrr = ((CLOCK_SPEED/16)/baudRate)-1;
 
 	UBRR0H = (uint8_t) (ubrr >> 8);
 	UBRR0L = (uint8_t) (ubrr & 0xFF);
