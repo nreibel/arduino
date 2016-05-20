@@ -77,9 +77,8 @@ void Whammy_ProgramChange(WhammyMode newProgram, boolean chordsMode, boolean byp
 typedef enum {
 	Idle,
 	ProgramChanged,
-	ProgramChangeEnd,
 	PresetPressed,
-	PresetPressEnd,
+	WaitBeforeNextCycle,
 	SavePreset,
 	BlinkLed,
 	WaitForBlink,
@@ -109,6 +108,8 @@ void Task_MainCyclic(void)
 			switch(key)
 			{
 			case ScrollUp:
+
+				bypassMode = TRUE;
 				INCREMENT_MOD(whammyMode, WHAMMY_MAX_MODE);
 
 				// We looped back to the first mode
@@ -122,6 +123,7 @@ void Task_MainCyclic(void)
 
 			case ScrollDown:
 
+				bypassMode = TRUE;
 				DECREMENT_MOD(whammyMode, WHAMMY_MAX_MODE);
 
 				// We looped back to the last mode
@@ -146,21 +148,8 @@ void Task_MainCyclic(void)
 
 	case ProgramChanged:
 	{
-		bypassMode = TRUE;
 		Whammy_ProgramChange(whammyMode, chordsMode, bypassMode);
-		state = ProgramChangeEnd;
-
-		break;
-	}
-
-	case ProgramChangeEnd:
-	{
-		// Wait for button released and serial ready before next cycle
-		if (!Keys_IsKeyPressed() && Serial_IsReady())
-		{
-			state = Idle;
-		}
-
+		state = WaitBeforeNextCycle;
 		break;
 	}
 
@@ -205,11 +194,12 @@ void Task_MainCyclic(void)
 				chordsMode = data.chordsMode;
 			}
 
-			Whammy_ProgramChange(whammyMode, chordsMode, bypassMode);
+			state = ProgramChanged;
 		}
-
-		state = PresetPressEnd;
-
+		else
+		{
+			state = WaitBeforeNextCycle;
+		}
 		break;
 	}
 
@@ -231,7 +221,7 @@ void Task_MainCyclic(void)
 		}
 		else
 		{
-			state = PresetPressEnd;
+			state = WaitBeforeNextCycle;
 		}
 
 		break;
@@ -251,15 +241,16 @@ void Task_MainCyclic(void)
 	case BlinkLed:
 	{
 		PinState ledStatus = Low;
+
+		// Invert pin state
 		Port_GetPinState(Pin_LED, &ledStatus);
 		ledStatus = (ledStatus == Low ? High : Low);
 		Port_SetPinState(Pin_LED, ledStatus);
-		ledBlinkCounter++;
 
-		if (ledBlinkCounter >= 2*NUMBER_OF_BLINKS)
+		if (ledBlinkCounter++ > 2*NUMBER_OF_BLINKS)
 		{
 			Timer_Disable(Timer_LedBlink);
-			state = PresetPressEnd;
+			state = WaitBeforeNextCycle;
 		}
 		else
 		{
@@ -269,9 +260,9 @@ void Task_MainCyclic(void)
 		break;
 	}
 
-	case PresetPressEnd:
+	case WaitBeforeNextCycle:
 	{
-		// Wait for button release and serial ready before next cycle
+		// Wait for key release, eeprom and serial ready before next cycle
 		if ( !Keys_IsKeyPressed() && Serial_IsReady() && EEPROM_IsReady() )
 		{
 			state = Idle;
