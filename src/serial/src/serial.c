@@ -40,7 +40,7 @@ void Serial_BackgroundTask()
 	}
 }
 
-Std_ReturnType Serial_Print ( const char *buffer, int length )
+Std_ReturnType Serial_AsyncPrint ( const char *buffer, int length )
 {
 	Std_ReturnType retval = Status_Not_OK;
 

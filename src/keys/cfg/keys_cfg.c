@@ -6,7 +6,7 @@
  * Assign a pin to each key.
  * Must be defined in the same order as enum Key
  */
-PinDef Kes_PinConfig[NUMBER_OF_KEYS] = {
+PinDef Keys_PinMapping[NUMBER_OF_KEYS] = {
 		{Port_D, Pin_6}, // ScrollUp
 		{Port_D, Pin_7}, // ScrollDown
 		{Port_D, Pin_2}, // Preset1

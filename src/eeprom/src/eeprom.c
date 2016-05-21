@@ -36,8 +36,7 @@ void EEPROM_BackgroundTask()
 			eepromState = EEPROM_Ready;
 		}
 	}
-
-	if (eepromState == EEPROM_Reading && !IS_SET_BIT(EECR, EEPE))
+	else if (eepromState == EEPROM_Reading && !IS_SET_BIT(EECR, EEPE))
 	{
 		EEAR = readBuffer.romAddr++;
 		SET_BIT(EECR, EERE);

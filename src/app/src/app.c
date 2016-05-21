@@ -66,11 +66,11 @@ void Whammy_ProgramChange(WhammyMode newProgram, boolean chordsMode, boolean byp
 #if DEBUG == ON
 	static char message[20];
 	sprintf(message, "Program %02d\r\n", newProgram);
-	Serial_Print(message, 20);
+	Serial_AsyncPrint(message, 20);
 #else
 	static char midiMessage[2] = {0xC0, 0x0};
 	midiMessage[1] = newProgram;
-	Serial_Print(midiMessage, 2);
+	Serial_AsyncPrint(midiMessage, 2);
 #endif
 }
 

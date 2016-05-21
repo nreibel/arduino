@@ -33,8 +33,8 @@ void USS_Init()
 {
 	Port_SetPinDataDirection(pinTrigger, Output);
 	Port_SetPinDataDirection(pinEcho, Input);
-	ussStateMachine = Ready;
 	Os_EnableInterrupts();
+	ussStateMachine = Ready;
 }
 
 Std_ReturnType USS_GetDistance(uint16_t *distance)

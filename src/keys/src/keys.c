@@ -11,7 +11,7 @@ void Keys_Init()
 	for (cpt = 0 ; cpt < NUMBER_OF_KEYS ; cpt++)
 	{
 		keyState[cpt] = Low;
-		Port_SetPinDataDirection(Kes_PinConfig[cpt], Input);
+		Port_SetPinDataDirection(Keys_PinMapping[cpt], Input);
 	}
 }
 
@@ -20,7 +20,7 @@ void Keys_CyclicTask()
 	int cpt;
 	for (cpt = 0 ; cpt < NUMBER_OF_KEYS ; cpt++)
 	{
-		Port_GetPinState(Kes_PinConfig[cpt], &keyState[cpt]);
+		Port_GetPinState(Keys_PinMapping[cpt], &keyState[cpt]);
 	}
 }
 
@@ -47,7 +47,7 @@ Std_ReturnType Keys_GetKeyPressed(Key *key)
 	{
 		if (keyState[cpt] != Low)
 		{
-			*key = cpt;
+			*key = (Key) cpt;
 			retval = Status_OK;
 		}
 	}

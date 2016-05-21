@@ -3,16 +3,6 @@
 #include "app.h"
 #include "timer.h"
 
-void Os_EnableInterrupts()
-{
-	Os_Cfg_EnableInterrupts();
-}
-
-uint32_t Os_GetCurrentTimeMs()
-{
-	return Os_Cfg_GetCurrentTimeMs();
-}
-
 void Os_Sleep(uint32_t ms)
 {
 	uint32_t begin = Os_GetCurrentTimeMs();
@@ -25,12 +15,12 @@ int main(void)
 	Timer_CyclicTaskInit();
 
 	/* Perform project-specific initialization */
-	Os_Cfg_Init();
+	Os_Init();
 
 	/* Run main loop */
 	while(1)
 	{
-		Os_Cfg_ExecuteBackgroundTasks();
+		Os_ExecuteBackgroundTasks();
 		Timer_CyclicTask();
 	}
 

@@ -14,17 +14,17 @@ ISR(TIMER2_COMPA_vect)
 	currentTimeMs++;
 }
 
-uint32_t Os_Cfg_GetCurrentTimeMs()
+uint32_t Os_GetCurrentTimeMs()
 {
 	return currentTimeMs;
 }
 
-void Os_Cfg_EnableInterrupts()
+void Os_EnableInterrupts()
 {
 	asm("sei");
 }
 
-void Os_Cfg_Init()
+void Os_Init()
 {
 	/* Init Timer2 as 1ms counter with interrupts */
 	OCR2A  = 250;            // Count to 250 ticks
@@ -39,7 +39,7 @@ void Os_Cfg_Init()
 	App_Init();
 }
 
-void Os_Cfg_ExecuteBackgroundTasks()
+void Os_ExecuteBackgroundTasks()
 {
 	Serial_BackgroundTask();
 	EEPROM_BackgroundTask();
