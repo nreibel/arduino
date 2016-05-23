@@ -3,6 +3,7 @@ OBJCOPY=avr-objcopy
 SIZE=avr-size
 UPLOAD=avrdude
 ARCH=atmega328p
+PROGRAMMER=arduino
 OBJ=_obj
 OUT=out
 FNAME=out_$(ARCH)
@@ -57,7 +58,7 @@ prepare:
 	@mkdir -p $(OBJ)/$(ARCH) $(OUT)
 
 upload:
-	@$(UPLOAD) -c arduino -p $(ARCH) -P $(SERIAL_TTY) -U flash:w:$(OUT)/$(FNAME).hex
+	@$(UPLOAD) -c $(PROGRAMMER) -p $(ARCH) -P $(SERIAL_TTY) -U flash:w:$(OUT)/$(FNAME).hex
 
 # Each software component must be created here
 app:    src/app/src/app.o src/app/cfg/app_cfg.o
