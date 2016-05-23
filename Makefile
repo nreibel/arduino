@@ -1,10 +1,12 @@
 CC=avr-gcc
 OBJCOPY=avr-objcopy
-OBJ=obj
-OUT=out
-FNAME=a
-CFLAGS=-Os -g0 -Wall -mmcu=$(ARCH)
+SIZE=avr-size
+UPLOAD=avrdude
 ARCH=atmega328p
+OBJ=_obj
+OUT=out
+FNAME=out_$(ARCH)
+CFLAGS=-Os -g0 -Wall -mmcu=$(ARCH)
 SERIAL_TTY = /dev/ttyACM0
 SERIAL_MONITOR = screen
 SERIAL_BAUD_RATE = 9600
@@ -17,39 +19,45 @@ INCLUDES=\
 	src/serial/cfg \
 	src/port/api \
 	src/port/cfg \
-	src/uss/api \
-	src/uss/cfg \
-	src/stack/api \
-	src/pwm/api \
-	src/pwm/cfg \
-	src/math/api \
 	src/app/api \
 	src/app/cfg \
-	src/lcd/api \
-	src/lcd/cfg \
 	src/eeprom/api \
 	src/eeprom/cfg \
 	src/keys/api \
-	src/keys/cfg \
+	src/keys/cfg
+# 	src/uss/api \
+# 	src/uss/cfg \
+# 	src/stack/api \
+# 	src/pwm/api \
+# 	src/pwm/cfg \
+# 	src/math/api \
+# 	src/lcd/api \
+# 	src/lcd/cfg \
+
 
 all: clean prepare hex
 
-elf: timer os serial port eeprom keys app
-	$(CC) $(CFLAGS) $(OBJ)/*.o -o $(OUT)/$(FNAME).elf
-	
-hex: elf
-	$(OBJCOPY) -O ihex $(OUT)/$(FNAME).elf $(OUT)/$(FNAME).hex
+hex: timer os serial port eeprom keys app
+	@echo "Linking object files..."
+	@$(CC) $(CFLAGS) $(OBJ)/*.o -o $(OUT)/$(FNAME).elf
+	@echo "Creating HEX file..."
+	@$(OBJCOPY) -O ihex $(OUT)/$(FNAME).elf $(OUT)/$(FNAME).hex
+	@echo "=================================="
+	@$(SIZE) -C --mcu=$(ARCH) $(OUT)/$(FNAME).elf
+	@echo "Done"
 
 clean:
 	@echo "Cleaning workspace"
+# 	@find . -name "*.o" -type f -printf "Delete %p\n" -delete
 	@rm -Rf $(OBJ)
+	@rm -Rf $(OUT)
 
 prepare:
 	@echo "Preparing workspace"
 	@mkdir -p $(OBJ) $(OUT)
 
 upload:
-	avrdude -c arduino -p $(ARCH) -P $(SERIAL_TTY) -U flash:w:$(OUT)/$(FNAME).hex
+	@$(UPLOAD) -c arduino -p $(ARCH) -P $(SERIAL_TTY) -U flash:w:$(OUT)/$(FNAME).hex
 
 # Each software component must be created here
 app:    src/app/src/app.o src/app/cfg/app_cfg.o
@@ -57,21 +65,22 @@ timer:  src/timer/src/timer.o
 os:     src/os/src/os.o src/os/cfg/os_cfg.o
 serial: src/serial/src/serial.o
 port:   src/port/src/port.o src/port/cfg/port_cfg.o
-uss:    src/uss/src/uss.o src/uss/cfg/uss_cfg.o
-pwm:    src/pwm/src/pwm.o src/pwm/cfg/pwm_cfg.o
-stack:  src/stack/src/stack.o
-math:   src/math/src/math.o
-lcd:    src/lcd/src/lcd.o
 eeprom: src/eeprom/src/eeprom.o
 keys:   src/keys/src/keys.o src/keys/cfg/keys_cfg.o
+# uss:    src/uss/src/uss.o src/uss/cfg/uss_cfg.o
+# pwm:    src/pwm/src/pwm.o src/pwm/cfg/pwm_cfg.o
+# stack:  src/stack/src/stack.o
+# math:   src/math/src/math.o
+# lcd:    src/lcd/src/lcd.o
 
 # Generic rules for compiling objects
 %.o: %.c
-	$(CC) $(addprefix -I,$(INCLUDES)) $(CFLAGS) -c -o $(OBJ)/$(@F) $<
+	@echo "Compiling $<"
+	@$(CC) $(addprefix -I,$(INCLUDES)) $(CFLAGS) -c -o $(OBJ)/$(@F) $<
 
 # Serial monitor
 monitor: stop
-	xterm -e "$(SERIAL_MONITOR) $(SERIAL_TTY) $(SERIAL_BAUD_RATE)" &
+	@xterm -e "$(SERIAL_MONITOR) $(SERIAL_TTY) $(SERIAL_BAUD_RATE)" &
 
 stop:
 	@-killall -q $(SERIAL_MONITOR) 2>/dev/null; true
