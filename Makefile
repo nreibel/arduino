@@ -35,11 +35,11 @@ INCLUDES=\
 # 	src/lcd/cfg \
 
 
-all: clean prepare hex
+all: prepare hex
 
 hex: timer os serial port eeprom keys app
 	@echo "Linking object files..."
-	@$(CC) $(CFLAGS) $(OBJ)/*.o -o $(OUT)/$(FNAME).elf
+	@$(CC) $(CFLAGS) $(OBJ)/$(ARCH)/*.o -o $(OUT)/$(FNAME).elf
 	@echo "Creating HEX file..."
 	@$(OBJCOPY) -O ihex $(OUT)/$(FNAME).elf $(OUT)/$(FNAME).hex
 	@echo "=================================="
@@ -48,13 +48,13 @@ hex: timer os serial port eeprom keys app
 
 clean:
 	@echo "Cleaning workspace"
-# 	@find . -name "*.o" -type f -printf "Delete %p\n" -delete
+#	@find . -name "*.o" -type f -printf "Delete %p\n" -delete
 	@rm -Rf $(OBJ)
 	@rm -Rf $(OUT)
 
 prepare:
 	@echo "Preparing workspace"
-	@mkdir -p $(OBJ) $(OUT)
+	@mkdir -p $(OBJ)/$(ARCH) $(OUT)
 
 upload:
 	@$(UPLOAD) -c arduino -p $(ARCH) -P $(SERIAL_TTY) -U flash:w:$(OUT)/$(FNAME).hex
@@ -76,7 +76,7 @@ keys:   src/keys/src/keys.o src/keys/cfg/keys_cfg.o
 # Generic rules for compiling objects
 %.o: %.c
 	@echo "Compiling $<"
-	@$(CC) $(addprefix -I,$(INCLUDES)) $(CFLAGS) -c -o $(OBJ)/$(@F) $<
+	@$(CC) $(addprefix -I,$(INCLUDES)) $(CFLAGS) -c -o $(OBJ)/$(ARCH)/$(@F) $<
 
 # Serial monitor
 monitor: stop
