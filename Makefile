@@ -1,16 +1,28 @@
+# Path to build tools
 CC=avr-gcc
 OBJCOPY=avr-objcopy
 SIZE=avr-size
 UPLOAD=avrdude
-ARCH=atmega328p
-PROGRAMMER=arduino
+
+# Output files
 OBJ=_obj
 OUT=out
 FNAME=out_$(ARCH)
-CFLAGS=-Os -g0 -Wall -mmcu=$(ARCH)
+
+# Compilation options and flags
+ARCH=atmega328p
+WARNINGS=all extra undef
+CFLAGS=-Os -g0 -mmcu=$(ARCH)
+
+# Serial config
 SERIAL_TTY = /dev/ttyACM0
 SERIAL_MONITOR = screen
 SERIAL_BAUD_RATE = 9600
+
+# avrisp  : use arduino as ISP to flash another chip
+# arduino : usual Arduino flash process
+PROGRAMMER=arduino
+
 INCLUDES=\
 	src/timer/api \
 	src/timer/cfg \
@@ -77,7 +89,7 @@ keys:   src/keys/src/keys.o src/keys/cfg/keys_cfg.o
 # Generic rules for compiling objects
 %.o: %.c
 	@echo "Compiling $<"
-	@$(CC) $(addprefix -I,$(INCLUDES)) $(CFLAGS) -c -o $(OBJ)/$(ARCH)/$(@F) $<
+	@$(CC) $(addprefix -I,$(INCLUDES)) $(addprefix -W,$(WARNINGS)) $(CFLAGS) -c -o $(OBJ)/$(ARCH)/$(@F) $<
 
 # Serial monitor
 monitor: stop
