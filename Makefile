@@ -13,6 +13,7 @@ FNAME=out_$(ARCH)
 ARCH=atmega328p
 WARNINGS=all extra undef
 CFLAGS=-Os -g0 -mmcu=$(ARCH)
+DEFINES="F_CPU=16000000"
 
 # Serial config
 SERIAL_TTY = /dev/ttyACM0
@@ -89,7 +90,7 @@ keys:   src/keys/src/keys.o src/keys/cfg/keys_cfg.o
 # Generic rules for compiling objects
 %.o: %.c
 	@echo "Compiling $<"
-	@$(CC) $(addprefix -I,$(INCLUDES)) $(addprefix -W,$(WARNINGS)) $(CFLAGS) -c -o $(OBJ)/$(ARCH)/$(@F) $<
+	@$(CC) $(addprefix -D,$(DEFINES)) $(addprefix -I,$(INCLUDES)) $(addprefix -W,$(WARNINGS)) $(CFLAGS) -c -o $(OBJ)/$(ARCH)/$(@F) $<
 
 # Serial monitor
 monitor: stop

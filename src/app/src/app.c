@@ -10,18 +10,6 @@
 #include "keys.h"
 
 /*
- * Set debug ON to print to the serial output (9600bps) instead of sending MIDI commands
- */
-#define DEBUG OFF
-
-#if DEBUG == ON
-#include <stdio.h>
-#define BAUD_RATE 9600
-#else
-#define BAUD_RATE 31250
-#endif
-
-/*
  * Global variables
  */
 static WhammyMode whammyMode = Whammy_2_Oct_Up;
@@ -38,7 +26,7 @@ void App_Init()
 	Keys_Init();
 
 	// Init serial for MIDI or debug communication
-	Serial_Init(BAUD_RATE);
+	Serial_Init();
 
 	// Set default channel at boot
 	Whammy_ProgramChange();
@@ -71,15 +59,9 @@ void Whammy_ProgramChange()
 		Port_SetPinState(Pin_LED_Classic, High);
 	}
 
-#if DEBUG == ON
-	static char message[20];
-	sprintf(message, "Program %02d\r\n", newProgram);
-	Serial_AsyncPrint(message, 20);
-#else
 	static char midiMessage[2] = {0xC0, 0x0};
 	midiMessage[1] = newProgram;
 	Serial_AsyncPrint(midiMessage, 2);
-#endif
 }
 
 typedef enum {

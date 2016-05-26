@@ -55,9 +55,9 @@ Std_ReturnType Serial_AsyncPrint ( const char *buffer, int length )
 	return retval;
 }
 
-void Serial_Init ( int baudRate )
+void Serial_Init()
 {
-	uint16_t ubrr = ((CLOCK_SPEED/16)/baudRate)-1;
+	uint16_t ubrr = ((F_CPU/16)/BAUD_RATE)-1;
 
 	UBRR0H = (uint8_t) (ubrr >> 8);
 	UBRR0L = (uint8_t) (ubrr & 0xFF);

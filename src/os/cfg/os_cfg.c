@@ -32,18 +32,18 @@ void Os_Init()
 {
 #if ARCHITECTURE == ARCH_ATTINY84
 	/* Init Timer0 as 1ms counter with interrupts */
-	OCR0A  = 250;            // Count to 250 ticks
-	TCNT0  = 0;              // Reset timer value
-	TCCR0A = 0x2;            // CTC mode
-	TCCR0B = 0x4;            // Set prescaler to 64 = 250000 ticks/s
-	SET_BIT(TIMSK0, OCIE0A); // Enable interrupt on Compare Match A
+	OCR0A  = (F_CPU/64)/1000; // Count 1000ms
+	TCNT0  = 0;               // Reset timer value
+	TCCR0A = 0x2;             // CTC mode
+	TCCR0B = 0x3;             // Set prescaler to 64
+	SET_BIT(TIMSK0, OCIE0A);  // Enable interrupt on Compare Match A
 #elif ARCHITECTURE == ARCH_ATMEGA328
 	/* Init Timer2 as 1ms counter with interrupts */
-	OCR2A  = 250;            // Count to 250 ticks
-	TCNT2  = 0;              // Reset timer value
-	TCCR2A = 0x2;            // CTC mode
-	TCCR2B = 0x4;            // Set prescaler to 64 = 250000 ticks/s
-	SET_BIT(TIMSK2, OCIE2A); // Enable interrupt on Compare Match A
+	OCR2A  = (F_CPU/64)/1000; // Count 1000ms
+	TCNT2  = 0;               // Reset timer value
+	TCCR2A = 0x2;             // CTC mode
+	TCCR2B = 0x4;             // Set prescaler to 64
+	SET_BIT(TIMSK2, OCIE2A);  // Enable interrupt on Compare Match A
 #endif
 
 	Os_EnableInterrupts();
