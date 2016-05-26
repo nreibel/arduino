@@ -4,13 +4,8 @@
 #include "port.h"
 #include "app_cfg.h"
 
-extern PinDef Pin_LED;
-extern PinDef Pin_BtnUp;
-extern PinDef Pin_BtnDown;
-extern PinDef Pin_Preset1;
-extern PinDef Pin_Preset2;
-extern PinDef Pin_Preset3;
-extern PinDef Pin_Preset4;
+extern PinDef Pin_LED_Chords;
+extern PinDef Pin_LED_Classic;
 
 typedef struct {
 	WhammyMode whammyMode;
@@ -19,6 +14,6 @@ typedef struct {
 
 void Task_MainCyclic(void);
 
-void Whammy_ProgramChange(WhammyMode newProgram, boolean chordsMode, boolean bypass);
+void Whammy_ProgramChange();
 
 #endif /* SRC_APP_API_APP_PRV_H_ */

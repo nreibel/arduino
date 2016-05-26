@@ -24,13 +24,15 @@
 /*
  * Global variables
  */
-static WhammyMode whammyMode  = Whammy_2_Oct_Up;
-static boolean    chordsMode  = TRUE;
-static boolean    bypassMode  = TRUE;
+static WhammyMode whammyMode = Whammy_2_Oct_Up;
+static boolean    chordsMode = TRUE;
+static boolean    bypassMode = TRUE;
+static PinDef    *activeLED  = NULL_PTR;
 
 void App_Init()
 {
-	Port_SetPinDataDirection(Pin_LED, Output);
+	Port_SetPinDataDirection(Pin_LED_Chords,  Output);
+	Port_SetPinDataDirection(Pin_LED_Classic, Output);
 
 	// Init keys handling
 	Keys_Init();
@@ -39,16 +41,18 @@ void App_Init()
 	Serial_Init(BAUD_RATE);
 
 	// Set default channel at boot
-	Whammy_ProgramChange(whammyMode, chordsMode, bypassMode);
+	Whammy_ProgramChange();
 
 	// Set up tasks
 	Timer_StartTask(Timer_MainTask, 10, &Task_MainCyclic);
 }
 
 // Send MIDI Program Change command through Serial
-void Whammy_ProgramChange(WhammyMode newProgram, boolean chordsMode, boolean bypass)
+void Whammy_ProgramChange()
 {
-	if (bypass == TRUE)
+	uint8_t newProgram = whammyMode;
+
+	if (bypassMode == TRUE)
 	{
 		newProgram += WHAMMY_CHANNEL_BYPASS_OFFSET;
 	}
@@ -56,11 +60,15 @@ void Whammy_ProgramChange(WhammyMode newProgram, boolean chordsMode, boolean byp
 	if (chordsMode == TRUE)
 	{
 		newProgram += WHAMMY_CHORDS_MODE_OFFSET;
-		Port_SetPinState(Pin_LED, High);
+		activeLED = &Pin_LED_Chords;
+		Port_SetPinState(Pin_LED_Chords,  High);
+		Port_SetPinState(Pin_LED_Classic, Low);
 	}
 	else
 	{
-		Port_SetPinState(Pin_LED, Low);
+		activeLED = &Pin_LED_Classic;
+		Port_SetPinState(Pin_LED_Chords,  Low);
+		Port_SetPinState(Pin_LED_Classic, High);
 	}
 
 #if DEBUG == ON
@@ -76,7 +84,6 @@ void Whammy_ProgramChange(WhammyMode newProgram, boolean chordsMode, boolean byp
 
 typedef enum {
 	Idle,
-	ProgramChanged,
 	PresetPressed,
 	WaitBeforeNextCycle,
 	SavePreset,
@@ -118,7 +125,9 @@ void Task_MainCyclic(void)
 					chordsMode = NOT(chordsMode);
 				}
 
-				state = ProgramChanged;
+				Whammy_ProgramChange();
+
+				state = WaitBeforeNextCycle;
 				break;
 
 			case ScrollDown:
@@ -132,7 +141,9 @@ void Task_MainCyclic(void)
 					chordsMode = NOT(chordsMode);
 				}
 
-				state = ProgramChanged;
+				Whammy_ProgramChange();
+
+				state = WaitBeforeNextCycle;
 				break;
 
 			default:
@@ -143,13 +154,6 @@ void Task_MainCyclic(void)
 				break;
 			}
 		}
-		break;
-	}
-
-	case ProgramChanged:
-	{
-		Whammy_ProgramChange(whammyMode, chordsMode, bypassMode);
-		state = WaitBeforeNextCycle;
 		break;
 	}
 
@@ -194,12 +198,10 @@ void Task_MainCyclic(void)
 				chordsMode = data.chordsMode;
 			}
 
-			state = ProgramChanged;
+			Whammy_ProgramChange();
 		}
-		else
-		{
-			state = WaitBeforeNextCycle;
-		}
+
+		state = WaitBeforeNextCycle;
 		break;
 	}
 
@@ -243,9 +245,9 @@ void Task_MainCyclic(void)
 		PinState ledStatus = Low;
 
 		// Invert pin state
-		Port_GetPinState(Pin_LED, &ledStatus);
+		Port_GetPinState(*activeLED, &ledStatus);
 		ledStatus = (ledStatus == Low ? High : Low);
-		Port_SetPinState(Pin_LED, ledStatus);
+		Port_SetPinState(*activeLED, ledStatus);
 
 		if (ledBlinkCounter++ > 2*NUMBER_OF_BLINKS)
 		{
