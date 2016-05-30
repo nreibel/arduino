@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+typedef Std_ReturnType (*BackgroundTask)(void);
+
 uint32_t Os_GetCurrentTimeMs();
 void     Os_Wait(uint32_t ms);
 

@@ -1,4 +1,5 @@
 #include "os.h"
+#include "os_cfg.h"
 #include "timer.h"
 #include "bits.h"
 #include <avr/io.h>
@@ -7,6 +8,12 @@
 #include "app.h"
 #include "serial.h"
 #include "eeprom.h"
+
+BackgroundTask BackgroundTasksList[NUMBER_OF_BACKGROUND_TASKS] =
+{
+	Serial_BackgroundTask,
+	EEPROM_BackgroundTask,
+};
 
 static volatile uint32_t currentTimeMs = 0;
 
@@ -48,24 +55,4 @@ void Os_Init()
 
 	// Enable interrupts
 	sei();
-
-	/* Initialization of the application */
-	App_Init();
-}
-
-Std_ReturnType Os_ExecuteBackgroundTasks()
-{
-	Std_ReturnType retval = Status_OK;
-
-	if (Serial_BackgroundTask() == Status_Pending)
-	{
-		retval = Status_Pending;
-	}
-
-	if (EEPROM_BackgroundTask() == Status_Pending)
-	{
-		retval = Status_Pending;
-	}
-
-	return retval;
 }
