@@ -105,11 +105,11 @@ Std_ReturnType LCD_Init()
 	}
 
 	/* Give time for hardware to init*/
-	Os_Sleep(15);
+	Os_Wait(15);
 
 	/* First write sets data width*/
 	LCD_WriteNibble(0x2, Low);
-	Os_Sleep(4);
+	Os_Wait(4);
 
 	LCD_FunctionSet(DataWidth_4_Bits, CharacterFont_5x8, DisplayLines_2_Line);
 	LCD_DisplayControl(TRUE, FALSE, FALSE);
@@ -311,9 +311,9 @@ Std_ReturnType LCD_WriteNibble(uint8_t data, PinState rs)
 
 	Port_SetPinState(pin_RS, rs);
 
-	Os_Sleep(1);
+	Os_Wait(1);
 	Port_SetPinState(pin_EN, Low);
-	Os_Sleep(1);
+	Os_Wait(1);
 
 	return retval;
 }

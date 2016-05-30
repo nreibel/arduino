@@ -3,9 +3,8 @@
 
 #include "types.h"
 
-extern void     Os_Init();
-extern void     Os_Cfg_EnableInterrupts();
-extern uint32_t Os_Cfg_GetCurrentTimeMs();
-extern void     Os_ExecuteBackgroundTasks();
+extern void           Os_Init();
+extern Std_ReturnType Os_ExecuteBackgroundTasks();
+extern void           Os_Sleep();
 
 #endif /* SRC_OS_API_OS_PRV_H_ */

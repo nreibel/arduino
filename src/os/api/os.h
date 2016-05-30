@@ -3,9 +3,7 @@
 
 #include "types.h"
 
-
 uint32_t Os_GetCurrentTimeMs();
-void     Os_Sleep(uint32_t ms);
-void     Os_EnableInterrupts();
+void     Os_Wait(uint32_t ms);
 
 #endif /* OS_API_OS_H_ */

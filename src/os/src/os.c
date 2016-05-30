@@ -3,7 +3,7 @@
 #include "app.h"
 #include "timer.h"
 
-void Os_Sleep(uint32_t ms)
+void Os_Wait(uint32_t ms)
 {
 	uint32_t begin = Os_GetCurrentTimeMs();
 	while (Os_GetCurrentTimeMs() < begin + ms);
@@ -11,6 +11,8 @@ void Os_Sleep(uint32_t ms)
 
 int main(void)
 {
+	uint32_t cyclicTime = Os_GetCurrentTimeMs();
+
 	/* Initialize timer */
 	Timer_CyclicTaskInit();
 
@@ -20,8 +22,16 @@ int main(void)
 	/* Run main loop */
 	while(1)
 	{
-		Os_ExecuteBackgroundTasks();
-		Timer_CyclicTask();
+		if (cyclicTime != Os_GetCurrentTimeMs())
+		{
+			Timer_CyclicTask();
+			cyclicTime = Os_GetCurrentTimeMs();
+		}
+
+		if (Os_ExecuteBackgroundTasks() != Status_Pending)
+		{
+			Os_Sleep();
+		}
 	}
 
 	return 1;

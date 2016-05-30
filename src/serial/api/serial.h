@@ -3,10 +3,10 @@
 
 #include "types.h"
 
-void Serial_BackgroundTask();
+Std_ReturnType Serial_BackgroundTask();
 
 void Serial_Init();
 boolean Serial_IsReady();
-Std_ReturnType Serial_AsyncPrint( const char *buffer, int length );
+Std_ReturnType Serial_Print( const char *buffer, int length );
 
 #endif /* SRC_SERIAL_API_SERIAL_H_ */

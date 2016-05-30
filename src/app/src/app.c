@@ -61,7 +61,7 @@ void Whammy_ProgramChange()
 
 	static char midiMessage[2] = {0xC0, 0x0};
 	midiMessage[1] = newProgram;
-	Serial_AsyncPrint(midiMessage, 2);
+	Serial_Print(midiMessage, 2);
 }
 
 typedef enum {

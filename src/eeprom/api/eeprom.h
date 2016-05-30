@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-void EEPROM_BackgroundTask();
+Std_ReturnType EEPROM_BackgroundTask();
 
 boolean EEPROM_IsReady(void);
 

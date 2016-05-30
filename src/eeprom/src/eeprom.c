@@ -1,9 +1,10 @@
 #include "eeprom.h"
 #include "eeprom_prv.h"
 #include "bits.h"
+#include "types.h"
 #include "avr/io.h"
 
-static EepromState       eepromState = EEPROM_Ready;
+static EepromState      eepromState = EEPROM_Ready;
 static EepromDataBuffer writeBuffer;
 static EepromDataBuffer readBuffer;
 
@@ -19,35 +20,55 @@ boolean EEPROM_IsReady(void)
 	return retval;
 }
 
-void EEPROM_BackgroundTask()
+Std_ReturnType EEPROM_BackgroundTask()
 {
-	if (eepromState == EEPROM_Writing && !IS_SET_BIT(EECR, EEPE))
+	Std_ReturnType retval = Status_OK;
+
+	if (eepromState == EEPROM_Writing)
 	{
-		EEAR = writeBuffer.romAddr++;
-		EEDR = *(writeBuffer.ramAddr++);
-		writeBuffer.length--;
-
-		/* Set Master Program Enable first, then Program Enable */
-		SET_BIT(EECR, EEMPE);
-		SET_BIT(EECR, EEPE);
-
-		if (writeBuffer.length == 0)
+		if (!IS_SET_BIT(EECR, EEPE))
 		{
-			eepromState = EEPROM_Ready;
+			if (writeBuffer.length > 0)
+			{
+				EEAR = writeBuffer.romAddr++;
+				EEDR = *(writeBuffer.ramAddr++);
+				writeBuffer.length--;
+
+				/* Set Master Program Enable first, then Program Enable */
+				SET_BIT(EECR, EEMPE);
+				SET_BIT(EECR, EEPE);
+			}
+			else
+			{
+				eepromState = EEPROM_Ready;
+			}
 		}
+
+		// More processing needed
+		retval = Status_Pending;
 	}
-	else if (eepromState == EEPROM_Reading && !IS_SET_BIT(EECR, EEPE))
+	else if (eepromState == EEPROM_Reading)
 	{
-		EEAR = readBuffer.romAddr++;
-		SET_BIT(EECR, EERE);
-		*(readBuffer.ramAddr++) = EEDR;
-		readBuffer.length--;
-
-		if (readBuffer.length == 0)
+		if (!IS_SET_BIT(EECR, EEPE))
 		{
-			eepromState = EEPROM_Ready;
+			if (readBuffer.length > 0)
+			{
+				EEAR = readBuffer.romAddr++;
+				SET_BIT(EECR, EERE);
+				*(readBuffer.ramAddr++) = EEDR;
+				readBuffer.length--;
+			}
+			else
+			{
+				eepromState = EEPROM_Ready;
+			}
 		}
+
+		// More processing needed
+		retval = Status_Pending;
 	}
+
+	return retval;
 }
 
 Std_ReturnType EEPROM_AsyncWrite(int ucAddress, uint8_t *ucData, int dataLength)

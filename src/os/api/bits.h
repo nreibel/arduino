@@ -13,6 +13,9 @@
 #define HIGH_NIBBLE(b)       (((b) >> 4) & 0xF)
 #define LOW_NIBBLE(b)        ((b) & 0xF)
 
+#define HIGH_BYTE(b)       (((b) >> 8) & 0xFF)
+#define LOW_BYTE(b)        ((b) & 0xFF)
+
 // Reset bit b in r
 #define RESET_BIT(r, b)      (r &= ~BIT(b))
 

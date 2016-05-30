@@ -21,26 +21,34 @@ boolean Serial_IsReady(void)
 	return retval;
 }
 
-void Serial_BackgroundTask()
+Std_ReturnType Serial_BackgroundTask()
 {
+	Std_ReturnType retval = Status_OK;
+
 	if (transmitStateMachine == Serial_Writing)
 	{
 		// Check for empty transmit buffer
-		if (IS_SET_BIT(UCSR0A, 5))
+		if (IS_SET_BIT(UCSR0A, UDRE0))
 		{
-			UDR0 = *(transmitBuffer++);
-			transmitLength--;
-
-			if (transmitLength == 0)
+			if (transmitLength > 0)
 			{
-				transmitBuffer = NULL_PTR;
+				UDR0 = *(transmitBuffer++);
+				transmitLength--;
+			}
+			else
+			{
 				transmitStateMachine = Serial_Ready;
 			}
 		}
+
+		// More processing needed
+		retval = Status_Pending;
 	}
+
+	return retval;
 }
 
-Std_ReturnType Serial_AsyncPrint ( const char *buffer, int length )
+Std_ReturnType Serial_Print ( const char *buffer, int length )
 {
 	Std_ReturnType retval = Status_Not_OK;
 
@@ -57,13 +65,20 @@ Std_ReturnType Serial_AsyncPrint ( const char *buffer, int length )
 
 void Serial_Init()
 {
+	// Enable peripheral
+	RESET_BIT(PRR, PRUSART0);
+
 	uint16_t ubrr = ((F_CPU/16)/BAUD_RATE)-1;
 
-	UBRR0H = (uint8_t) (ubrr >> 8);
-	UBRR0L = (uint8_t) (ubrr & 0xFF);
+	// Set UBRR
+	UBRR0H = HIGH_BYTE(ubrr);
+	UBRR0L = LOW_BYTE(ubrr);
 
-	UCSR0B = BIT(4) | BIT(3); // Enable receiver and transmitter
-	UCSR0C = 0x06; // Frame format: 8 bits, no parity bit, 1 stop bit
+	// Enable transmitter
+	SET_BIT(UCSR0B, TXEN0);
+
+	// Frame format: 8 bits, no parity bit, 1 stop bit
+	UCSR0C = 0x06;
 
 	transmitStateMachine = Serial_Ready;
 }
