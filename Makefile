@@ -10,7 +10,7 @@ OUT=out
 FNAME=out_$(ARCH)
 
 # Compilation options and flags
-ARCH=atmega328p
+ARCH=atmega88
 WARNINGS=all extra undef
 CFLAGS=-O2 -g0 -mmcu=$(ARCH) -ffunction-sections -fdata-sections
 LDFLAGS=-Wl,-gc-sections -Wl,--relax
@@ -23,7 +23,7 @@ SERIAL_BAUD_RATE=9600
 
 # avrisp  : use arduino as ISP to flash another chip
 # arduino : usual Arduino flash process
-PROGRAMMER=arduino
+PROGRAMMER=avrisp
 
 INCLUDES=\
 	src/timer/api \
@@ -70,9 +70,12 @@ clean:
 prepare:
 	@echo "Preparing workspace"
 	@mkdir -p $(OBJ)/$(ARCH) $(OUT)
+	
+fuses:
+	@$(UPLOAD) -b 19200 -c $(PROGRAMMER) -p $(ARCH) -P $(SERIAL_TTY) -U lfuse:w:0xff:m -U hfuse:w:0xdf:m -U efuse:w:0xf9:m
 
 upload:
-	@$(UPLOAD) -c $(PROGRAMMER) -p $(ARCH) -P $(SERIAL_TTY) -U flash:w:$(OUT)/$(FNAME).hex
+	@$(UPLOAD) -b 19200 -c $(PROGRAMMER) -p $(ARCH) -P $(SERIAL_TTY) -U flash:w:$(OUT)/$(FNAME).hex
 
 # Each software component must be created here
 app:    src/app/src/app.o src/app/cfg/app_cfg.o
