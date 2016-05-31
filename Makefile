@@ -12,13 +12,14 @@ FNAME=out_$(ARCH)
 # Compilation options and flags
 ARCH=atmega328p
 WARNINGS=all extra undef
-CFLAGS=-Os -g0 -mmcu=$(ARCH)
+CFLAGS=-O2 -g0 -mmcu=$(ARCH) -ffunction-sections -fdata-sections
+LDFLAGS=-Wl,-gc-sections -Wl,--relax
 DEFINES="F_CPU=16000000"
 
 # Serial config
-SERIAL_TTY = /dev/ttyACM0
-SERIAL_MONITOR = screen
-SERIAL_BAUD_RATE = 9600
+SERIAL_TTY=/dev/ttyACM0
+SERIAL_MONITOR=screen
+SERIAL_BAUD_RATE=9600
 
 # avrisp  : use arduino as ISP to flash another chip
 # arduino : usual Arduino flash process
@@ -53,7 +54,7 @@ all: prepare hex
 
 hex: timer os serial port eeprom keys app
 	@echo "Linking object files..."
-	@$(CC) $(CFLAGS) $(OBJ)/$(ARCH)/*.o -o $(OUT)/$(FNAME).elf
+	@$(CC) $(LDFLAGS) $(CFLAGS) $(OBJ)/$(ARCH)/*.o -o $(OUT)/$(FNAME).elf
 	@echo "Creating HEX file..."
 	@$(OBJCOPY) -O ihex $(OUT)/$(FNAME).elf $(OUT)/$(FNAME).hex
 	@echo "=================================="
