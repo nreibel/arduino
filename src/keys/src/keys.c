@@ -12,6 +12,7 @@ void Keys_Init()
 	{
 		keyState[cpt] = Low;
 		Port_SetPinDataDirection(Keys_PinMapping[cpt], Input);
+		Port_SetPinState(Keys_PinMapping[cpt], High);
 	}
 }
 
