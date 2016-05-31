@@ -230,8 +230,9 @@ void Task_MainCyclic(void)
 		Port_GetPinState(*activeLED, &ledStatus);
 		ledStatus = (ledStatus == Low ? High : Low);
 		Port_SetPinState(*activeLED, ledStatus);
+		ledBlinkCounter++;
 
-		if (ledBlinkCounter++ > 2*NUMBER_OF_BLINKS)
+		if (ledBlinkCounter >= 2*NUMBER_OF_BLINKS)
 		{
 			Timer_Disable(Timer_LedBlink);
 			state = WaitBeforeNextCycle;
