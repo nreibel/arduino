@@ -4,14 +4,9 @@
 #include "os.h"
 
 typedef enum {
-#if ARCHITECTURE == ARCH_ATTINY84
-	Port_A = 0,
-	Port_B,
-#elif ARCHITECTURE == ARCH_ATMEGA328
 	Port_B = 0,
 	Port_C,
 	Port_D,
-#endif
 	NbrOfPorts
 } Port;
 
