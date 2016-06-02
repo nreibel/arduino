@@ -14,7 +14,7 @@ ARCH=atmega88
 WARNINGS=all extra undef
 CFLAGS=-O2 -g0 -mmcu=$(ARCH) -ffunction-sections -fdata-sections
 LDFLAGS=-Wl,-gc-sections -Wl,--relax
-DEFINES="F_CPU=16000000"
+DEFINES="F_CPU=2000000"
 
 # Serial config
 SERIAL_TTY=/dev/ttyACM0
@@ -72,7 +72,7 @@ prepare:
 	@mkdir -p $(OBJ)/$(ARCH) $(OUT)
 	
 fuses:
-	@$(UPLOAD) -b 19200 -c $(PROGRAMMER) -p $(ARCH) -P $(SERIAL_TTY) -U lfuse:w:0xff:m -U hfuse:w:0xdf:m -U efuse:w:0xf9:m
+	@$(UPLOAD) -b 19200 -c $(PROGRAMMER) -p $(ARCH) -P $(SERIAL_TTY) -U lfuse:w:0x5e:m -U hfuse:w:0xdf:m -U efuse:w:0xf9:m
 
 upload:
 	@$(UPLOAD) -b 19200 -c $(PROGRAMMER) -p $(ARCH) -P $(SERIAL_TTY) -U flash:w:$(OUT)/$(FNAME).hex

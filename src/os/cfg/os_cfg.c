@@ -47,10 +47,10 @@ void Os_Init()
 
 	/* Init Timer2 as 1ms counter with interrupts */
 	RESET_BIT(PRR, PRTIM2);   // Enable peripheral
-	OCR2A  = (F_CPU/64)/1000; // Count 1000ms
+	OCR2A  = (F_CPU/8)/1000; // Count 1000us
 	TCNT2  = 0;               // Reset timer value
 	TCCR2A = 0x2;             // CTC mode
-	TCCR2B = 0x4;             // Set prescaler to 64
+	TCCR2B = 0x2;             // Set prescaler to 8
 	SET_BIT(TIMSK2, OCIE2A);  // Enable interrupt on Compare Match A
 
 	// Enable interrupts
