@@ -11,7 +11,7 @@ typedef enum {
 } LcdStatus;
 
 void LCD_CyclicTask();
-Std_ReturnType LCD_Write_Char(char chr);
+Std_ReturnType LCD_Write_Char(uint8_t chr);
 Std_ReturnType LCD_WriteByte(uint8_t data, PinState rs);
 Std_ReturnType LCD_WriteNibble(uint8_t data, PinState rs);
 

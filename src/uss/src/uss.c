@@ -8,7 +8,7 @@
 #include "avr/interrupt.h"
 #include "avr/io.h"
 
-volatile static Uss_InternalState ussStateMachine  = Uninitialized;
+static volatile Uss_InternalState ussStateMachine  = Uninitialized;
 
 ISR(INT1_vect)
 {
@@ -33,7 +33,6 @@ void USS_Init()
 {
 	Port_SetPinDataDirection(pinTrigger, Output);
 	Port_SetPinDataDirection(pinEcho, Input);
-	Os_EnableInterrupts();
 	ussStateMachine = Ready;
 }
 
@@ -82,6 +81,7 @@ Std_ReturnType USS_TriggerMeasurement()
 		// Enable interrupt on rising edge of INT1
 		EICRA = 0xC;
 		SET_BIT(EIMSK, INT1);
+		sei();
 
 		ussStateMachine = WaitForEcho;
 		retval = Status_OK;

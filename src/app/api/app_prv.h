@@ -2,18 +2,9 @@
 #define SRC_APP_API_APP_PRV_H_
 
 #include "port.h"
-#include "app_cfg.h"
 
-extern PinDef Pin_LED_Chords;
-extern PinDef Pin_LED_Classic;
+extern PinDef Pin_LED;
 
-typedef struct {
-	WhammyMode whammyMode;
-	boolean    chordsMode;
-} EEPROM_Data;
-
-void Task_MainCyclic(void);
-
-void Whammy_ProgramChange();
+void Task_Blink(void);
 
 #endif /* SRC_APP_API_APP_PRV_H_ */

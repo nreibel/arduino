@@ -10,11 +10,10 @@ OUT=out
 FNAME=out_$(ARCH)
 
 # Compilation options and flags
-ARCH=atmega88
+ARCH=atmega328p
 WARNINGS=all extra undef
 CFLAGS=-O2 -g0 -mmcu=$(ARCH) -ffunction-sections -fdata-sections
 LDFLAGS=-Wl,-gc-sections -Wl,--relax
-DEFINES="F_CPU=2000000"
 
 # Serial config
 SERIAL_TTY=/dev/ttyACM0
@@ -23,7 +22,7 @@ SERIAL_BAUD_RATE=9600
 
 # avrisp  : use arduino as ISP to flash another chip
 # arduino : usual Arduino flash process
-PROGRAMMER=avrisp
+PROGRAMMER=arduino
 
 INCLUDES=\
 	src/timer/api \
@@ -39,20 +38,20 @@ INCLUDES=\
 	src/eeprom/api \
 	src/eeprom/cfg \
 	src/keys/api \
-	src/keys/cfg
-# 	src/uss/api \
-# 	src/uss/cfg \
-# 	src/stack/api \
-# 	src/pwm/api \
-# 	src/pwm/cfg \
-# 	src/math/api \
-# 	src/lcd/api \
-# 	src/lcd/cfg \
+	src/keys/cfg \
+	src/uss/api \
+	src/uss/cfg \
+	src/stack/api \
+	src/pwm/api \
+	src/pwm/cfg \
+	src/math/api \
+	src/lcd/api \
+	src/lcd/cfg
 
 
 all: prepare hex
 
-hex: timer os serial port eeprom keys app
+hex: timer os serial port eeprom keys app uss pwm stack math lcd
 	@echo "Linking object files..."
 	@$(CC) $(LDFLAGS) $(CFLAGS) $(OBJ)/$(ARCH)/*.o -o $(OUT)/$(FNAME).elf
 	@echo "Creating HEX file..."
@@ -63,19 +62,15 @@ hex: timer os serial port eeprom keys app
 
 clean:
 	@echo "Cleaning workspace"
-#	@find . -name "*.o" -type f -printf "Delete %p\n" -delete
 	@rm -Rf $(OBJ)
 	@rm -Rf $(OUT)
 
 prepare:
 	@echo "Preparing workspace"
 	@mkdir -p $(OBJ)/$(ARCH) $(OUT)
-	
-fuses:
-	@$(UPLOAD) -b 19200 -c $(PROGRAMMER) -p $(ARCH) -P $(SERIAL_TTY) -U lfuse:w:0x5e:m -U hfuse:w:0xdf:m -U efuse:w:0xf9:m
 
 upload:
-	@$(UPLOAD) -b 19200 -c $(PROGRAMMER) -p $(ARCH) -P $(SERIAL_TTY) -U flash:w:$(OUT)/$(FNAME).hex
+	@$(UPLOAD) -c $(PROGRAMMER) -p $(ARCH) -P $(SERIAL_TTY) -U flash:w:$(OUT)/$(FNAME).hex
 
 # Each software component must be created here
 app:    src/app/src/app.o src/app/cfg/app_cfg.o
@@ -85,11 +80,11 @@ serial: src/serial/src/serial.o
 port:   src/port/src/port.o src/port/cfg/port_cfg.o
 eeprom: src/eeprom/src/eeprom.o
 keys:   src/keys/src/keys.o src/keys/cfg/keys_cfg.o
-# uss:    src/uss/src/uss.o src/uss/cfg/uss_cfg.o
-# pwm:    src/pwm/src/pwm.o src/pwm/cfg/pwm_cfg.o
-# stack:  src/stack/src/stack.o
-# math:   src/math/src/math.o
-# lcd:    src/lcd/src/lcd.o
+uss:    src/uss/src/uss.o src/uss/cfg/uss_cfg.o
+pwm:    src/pwm/src/pwm.o src/pwm/cfg/pwm_cfg.o
+stack:  src/stack/src/stack.o
+math:   src/math/src/math.o
+lcd:    src/lcd/src/lcd.o
 
 # Generic rules for compiling objects
 %.o: %.c

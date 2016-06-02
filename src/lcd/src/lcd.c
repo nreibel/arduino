@@ -122,7 +122,7 @@ Std_ReturnType LCD_Init()
 	return retval;
 }
 
-Std_ReturnType LCD_Write_Char(char chr)
+Std_ReturnType LCD_Write_Char(uint8_t chr)
 {
 	Std_ReturnType retval = Status_OK;
 

@@ -5,9 +5,7 @@
 
 typedef enum
 {
-	Timer_MainTask = 0,
-	Timer_ButtonPress,
-	Timer_LedBlink,
+	Timer_Blink = 0,
 	NbrOfTimerChannels
 } TimerChannel;
 

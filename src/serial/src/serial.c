@@ -1,4 +1,5 @@
 #include "serial.h"
+#include "os_cfg.h"
 #include "serial_cfg.h"
 #include "serial_prv.h"
 #include "avr/io.h"
