@@ -4,19 +4,40 @@
 #include "app_cfg.h"
 #include "timer.h"
 #include "port.h"
+#include "serial.h"
+#include "bits.h"
+#include "eeprom.h"
+#include "keys.h"
+
 
 void App_Init()
 {
 	Port_SetPinDataDirection(Pin_LED, Output);
 
-	Timer_StartTask(Timer_Blink, LED_BLINK_DELAY, &Task_Blink);
+	// Init serial debug communication
+	Serial_Init();
+
+	// Set up tasks
+	Timer_StartTask(Timer_MainTask, 1000, &Task_MainCyclic);
 }
 
 // Main task
-void Task_Blink(void)
+void Task_MainCyclic(void)
 {
-	static PinState state = High;
+    static PinState state = High;
+    static char *message = "Tick\r\n";
 
-	Port_SetPinState(Pin_LED, state);
-	state = (state == Low ? High : Low);
+    Port_SetPinState(Pin_LED, state);
+    Serial_Print(message, 6);
+    
+    if (state == High)
+    {
+        state = Low;
+        message = "Tock\r\n";
+    }
+    else
+    {
+        state = High;
+        message = "Tick\r\n";
+    }
 }

@@ -1,6 +1,6 @@
 #include "serial.h"
-#include "os_cfg.h"
 #include "serial_cfg.h"
+#include "os_cfg.h"
 #include "serial_prv.h"
 #include "avr/io.h"
 #include "bits.h"
@@ -69,7 +69,14 @@ void Serial_Init()
 	// Enable peripheral
 	RESET_BIT(PRR, PRUSART0);
 
-	uint16_t ubrr = ((F_CPU/16)/BAUD_RATE)-1;
+    // Formula is UBRR = (Freq / (BAUD * 16) - 1)
+#if defined F_CPU && F_CPU == F_CPU_16MHZ
+	uint16_t ubrr = (1000000/BAUD_RATE)-1;
+#elif defined F_CPU && F_CPU == F_CPU_2MHZ
+	uint16_t ubrr = (125000/BAUD_RATE)-1;
+#else
+    #error F_CPU is not defined
+#endif
 
 	// Set UBRR
 	UBRR0H = HIGH_BYTE(ubrr);

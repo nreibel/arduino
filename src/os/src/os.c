@@ -42,12 +42,14 @@ int main(void)
 	/* Run main loop */
 	while(1)
 	{
+        // Check on cyclic tasks every ms
 		if (cyclicTime != Os_GetCurrentTimeMs())
 		{
 			Timer_CyclicTask();
 			cyclicTime = Os_GetCurrentTimeMs();
 		}
 
+		// Execute background tasks in the spare time, or sleep until next tick
 		if (Os_ExecuteBackgroundTasks() != Status_Pending)
 		{
 			Os_Sleep();
