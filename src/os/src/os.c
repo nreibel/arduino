@@ -30,11 +30,11 @@ int main(void)
 {
 	uint32_t cyclicTime = Os_GetCurrentTimeMs();
 
-	/* Initialize timer */
-	Timer_CyclicTaskInit();
-
 	/* Perform project-specific initialization */
 	Os_Init();
+
+	/* Initialize timer */
+	Timer_CyclicTaskInit();
 
 	/* Initialization of the application */
 	App_Init();
@@ -49,8 +49,10 @@ int main(void)
 			cyclicTime = Os_GetCurrentTimeMs();
 		}
 
+#if NUMBER_OF_BACKGROUND_TASKS > 0
 		// Execute background tasks in the spare time, or sleep until next tick
 		if (Os_ExecuteBackgroundTasks() != Status_Pending)
+#endif
 		{
 			Os_Sleep();
 		}

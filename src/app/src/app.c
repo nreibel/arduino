@@ -25,7 +25,7 @@ void App_Init()
 void Task_MainCyclic(void)
 {
     static PinState state = High;
-    static char *message = "Tick\r\n";
+    static uint8_t *message = (uint8_t*) "Tick\r\n";
 
     Port_SetPinState(Pin_LED, state);
     Serial_Print(message, 6);
@@ -33,11 +33,11 @@ void Task_MainCyclic(void)
     if (state == High)
     {
         state = Low;
-        message = "Tock\r\n";
+        message = (uint8_t*) "Tock\r\n";
     }
     else
     {
         state = High;
-        message = "Tick\r\n";
+        message = (uint8_t*) "Tick\r\n";
     }
 }

@@ -1,22 +1,21 @@
 #include "os.h"
 #include "os_cfg.h"
-#include "timer.h"
 #include "bits.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
-#include "app.h"
 #include "serial.h"
-#include "eeprom.h"
 
 // Current time, to be incremented by 1ms ISR triggered by Timer2
 static volatile uint32_t currentTimeMs = 0;
 
-BackgroundTask BackgroundTasksList[] =
-{
-	Serial_BackgroundTask,
-	// EEPROM_BackgroundTask,
+#if NUMBER_OF_BACKGROUND_TASKS > 0
+BackgroundTask BackgroundTasksList[] = {
+    // Spi_BackgroundTask,
+    Serial_BackgroundTask,
+    // EEPROM_BackgroundTask,
 };
+#endif
 
 ISR(TIMER2_COMPA_vect)
 {
@@ -68,7 +67,7 @@ void Os_Init()
 #else
     #error F_CPU is not defined
 #endif
-    
+
 	// Enable interrupts
 	sei();
 }

@@ -3,8 +3,6 @@
 
 #include <stdint.h>
 
-typedef void (*Callback)(void);
-
 typedef enum {
 	FALSE = 0,
 	TRUE = 1

@@ -7,10 +7,6 @@
 typedef enum {
 	ScrollUp = 0,
 	ScrollDown,
-	Preset1,
-	Preset2,
-	Preset3,
-	Preset4,
 	NUMBER_OF_KEYS
 } Key;
 

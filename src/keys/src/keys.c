@@ -10,9 +10,9 @@ void Keys_Init()
 	int cpt;
 	for (cpt = 0 ; cpt < NUMBER_OF_KEYS ; cpt++)
 	{
-		keyState[cpt] = Low;
+		keyState[cpt] = High;
 		Port_SetPinDataDirection(Keys_PinMapping[cpt], Input);
-		Port_SetPinState(Keys_PinMapping[cpt], Low);
+		Port_SetPinState(Keys_PinMapping[cpt], High);
 	}
 }
 
@@ -30,7 +30,7 @@ boolean Keys_IsKeyPressed()
 	int cpt;
 	for (cpt = 0 ; cpt < NUMBER_OF_KEYS ; cpt++)
 	{
-		if (keyState[cpt] != Low)
+		if (keyState[cpt] != High)
 		{
 			return TRUE;
 		}
@@ -46,7 +46,7 @@ Std_ReturnType Keys_GetKeyPressed(Key *key)
 	int cpt;
 	for (cpt = 0 ; cpt < NUMBER_OF_KEYS ; cpt++)
 	{
-		if (keyState[cpt] != Low)
+		if (keyState[cpt] != High)
 		{
 			*key = (Key) cpt;
 			retval = Status_OK;

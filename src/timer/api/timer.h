@@ -4,6 +4,8 @@
 #include "types.h"
 #include "timer_cfg.h"
 
+typedef void (*Callback)(void);
+
 void Timer_CyclicTaskInit(void);
 void Timer_CyclicTask(void);
 
