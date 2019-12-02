@@ -1,6 +1,7 @@
 #ifndef SRC_ST7735_API_ST7735_H_
 #define SRC_ST7735_API_ST7735_H_
 
+#include "st7735_cfg.h"
 #include "types.h"
 #include "port.h"
 
@@ -37,16 +38,19 @@
 #define ST7735_SCREEN_ORIENTATION_PORTRAIT_INV  ST7735_MADCTL_MY | ST7735_MADCTL_MX
 
 void ST7735_Init();
-void ST7735_Command(const uint8_t command);
-void ST7735_Data(const uint8_t data);
 
 // Pixel drawing
 void ST7735_DrawPixel(const uint8_t x, const uint8_t y, const uint16_t color);
-void ST7735_SetDrawWindow(const uint8_t x1, const uint8_t y1, const uint8_t x2, const uint8_t y2);
-void ST7735_FillRectangle(const uint8_t x1, const uint8_t y1, const uint8_t x2, const uint8_t y2, const uint16_t color);
+void ST7735_FillRectangle(const uint8_t x, const uint8_t y, const uint8_t w, const uint8_t h, const uint16_t color);
 
 // String drawing
-void ST7735_DrawChar(const uint8_t x, const uint8_t y, const uint8_t c, const uint16_t foregroundColor, const uint16_t backgroundColor);
-void ST7735_DrawString(const uint8_t x, const uint8_t y, const uint8_t *str, int length, const uint16_t foregroundColor, const uint16_t backgroundColor);
+void ST7735_ClearChar(const uint8_t x, const uint8_t y, const uint16_t backgroundColor);
+void ST7735_DrawChar(const uint8_t x, const uint8_t y, const char c, const uint16_t foregroundColor, const uint16_t backgroundColor);
+
+void ST7735_ClearString(const uint8_t x, const uint8_t y, const int length, const uint16_t backgroundColor);
+void ST7735_DrawString(const uint8_t x, const uint8_t y, const char* str, const int length, const uint16_t foregroundColor, const uint16_t backgroundColor);
+
+// Imaging
+void ST7735_DrawXBM(const uint8_t *bits, const uint8_t xPos, const uint8_t yPos, const uint8_t width, const uint8_t height, const uint16_t foregroundColor, const uint16_t backgroundColor);
 
 #endif // SRC_ST7735_API_ST7735_H_

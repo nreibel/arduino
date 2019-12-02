@@ -3,60 +3,65 @@
 #include "os_cfg.h"
 #include "app.h"
 #include "timer.h"
+#include "bits.h"
+#include "port.h"
 
-void Os_Wait(uint32_t ms)
+void Os_Wait(time_t ms)
 {
-	uint32_t begin = Os_GetCurrentTimeMs();
-	while (Os_GetCurrentTimeMs() < begin + ms);
+    time_t begin = Os_GetCurrentTimeMs();
+    while (Os_GetCurrentTimeMs() < begin + ms) Os_Sleep();
 }
 
 Std_ReturnType Os_ExecuteBackgroundTasks()
 {
-	Std_ReturnType retval = Status_OK;
-	int i = 0;
+    Std_ReturnType retval = Status_OK;
 
-	for (i = 0 ; i < NUMBER_OF_BACKGROUND_TASKS ; i++)
-	{
-		if (BackgroundTasksList[i]() == Status_Pending)
-		{
-			retval = Status_Pending;
-		}
-	}
+    for (int i = 0 ; i < NUMBER_OF_BACKGROUND_TASKS ; i++)
+    {
+        if (BackgroundTasksList[i]() == Status_Pending)
+        {
+            retval = Status_Pending;
+        }
+    }
 
-	return retval;
+    return retval;
 }
 
 int main(void)
-{
-	uint32_t cyclicTime = Os_GetCurrentTimeMs();
+{  
+    time_t lastTrigger = Os_GetCurrentTimeMs();
+    
+    /* Perform project-specific initialization */
+    Os_Init();
+ 
+    // Enable interrupts
+    Os_EnableInterrupts();
 
-	/* Perform project-specific initialization */
-	Os_Init();
+    /* Initialize timer */
+    Timer_CyclicTaskInit();
 
-	/* Initialize timer */
-	Timer_CyclicTaskInit();
-
-	/* Initialization of the application */
-	App_Init();
-
-	/* Run main loop */
-	while(1)
-	{
+    /* Initialization of the application */
+    App_Init();
+    
+    /* Run main loop */
+    while(1)
+    {
         // Check on cyclic tasks every ms
-		if (cyclicTime != Os_GetCurrentTimeMs())
-		{
-			Timer_CyclicTask();
-			cyclicTime = Os_GetCurrentTimeMs();
-		}
+        time_t now = Os_GetCurrentTimeMs();
+        if (now != lastTrigger)
+        {
+            Timer_CyclicTask();
+            lastTrigger = now;
+        }
 
 #if NUMBER_OF_BACKGROUND_TASKS > 0
-		// Execute background tasks in the spare time, or sleep until next tick
-		if (Os_ExecuteBackgroundTasks() != Status_Pending)
+        // Execute background tasks in the spare time, or sleep until next tick
+        if (Os_ExecuteBackgroundTasks() != Status_Pending)
 #endif
-		{
-			Os_Sleep();
-		}
-	}
+        {
+            Os_Sleep();
+        }
+    }
 
-	return 1;
+    return 1;
 }

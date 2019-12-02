@@ -3,36 +3,31 @@
 #include "spi_cfg.h"
 #include "port.h"
 #include "bits.h"
-#include <avr/io.h>
 
 static const Spi_Slave* currentSelected = NULL_PTR;
-static Spi_TransmitState s_state = Spi_Uninitialized;
-static const uint8_t *s_buffer = NULL_PTR;
-static int s_length = 0;
+static Spi_TransmitState spiState = Spi_Uninitialized;
+static const void * txBuffer = NULL_PTR;
+static int txLength = 0;
 
 void Spi_Init()
 {
-    // Enable peripheral
-    RESET_BIT(PRR, PRSPI);
-
     // Enable MOSI, SCK
     Port_SetPinDataDirection(Spi_MOSI, Output);
     Port_SetPinDataDirection(Spi_SCK, Output);
 
     // Disable slaves (active high)
-    for (int i = 0 ; i < NbrOfSpiSlaves ; i++)
+    for (uint8_t i = 0 ; i < NbrOfSpiSlaves ; i++)
     {
         Port_SetPinDataDirection(SlaveSelect_Pins[i], Output);
         Port_SetPinState(SlaveSelect_Pins[i], High);
     }
+    
+    Spi_Init_HW();
 
-    // Enable SPI Master Mode
-    SPCR = BIT(MSTR) | BIT(SPE) | MASK(SPI_PRV_SPCR_SPR, 0xFF);
-
-    s_state = Spi_Ready;
+    spiState = Spi_Ready;
 }
 
-void Spi_SelectSlave(const Spi_Slave slave)
+void Spi_SelectSlave(Spi_Slave slave)
 {
     // If already enabled, do nothing
     if (currentSelected != &slave)
@@ -49,47 +44,25 @@ void Spi_SelectSlave(const Spi_Slave slave)
     }
 }
 
-void Spi_DisableSlave(const Spi_Slave slave)
+void Spi_DisableSlave(Spi_Slave slave)
 {
     // Disable slave (active low)
     Port_SetPinState(SlaveSelect_Pins[slave], High);
     currentSelected = NULL_PTR;
 }
 
-Std_ReturnType Spi_WriteByte(const uint8_t write, uint8_t *const read)
+Std_ReturnType Spi_WriteByte(uint8_t write, uint8_t *read)
 {
     Std_ReturnType retval = Status_Not_OK;
 
-    if (s_state == Spi_Ready)
+    if (spiState == Spi_Ready)
     {
-        SPDR = write;
-        while( ! IS_SET_BIT(SPSR, SPIF) ); // Wait transmission
+        Spi_HAL_WriteByte(write);
+        while( !Spi_HAL_IsReady() ); // Wait end of transmission
+        
         if (read != NULL_PTR)
         {
-            *read = SPDR;
-        }
-    }
-
-    return retval;
-}
-
-void Spi_FastWrite(const uint8_t write)
-{
-    SPDR = write;
-    asm volatile ("nop"); // At high speed, can delay and prevent entering the loop
-    while( ! IS_SET_BIT(SPSR, SPIF) ); // Wait transmission
-}
-
-Std_ReturnType Spi_WriteBufferSync(const uint8_t *const data, const int length)
-{
-    Std_ReturnType retval = Status_Not_OK;
-
-    if (s_state == Spi_Ready && data != NULL_PTR && length > 0)
-    {
-        for (int i = 0 ; i < length ; i++)
-        {
-            SPDR = data[i];
-            while( ! IS_SET_BIT(SPSR, SPIF) ); // Wait transmission
+            *read = Spi_HAL_ReadByte();
         }
 
         retval = Status_OK;
@@ -98,15 +71,33 @@ Std_ReturnType Spi_WriteBufferSync(const uint8_t *const data, const int length)
     return retval;
 }
 
-Std_ReturnType Spi_WriteBufferAsync(const uint8_t *const data, const int length)
+Std_ReturnType Spi_WriteBufferSync(const void * data, int length)
+{
+    Std_ReturnType retval = Status_Not_OK;
+    
+    if (spiState == Spi_Ready && data != NULL_PTR)
+    {
+        while(length-- > 0)
+        {
+            Spi_HAL_WriteByte( READ_PU8(data++) );
+            while( !Spi_HAL_IsReady() ); // Wait end of transmission
+        }
+
+        retval = Status_OK;
+    }
+
+    return retval;
+}
+
+Std_ReturnType Spi_WriteBufferAsync(const void *data, int length)
 {
     Std_ReturnType ret = Status_Not_OK;
 
-    if (s_state == Spi_Ready && data != NULL_PTR && length > 0)
+    if (spiState == Spi_Ready && data != NULL_PTR && length > 0)
     {
-        s_buffer = data;
-        s_length = length;
-        s_state = Spi_Writing;
+        txBuffer = data;
+        txLength = length;
+        spiState = Spi_Writing;
         ret = Status_Pending;
     }
 
@@ -117,7 +108,7 @@ boolean Spi_IsReady()
 {
     boolean status = FALSE;
 
-    if (s_state == Spi_Ready)
+    if (spiState == Spi_Ready)
     {
         status = TRUE;
     }
@@ -129,7 +120,7 @@ Std_ReturnType Spi_BackgroundTask()
 {
     Std_ReturnType retval = Status_Pending;
 
-    switch(s_state)
+    switch(spiState)
     {
     case Spi_Uninitialized:
         retval = Status_Not_OK;
@@ -140,15 +131,15 @@ Std_ReturnType Spi_BackgroundTask()
         break;
 
     case Spi_Writing:
-        SPDR = *(s_buffer++);
-        s_length--;
-        s_state = Spi_Waiting;
+        Spi_HAL_WriteByte( READ_PU8(txBuffer++) );
+        txLength--;
+        spiState = Spi_Waiting;
         break;
 
     case Spi_Waiting:
-        if (IS_SET_BIT(SPSR, SPIF))
+        if (Spi_HAL_IsReady())
         {
-            s_state = s_length > 0 ? Spi_Writing : Spi_Ready;
+            spiState = txLength > 0 ? Spi_Writing : Spi_Ready;
         }
         break;
 

@@ -6,5 +6,5 @@ PinDef Spi_SCK = {Port_B, Pin_5};
 
 PinDef SlaveSelect_Pins[] =
 {
-    {Port_B, 0}, // SPI_Slave_TFT
+    {Port_B, 2}, // SPI_Slave_TFT
 };

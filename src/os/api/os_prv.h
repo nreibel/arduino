@@ -6,8 +6,6 @@
 
 extern BackgroundTask BackgroundTasksList[NUMBER_OF_BACKGROUND_TASKS];
 
-extern void           Os_Init();
-extern Std_ReturnType Os_ExecuteBackgroundTasks();
-extern void           Os_Sleep();
+Std_ReturnType Os_ExecuteBackgroundTasks();
 
 #endif /* SRC_OS_API_OS_PRV_H_ */

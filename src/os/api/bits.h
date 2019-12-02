@@ -29,10 +29,14 @@
 // Test bit of value r at index x
 #define IS_SET_BIT(r, x)     MASK((r), BIT(x))
 
-#define INCREMENT_MOD(x, m)  (x = (x + 1) % (m))
-#define DECREMENT_MOD(x, m)  (x = (x + m - 1) % (m))
+#define ADD_BOUNDED(var, inc, min, max) (var = (min) + ((var+(min)+(inc)) % (max-min+1)))
+#define SUB_BOUNDED(var, inc, min, max) ADD_BOUNDED(var, -(inc), min, max)
+#define ADD_MODULO(var, inc, max)       ADD_BOUNDED(var, inc, 0, (max)-1)
+#define SUB_MODULO(var, inc, max)       SUB_BOUNDED(var, inc, 0, (max)-1)
+#define INCREMENT_MOD(var, max)         ADD_MODULO(var, 1, max)
+#define DECREMENT_MOD(var, max)         SUB_MODULO(var, 1, max)
 
-#define MAX(a, b)            ((a) > (b) ? (a) : (b))
-#define MIN(a, b)            ((a) < (b) ? (a) : (b))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 #endif /* SRC_OS_API_BITS_H_ */

@@ -13,13 +13,25 @@ typedef enum {
 #define ON  1
 #define OFF 0
 
-#define NULL_PTR ((void*)0)
+// Debug
+#define HALT while(1)
 
-#define READ_PTR(addr, type)        (*((type*)(addr)))
-#define READ_PU8(addr)              READ_PTR(addr, uint8_t)
+#define TYPECAST(var, type) ((type) (var))
+#define PTR(addr, type)     TYPECAST(addr, type*)
+#define UINT8_PTR(var)      PTR(var, uint8_t)
+#define UINT16_PTR(var)     PTR(var, uint16_t)
+#define UINT32_PTR(var)     PTR(var, uint32_t)
+#define NULL_PTR            PTR(0, void)
 
-#define WRITE_PTR(addr, val, type)  *((type*)(addr)) = ((type)(val))
+#define READ_PTR(addr, type) *PTR(addr, type)
+#define READ_PU8(addr)       READ_PTR(addr, uint8_t)
+#define READ_PU16(addr)      READ_PTR(addr, uint16_t)
+#define READ_PU32(addr)      READ_PTR(addr, uint32_t)
+
+#define WRITE_PTR(addr, val, type) *PTR(addr, type) = ((type)(val))
 #define WRITE_PU8(addr, val)       WRITE_PTR(addr, val, uint8_t)
+#define WRITE_PU16(addr, val)      WRITE_PTR(addr, val, uint16_t)
+#define WRITE_PU32(addr, val)      WRITE_PTR(addr, val, uint32_t)
 
 typedef enum
 {

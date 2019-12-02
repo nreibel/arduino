@@ -2,18 +2,22 @@
 #define SRC_SERIAL_API_SERIAL_H_
 
 #include "types.h"
-
-Std_ReturnType Serial_BackgroundTask();
+#include "serial_cfg.h"
 
 void Serial_Init();
-boolean Serial_IsReady();
 
-Std_ReturnType Serial_Print(const uint8_t *buffer, const int length);
-Std_ReturnType Serial_AsyncPrint(const uint8_t *buffer, const int length);
+Std_ReturnType Serial_Print(const void * const buffer, const unsigned int length);
 
-Std_ReturnType Serial_Read(uint8_t *buffer, const int buffer_len, int *rcvd_len);
+#if SERIAL_ASYNC_RX == ON
+Std_ReturnType Serial_RxReady(boolean *ready);
+Std_ReturnType Serial_GetRxBuffer(void **buffer, unsigned int *rcvd_len);
+#else
+Std_ReturnType Serial_Read(void * const buffer, const unsigned int buffer_len, unsigned int * const rcvd_len);
+#endif
 
-Std_ReturnType Serial_DataReady(boolean *ready);
-Std_ReturnType Serial_AsyncRead(uint8_t *buffer, const int buffer_len, int *rcvd_len);
+#if SERIAL_ASYNC_TX == ON
+Std_ReturnType Serial_TxReady(boolean *ready);
+Std_ReturnType Serial_SetTxBuffer(const void * const buffer, const unsigned int length);
+#endif
 
 #endif /* SRC_SERIAL_API_SERIAL_H_ */

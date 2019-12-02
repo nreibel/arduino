@@ -11,8 +11,8 @@ typedef enum {
 
 /* Holds the status of each timer channel */
 typedef struct {
-	uint32_t    triggerTime;
-	uint32_t    lastTrigger;
+	time_t    triggerTime;
+	time_t    lastTrigger;
 	Callback    callback;
 	TimerStatus status;
 } TimerConfig;
