@@ -1,9 +1,12 @@
 SHELL=/bin/sh
 
-# APP_DIR=app/
 # SRC_DIR=src/
 # CFG_DIR=cfg/
 # TARGET=targets/uno.mk
+# MODULES=eeprom hc595 i2c keys lcd math os port pwm serial spi st7735 stack timer uss
+# APP_DIR=app/
+# INCLUDES=$(APP_DIR)/api $(APP_DIR)/cfg \
+# app: $(APP_DIR)/src/app.o $(APP_DIR)/cfg/app_cfg.o
 
 # Path to build tools
 CC=avr-gcc
@@ -26,19 +29,10 @@ LDFLAGS=-Wl,-gc-sections -Wl,--relax
 # Serial monitor
 BAUD_RATE=19200
 
-MODULES=eeprom hc595 i2c keys lcd math os port pwm serial spi st7735 stack timer uss
-
-INCLUDES=\
-	$(APP_DIR)/api \
-	$(APP_DIR)/cfg \
-
 include $(TARGET)
 include $(MODULES:%=$(SRC_DIR)/%/makefile.include)
 
 all: clean prepare hex
-
-app:    $(APP_DIR)/src/app.o \
-	$(APP_DIR)/cfg/app_cfg.o
 
 hex: app $(MODULES)
 	@echo "Linking object files..."
