@@ -18,7 +18,7 @@
 #define ST7735_RAMRD   0x2E
 #define ST7735_MADCTL  0x36
 #define ST7735_COLMOD  0x3A
-    
+
 #define ST7735_MADCTL_MY 0x80
 #define ST7735_MADCTL_MX 0x40
 #define ST7735_MADCTL_MV 0x20

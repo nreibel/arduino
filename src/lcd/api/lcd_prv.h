@@ -5,9 +5,9 @@ extern PinDef pin_RS;
 extern PinDef pin_EN;
 
 typedef enum {
-	Uninitialized,
-	Ready,
-	Busy
+    Uninitialized,
+    Ready,
+    Busy
 } LcdStatus;
 
 void LCD_CyclicTask();

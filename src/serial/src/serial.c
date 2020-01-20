@@ -8,7 +8,7 @@
 void Serial_Init()
 {
     Serial_HAL_Init_HW();
-    
+
     #if SERIAL_ASYNC_RX == ON
     Serial_HAL_EnableRxInterrupts();
     #endif
@@ -34,13 +34,13 @@ Std_ReturnType Serial_Read(void *buffer, const unsigned int buffer_len, unsigned
 {
     Std_ReturnType retval = Status_Not_OK;
     *rcvd_len = 0;
-    
+
     // Stop when buffer full
     while ( *rcvd_len < buffer_len )
     {
         while( !Serial_HAL_RxIsReady() ); // Wait for RX complete
         uint8_t received = Serial_HAL_ReadByte();
-        
+
         // Stop if last char is a line break
         if ( received == SERIAL_LINE_TERMINATOR)
         {
@@ -52,7 +52,7 @@ Std_ReturnType Serial_Read(void *buffer, const unsigned int buffer_len, unsigned
             retval = Status_OK; // At least 1 byte has been read
         }
     }
-    
+
     return retval;
 }
 #endif // SERIAL_ASYNC_RX == OFF

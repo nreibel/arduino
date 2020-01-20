@@ -21,7 +21,7 @@ void Spi_Init()
         Port_SetPinDataDirection(SlaveSelect_Pins[i], Output);
         Port_SetPinState(SlaveSelect_Pins[i], High);
     }
-    
+
     Spi_Init_HW();
 
     spiState = Spi_Ready;
@@ -59,7 +59,7 @@ Std_ReturnType Spi_WriteByte(uint8_t write, uint8_t *read)
     {
         Spi_HAL_WriteByte(write);
         while( !Spi_HAL_IsReady() ); // Wait end of transmission
-        
+
         if (read != NULL_PTR)
         {
             *read = Spi_HAL_ReadByte();
@@ -74,7 +74,7 @@ Std_ReturnType Spi_WriteByte(uint8_t write, uint8_t *read)
 Std_ReturnType Spi_WriteBufferSync(const void * data, int length)
 {
     Std_ReturnType retval = Status_Not_OK;
-    
+
     if (spiState == Spi_Ready && data != NULL_PTR)
     {
         while(length-- > 0)

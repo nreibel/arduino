@@ -5,26 +5,26 @@
 
 typedef enum
 {
-	DataWidth_4_Bits,
-	DataWidth_8_Bits,
+    DataWidth_4_Bits,
+    DataWidth_8_Bits,
 } InterfaceDataWidth;
 
 typedef enum
 {
-	CharacterFont_5x10,
-	CharacterFont_5x8,
+    CharacterFont_5x10,
+    CharacterFont_5x8,
 } CharacterFont;
 
 typedef enum
 {
-	DisplayLines_1_Line,
-	DisplayLines_2_Line,
+    DisplayLines_1_Line,
+    DisplayLines_2_Line,
 } DisplayLines;
 
 typedef enum
 {
-	Increment,
-	Decrement,
+    Increment,
+    Decrement,
 } CursorMoveDirection;
 
 Std_ReturnType LCD_Init();

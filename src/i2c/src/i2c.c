@@ -29,7 +29,7 @@ static I2C_State state = I2C_State_Ready;
 Std_ReturnType I2C_BackgroundTask()
 {
     Std_ReturnType retval = Status_OK;
-    
+
     switch(state)
     {
         case I2C_State_Uninitialized:
@@ -86,7 +86,7 @@ Std_ReturnType I2C_BackgroundTask()
             HALT;
             break;
     }
-    
+
     return retval;
 }
 
@@ -119,7 +119,7 @@ void I2C_StartRead(int writeLen, int readLen)
 Std_ReturnType I2C_WriteSync(uint8_t addr, void *buffer, int len)
 {
     Std_ReturnType retval = Status_Not_OK;
-    
+
     if (state == I2C_State_Ready)
     {
         I2C_StartCondition();
@@ -131,14 +131,14 @@ Std_ReturnType I2C_WriteSync(uint8_t addr, void *buffer, int len)
         I2C_StopCondition();
         retval = Status_OK;
     }
-    
+
     return retval;
 }
 
 Std_ReturnType I2C_ReadSync(uint8_t addr, void *buffer, int writeLen, int readLen, int delay)
 {
     Std_ReturnType retval = Status_Not_OK;
-    
+
     if (state == I2C_State_Ready)
     {
         I2C_StartCondition();
@@ -147,7 +147,7 @@ Std_ReturnType I2C_ReadSync(uint8_t addr, void *buffer, int writeLen, int readLe
         {
             I2C_Write(UINT8_PTR(buffer)[i]);
         }
-        
+
         if (delay > 0)
         {
             I2C_StopCondition();
@@ -158,7 +158,7 @@ Std_ReturnType I2C_ReadSync(uint8_t addr, void *buffer, int writeLen, int readLe
         {
             I2C_RestartCondition();
         }
-        
+
         I2C_SlaveRead(addr);
         for(int i = 0 ; i < readLen-1 ; i++)
         {
@@ -168,12 +168,12 @@ Std_ReturnType I2C_ReadSync(uint8_t addr, void *buffer, int writeLen, int readLe
         I2C_StopCondition();
         retval = Status_OK;
     }
-    
+
     return retval;
 }
 
 void I2C_Init()
-{   
+{
     // Enable device
     RESET_BIT(PRR, PRTWI);
     TWSR = 0;  // Prescaler = 1
@@ -278,7 +278,7 @@ uint8_t I2C_ReadAck(void)
 {
     TWCR = BIT(TWINT) | BIT(TWEN) | BIT(TWEA);
     while(!I2C_TransmitReady());
-    
+
     uint8_t status = MASK(TWSR, 0xF8);
     switch(status)
     {
@@ -292,7 +292,7 @@ uint8_t I2C_ReadAck(void)
             HALT;
             break;
     }
-    
+
     return TWDR;
 }
 
@@ -300,7 +300,7 @@ uint8_t I2C_ReadNak(void)
 {
     TWCR = BIT(TWINT) | BIT(TWEN);
     while(!I2C_TransmitReady());
-    
+
     uint8_t status = MASK(TWSR, 0xF8);
     switch(status)
     {
@@ -314,6 +314,6 @@ uint8_t I2C_ReadNak(void)
             HALT;
             break;
     }
-    
+
     return TWDR;
 }

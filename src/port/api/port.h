@@ -5,20 +5,20 @@
 #include "port_cfg.h"
 
 typedef struct {
-	Port port;
-	Pin pin;
+    Port port;
+    Pin pin;
 } PinDef;
 
 typedef enum
 {
-	Input,
-	Output
+    Input,
+    Output
 } DataDirection;
 
 typedef enum
 {
-	Low,
-	High
+    Low,
+    High
 } PinState;
 
 Std_ReturnType Port_SetDataDirection    (Port port, uint8_t direction);

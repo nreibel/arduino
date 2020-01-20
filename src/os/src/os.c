@@ -28,12 +28,12 @@ Std_ReturnType Os_ExecuteBackgroundTasks()
 }
 
 int main(void)
-{  
+{
     time_t lastTrigger = Os_GetCurrentTimeMs();
-    
+
     /* Perform project-specific initialization */
     Os_Init();
- 
+
     // Enable interrupts
     Os_EnableInterrupts();
 
@@ -42,7 +42,7 @@ int main(void)
 
     /* Initialization of the application */
     App_Init();
-    
+
     /* Run main loop */
     while(1)
     {

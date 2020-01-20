@@ -23,7 +23,7 @@ void Keys_Init()
         keyState[cpt] = High;
         Port_SetPinDataDirection(Keys_PinMapping[cpt], Input);
         Port_SetPinState(Keys_PinMapping[cpt], High);
-    }    
+    }
 }
 
 boolean Keys_IsKeyPressed()
@@ -35,14 +35,14 @@ boolean Keys_IsKeyPressed()
             return TRUE;
         }
     }
-    
+
     return FALSE;
 }
 
 Std_ReturnType Keys_GetKeyPressed(Key *key)
 {
     Std_ReturnType retval = Status_Not_OK;
-    
+
     for (int cpt = 0 ; cpt < NUMBER_OF_KEYS ; cpt++)
     {
         if (keyState[cpt] != High)
@@ -52,6 +52,6 @@ Std_ReturnType Keys_GetKeyPressed(Key *key)
             retval = Status_OK;
         }
     }
-    
+
     return retval;
 }

@@ -64,18 +64,18 @@ void ST7735_Init()
     // TFT startup routine
     ST7735_Command(ST7735_SWRESET);
     Os_Wait(120);
-    
+
     ST7735_Command(ST7735_SLPOUT);
     Os_Wait(120);
-    
+
     // Screen orientation
     ST7735_Command(ST7735_MADCTL);
     ST7735_Data(ST7735_SCREEN_ORIENTATION);
-    
+
     // 16bits per pixel
     ST7735_Command(ST7735_COLMOD);
     ST7735_Data(0x05);
-    
+
     ST7735_Command(ST7735_DISPON);
 }
 
@@ -130,9 +130,9 @@ void ST7735_DrawChar(const uint8_t x, const uint8_t y, const char chr, const uin
         case 'A' ... 'Z': c = chr - 'A' + 20; break;
         default: c = 0; break;
     }
-    
+
     ST7735_SetDrawWindow(x, y, x+ST7735_CHARSET_WIDTH-1, y+ST7735_CHARSET_HEIGHT-1);
-    
+
     // 7 pixels height
     for (int dy = 0 ; dy < ST7735_CHARSET_HEIGHT ; dy++)
     {
@@ -154,9 +154,9 @@ void ST7735_DrawChar(const uint8_t x, const uint8_t y, const char chr, const uin
 }
 
 void ST7735_ClearChar(const uint8_t x, const uint8_t y, const uint16_t backgroundColor)
-{   
+{
     ST7735_SetDrawWindow(x, y, x+ST7735_CHARSET_WIDTH-1, y+ST7735_CHARSET_HEIGHT-1);
-    
+
     // 7 pixels height
     for (int dy = 0 ; dy < ST7735_CHARSET_HEIGHT ; dy++)
     {

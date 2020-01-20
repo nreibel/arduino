@@ -4,8 +4,8 @@
 #include <stdint.h>
 
 typedef enum {
-	FALSE = 0,
-	TRUE = 1
+    FALSE = 0,
+    TRUE = 1
 } boolean;
 
 #define NOT(b) ((b) == FALSE ? TRUE : FALSE)
@@ -35,9 +35,9 @@ typedef enum {
 
 typedef enum
 {
-	Status_Not_OK = 0,
-	Status_Pending,
-	Status_OK
+    Status_Not_OK = 0,
+    Status_Pending,
+    Status_OK
 } Std_ReturnType;
 
 #endif /* OS_API_TYPES_H_ */

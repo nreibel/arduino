@@ -3,7 +3,7 @@
 
 // uint8_t has a max value of ~0,25s
 // uint16_t has a max value of ~65s
-// uint32_t has a max value of ~49,7 days 
+// uint32_t has a max value of ~49,7 days
 typedef uint16_t time_t;
 
 typedef enum

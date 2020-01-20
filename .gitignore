@@ -1,5 +1,5 @@
-_obj/
-out/
+obj/
+bin/
 .cproject
 .directory
 .project

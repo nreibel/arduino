@@ -4,9 +4,9 @@
 #include "types.h"
 
 typedef struct {
-        uint16_t* buffer; // Data
-        uint16_t* ptr;    // Current element
-        uint16_t  size;   // Max size
+    uint16_t* buffer; // Data
+    uint16_t* ptr;    // Current element
+    uint16_t  size;   // Max size
 } Stack;
 
 Stack* Stack_Create (uint16_t size);

@@ -36,11 +36,11 @@ Std_ReturnType Serial_SetTxBuffer(const void *buffer, const unsigned int length)
 {
     s_txBuffer = buffer;
     s_txLength = length;
-    
+
     // Kickstart transmission
     Serial_HAL_WriteByte( READ_PU8(s_txBuffer++) );
     s_txLength--;
-    
+
     return Status_OK;
 }
 

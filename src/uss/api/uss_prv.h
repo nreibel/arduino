@@ -4,11 +4,11 @@
 #include "port.h"
 
 typedef enum {
-	Uninitialized,
-	Ready,
-	WaitForEcho,
-	MeasuringEcho,
-	MeasurementAvailable,
+    Uninitialized,
+    Ready,
+    WaitForEcho,
+    MeasuringEcho,
+    MeasurementAvailable,
 } Uss_InternalState;
 
 /* Ticks to us ratio is set by timer prescaler */

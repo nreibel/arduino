@@ -5,10 +5,10 @@
 #include "spi_cfg.h"
 
 typedef enum {
-	Spi_Uninitialized,
-	Spi_Ready,
-	Spi_Writing,
-	Spi_Waiting,
+    Spi_Uninitialized,
+    Spi_Ready,
+    Spi_Writing,
+    Spi_Waiting,
 } Spi_TransmitState;
 
 extern PinDef Spi_MISO;

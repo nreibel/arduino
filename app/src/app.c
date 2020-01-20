@@ -12,13 +12,13 @@
 
 void App_Init()
 {
-	Port_SetPinDataDirection(Pin_LED, Output);
+    Port_SetPinDataDirection(Pin_LED, Output);
 
-	// Init serial debug communication
-	Serial_Init();
+    // Init serial debug communication
+    Serial_Init();
 
-	// Set up tasks
-	Timer_StartTask(Timer_MainTask, 1000, &Task_MainCyclic);
+    // Set up tasks
+    Timer_StartTask(Timer_MainTask, 1000, &Task_MainCyclic);
 }
 
 // Main task
@@ -29,7 +29,7 @@ void Task_MainCyclic(void)
 
     Port_SetPinState(Pin_LED, state);
     Serial_Print(message, 6);
-    
+
     if (state == High)
     {
         state = Low;

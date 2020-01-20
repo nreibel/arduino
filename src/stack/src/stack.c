@@ -14,11 +14,11 @@ Stack* Stack_Create(uint16_t size)
 
 void Stack_Init(Stack *s, uint16_t value)
 {
-	uint16_t cpt;
-	for (cpt = 0 ; cpt < s->size ; cpt++)
-	{
-		s->buffer[cpt] = value;
-	}
+    uint16_t cpt;
+    for (cpt = 0 ; cpt < s->size ; cpt++)
+    {
+        s->buffer[cpt] = value;
+    }
 }
 
 void Stack_Push(Stack *s, uint16_t value)

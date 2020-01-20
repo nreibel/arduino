@@ -37,12 +37,12 @@ Std_ReturnType Serial_GetRxBuffer(void **buffer, unsigned int *rcvd_len)
 {
     *buffer = UINT8_PTR(s_rxBuffer[s_rxBufferId]);
     *rcvd_len = s_rxLength;
-    
+
     // Switch buffer
     INCREMENT_MOD(s_rxBufferId, SERIAL_RECEIVE_BUFFER_COUNT);
     s_rxLength = 0;
     s_dataReady = FALSE;
-    
+
     return Status_OK;
 }
 

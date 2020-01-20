@@ -6,7 +6,7 @@ void Spi_Init_HW(void)
 {
     // Enable peripheral
     RESET_BIT(PRR0, PRSPI);
-    
+
     // Enable SPI Master Mode, speed is CLK/4
     SPCR = BIT(MSTR) | BIT(SPE);
 }
