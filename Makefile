@@ -1,5 +1,10 @@
 SHELL=/bin/sh
 
+# APP_DIR=app/
+# SRC_DIR=src/
+# CFG_DIR=cfg/
+# TARGET=targets/uno.mk
+
 # Path to build tools
 CC=avr-gcc
 OBJCOPY=avr-objcopy
@@ -12,9 +17,6 @@ MONITOR=picocom
 OBJ=obj
 OUT=bin
 FNAME=out-$(ARCH)
-APP_DIR=app/
-SRC_DIR=src/
-CFG_DIR=cfg/
 
 # Compilation options and flags
 WARNINGS=all extra undef
@@ -30,7 +32,7 @@ INCLUDES=\
 	$(APP_DIR)/api \
 	$(APP_DIR)/cfg \
 
-include target_$(TARGET).mk
+include $(TARGET)
 include $(MODULES:%=$(SRC_DIR)/%/makefile.include)
 
 all: clean prepare hex
