@@ -1,0 +1,7 @@
+INCLUDES+=\
+	$(SRC_DIR)/spi/api \
+	$(SRC_DIR)/spi/cfg \
+
+spi:    $(SRC_DIR)/spi/src/spi.o \
+	$(SRC_DIR)/spi/src/spi_$(ARCH).o \
+	$(SRC_DIR)/spi/cfg/spi_cfg.o \

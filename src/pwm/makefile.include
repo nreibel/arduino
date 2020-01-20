@@ -1,0 +1,6 @@
+INCLUDES+=\
+	$(SRC_DIR)/pwm/api \
+	$(SRC_DIR)/pwm/cfg \
+
+pwm:    $(SRC_DIR)/pwm/src/pwm.o \
+	$(SRC_DIR)/pwm/cfg/pwm_cfg.o \

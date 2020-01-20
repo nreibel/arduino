@@ -1,0 +1,5 @@
+INCLUDES+=\
+	$(SRC_DIR)/lcd/api \
+	$(SRC_DIR)/lcd/cfg \
+
+lcd:    $(SRC_DIR)/lcd/src/lcd.o \

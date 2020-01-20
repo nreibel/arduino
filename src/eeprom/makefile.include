@@ -1,0 +1,5 @@
+INCLUDES+=\
+	$(SRC_DIR)/eeprom/api \
+	$(SRC_DIR)/eeprom/cfg \
+
+eeprom: $(SRC_DIR)/eeprom/src/eeprom.o \

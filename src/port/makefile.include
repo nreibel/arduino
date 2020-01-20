@@ -1,0 +1,6 @@
+INCLUDES+=\
+	$(SRC_DIR)/port/api \
+	$(SRC_DIR)/port/cfg \
+
+port:   $(SRC_DIR)/port/src/port.o \
+	$(SRC_DIR)/port/cfg/port_cfg.o \

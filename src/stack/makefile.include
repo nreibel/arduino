@@ -1,0 +1,5 @@
+INCLUDES+=\
+	$(SRC_DIR)/stack/api \
+	$(SRC_DIR)/stack/cfg \
+
+stack:  $(SRC_DIR)/stack/src/stack.o \

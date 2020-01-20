@@ -1,0 +1,6 @@
+INCLUDES+=\
+	$(SRC_DIR)/uss/api \
+	$(SRC_DIR)/uss/cfg \
+
+uss:    $(SRC_DIR)/uss/src/uss.o \
+	$(SRC_DIR)/uss/cfg/uss_cfg.o \

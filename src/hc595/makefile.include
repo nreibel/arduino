@@ -1,0 +1,7 @@
+INCLUDES+=\
+	$(SRC_DIR)/hc595/api \
+	$(SRC_DIR)/hc595/cfg \
+
+hc595: \
+	$(SRC_DIR)/hc595/src/hc595.o \
+	$(SRC_DIR)/hc595/cfg/hc595_cfg.o \

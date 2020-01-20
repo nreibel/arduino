@@ -1,0 +1,5 @@
+INCLUDES+=\
+	$(SRC_DIR)/timer/api \
+	$(SRC_DIR)/timer/cfg \
+
+timer:  $(SRC_DIR)/timer/src/timer.o \
