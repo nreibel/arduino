@@ -5,13 +5,13 @@ CC=avr-gcc
 OBJCOPY=avr-objcopy
 SIZE=avr-size
 UPLOAD=avrdude
-TERM=konsole -e
+TERM=konsole
+MONITOR=picocom
 
 # Output files
 OBJ=obj
 OUT=bin
 FNAME=out-$(ARCH)
-SRC_DIR=src/
 APP_DIR=app/
 
 # Compilation options and flags
@@ -64,4 +64,7 @@ upload: stop
 
 # Serial monitor
 monitor: stop
-	@$(TERM) "picocom -b $(BAUD_RATE) $(SERIAL_TTY)" &
+	@$(TERM) -e "$(MONITOR) -b $(BAUD_RATE) $(SERIAL_TTY)" &
+
+stop:
+	@for pid in `pgrep $(MONITOR)`; do kill $$pid; done
