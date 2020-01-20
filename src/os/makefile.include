@@ -1,8 +1,8 @@
 INCLUDES+=\
 	$(SRC_DIR)/os/api \
-	$(SRC_DIR)/os/cfg \
+	$(CFG_DIR)/os \
 
 os:     $(SRC_DIR)/os/src/os.o \
 	$(SRC_DIR)/os/src/os_$(ARCH).o \
 	$(SRC_DIR)/os/src/utils.o \
-	$(SRC_DIR)/os/cfg/os_cfg.o \
+	$(CFG_DIR)/os/os_cfg.o \

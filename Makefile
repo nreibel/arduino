@@ -13,6 +13,8 @@ OBJ=obj
 OUT=bin
 FNAME=out-$(ARCH)
 APP_DIR=app/
+SRC_DIR=src/
+CFG_DIR=cfg/
 
 # Compilation options and flags
 WARNINGS=all extra undef
@@ -29,7 +31,7 @@ INCLUDES=\
 	$(APP_DIR)/cfg \
 
 include target_$(TARGET).mk
-include $(MODULES:%=src/%/makefile.include)
+include $(MODULES:%=$(SRC_DIR)/%/makefile.include)
 
 all: clean prepare hex
 

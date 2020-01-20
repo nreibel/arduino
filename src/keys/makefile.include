@@ -1,6 +1,6 @@
 INCLUDES+=\
 	$(SRC_DIR)/keys/api \
-	$(SRC_DIR)/keys/cfg \
+	$(CFG_DIR)/keys \
 
 keys:   $(SRC_DIR)/keys/src/keys.o \
-	$(SRC_DIR)/keys/cfg/keys_cfg.o \
+	$(CFG_DIR)/keys/keys_cfg.o \

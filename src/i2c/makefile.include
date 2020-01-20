@@ -1,6 +1,6 @@
 INCLUDES+=\
 	$(SRC_DIR)/i2c/api \
-	$(SRC_DIR)/i2c/cfg \
+	$(CFG_DIR)/i2c \
 
 i2c:    $(SRC_DIR)/i2c/src/i2c.o \
-	$(SRC_DIR)/i2c/cfg/i2c_cfg.o \
+	$(CFG_DIR)/i2c/i2c_cfg.o \

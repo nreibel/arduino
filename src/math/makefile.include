@@ -1,5 +1,5 @@
 INCLUDES+=\
 	$(SRC_DIR)/math/api \
-	$(SRC_DIR)/math/cfg \
+	$(CFG_DIR)/math \
 
 math:   $(SRC_DIR)/math/src/math.o \

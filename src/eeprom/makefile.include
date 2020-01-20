@@ -1,5 +1,5 @@
 INCLUDES+=\
 	$(SRC_DIR)/eeprom/api \
-	$(SRC_DIR)/eeprom/cfg \
+	$(CFG_DIR)/eeprom \
 
 eeprom: $(SRC_DIR)/eeprom/src/eeprom.o \

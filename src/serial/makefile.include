@@ -1,6 +1,6 @@
 INCLUDES+=\
 	$(SRC_DIR)/serial/api \
-	$(SRC_DIR)/serial/cfg \
+	$(CFG_DIR)/serial \
 
 serial: \
 	$(SRC_DIR)/serial/src/serial.o \
