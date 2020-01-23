@@ -22,9 +22,9 @@ OUT=bin
 FNAME=out-$(ARCH)
 
 # Compilation options and flags
-WARNINGS=all extra undef
-CFLAGS=-O3 -g0 -mmcu=$(ARCH) -ffunction-sections -fdata-sections
-LDFLAGS=-Wl,-gc-sections -Wl,--relax
+WARNINGS+=all extra undef
+CFLAGS+=-O3 -g0 -mmcu=$(ARCH) -ffunction-sections -fdata-sections
+LDFLAGS+=-Wl,-gc-sections -Wl,--relax
 
 # Serial monitor
 BAUD_RATE=19200
