@@ -4,7 +4,6 @@
 #include "port.h"
 #include "bits.h"
 
-static const Spi_Slave* currentSelected = NULL_PTR;
 static Spi_TransmitState spiState = Spi_Uninitialized;
 static const void * txBuffer = NULL_PTR;
 static int txLength = 0;
@@ -16,7 +15,7 @@ void Spi_Init()
     Port_SetPinDataDirection(Spi_SCK, Output);
 
     // Disable slaves (active high)
-    for (uint8_t i = 0 ; i < NbrOfSpiSlaves ; i++)
+    for (uint8_t i = 0 ; i < SPI_NUMBER_OF_SLAVES ; i++)
     {
         Port_SetPinDataDirection(SlaveSelect_Pins[i], Output);
         Port_SetPinState(SlaveSelect_Pins[i], High);
@@ -27,28 +26,16 @@ void Spi_Init()
     spiState = Spi_Ready;
 }
 
-void Spi_SelectSlave(Spi_Slave slave)
+void Spi_SelectSlave(uint8_t slave)
 {
-    // If already enabled, do nothing
-    if (currentSelected != &slave)
-    {
-        if (currentSelected != NULL_PTR)
-        {
-            // Disable previously selected slave
-            Spi_DisableSlave(*currentSelected);
-        }
-
-        // Select slave (active low)
-        Port_SetPinState(SlaveSelect_Pins[slave], Low);
-        currentSelected = &slave;
-    }
+    // Disable slave (active low)
+    Port_SetPinState(SlaveSelect_Pins[slave], Low);
 }
 
-void Spi_DisableSlave(Spi_Slave slave)
+void Spi_DisableSlave(uint8_t slave)
 {
     // Disable slave (active low)
     Port_SetPinState(SlaveSelect_Pins[slave], High);
-    currentSelected = NULL_PTR;
 }
 
 Std_ReturnType Spi_WriteByte(uint8_t write, uint8_t *read)

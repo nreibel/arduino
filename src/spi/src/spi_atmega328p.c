@@ -1,6 +1,8 @@
 #include <avr/io.h>
 #include "types.h"
 #include "bits.h"
+#include "spi_cfg.h"
+#include "spi_prv.h"
 
 void Spi_Init_HW(void)
 {
@@ -8,7 +10,8 @@ void Spi_Init_HW(void)
     RESET_BIT(PRR, PRSPI);
 
     // Enable SPI Master Mode, speed is CLK/4
-    SPCR = BIT(MSTR) | BIT(SPE);
+    SPCR = BIT(MSTR) | BIT(SPE) | SPI_CLOCK_SELECT_BITS;
+    if (SPI_CLOCK_DIV_2X) SPSR = BIT(SPI2X);
 }
 
 boolean Spi_HAL_IsReady(void)

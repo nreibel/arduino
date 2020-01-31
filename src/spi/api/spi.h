@@ -4,12 +4,17 @@
 #include "types.h"
 #include "spi_cfg.h"
 
+#define SPI_CLOCK_DIV_4   0
+#define SPI_CLOCK_DIV_16  1
+#define SPI_CLOCK_DIV_64  2
+#define SPI_CLOCK_DIV_128 3
+
 Std_ReturnType Spi_BackgroundTask();
 
 boolean Spi_IsReady();
 void Spi_Init();
-void Spi_SelectSlave(Spi_Slave slave);
-void Spi_DisableSlave(Spi_Slave slave);
+void Spi_SelectSlave(uint8_t slave);
+void Spi_DisableSlave(uint8_t slave);
 
 Std_ReturnType Spi_WriteByte(uint8_t write, uint8_t *read);
 Std_ReturnType Spi_WriteBufferSync(const void * const data, int length);
