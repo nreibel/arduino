@@ -111,6 +111,66 @@ void ST7735_DrawPixel(const uint8_t x, const uint8_t y, const uint16_t color)
     ST7735_FillRectangle(x, y, 1, 1, color);
 }
 
+void ST7735_DrawLine(const uint8_t x1, const uint8_t y1, const uint8_t x2, const uint8_t y2, const uint16_t color)
+{
+    // Integer only implementation of Bresenham's algorythm
+    uint16_t CurrentX = x1, CurrentY = y1;
+    int8_t Xinc = 1, Yinc = 1;
+    int16_t Dx = x2-x1;
+    int16_t Dy = y2-y1;
+
+    if (Dx < 0)
+    {
+        Xinc = -1;
+        Dx = -Dx;
+    }
+
+    if (Dy < 0)
+    {
+        Yinc = -1;
+        Dy = -Dy;
+    }
+
+    ST7735_DrawPixel(x1, y1, color);
+
+    if (Dy <= Dx)
+    {
+        int16_t TwoDxAccumulatedError = 0;
+        do
+        {
+            CurrentX += Xinc;
+            TwoDxAccumulatedError += 2*Dy;
+            if (TwoDxAccumulatedError > Dx)
+            {
+                CurrentY += Yinc;
+                TwoDxAccumulatedError -= 2*Dx;
+            }
+
+            ST7735_DrawPixel(CurrentX, CurrentY, color);
+        }
+        while(CurrentX != x2);
+    }
+    else
+    {
+        int16_t TwoDyAccumulatedError = 0;
+        do
+        {
+            CurrentY += Yinc;
+            TwoDyAccumulatedError += 2*Dx;
+            if (TwoDyAccumulatedError > Dy)
+            {
+                CurrentX += Xinc;
+                TwoDyAccumulatedError -= 2*Dy;
+            }
+
+            ST7735_DrawPixel(CurrentX, CurrentY, color);
+        }
+        while(CurrentY != y2);
+    }
+
+    ST7735_DrawPixel(x2, y2, color);
+}
+
 void ST7735_DrawChar(const uint8_t x, const uint8_t y, const char chr, const uint16_t foregroundColor, const uint16_t backgroundColor)
 {
     int c = 0; // Unknown character by default
