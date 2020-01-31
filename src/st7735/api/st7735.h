@@ -45,6 +45,7 @@ void ST7735_FillRectangle(const uint8_t x, const uint8_t y, const uint8_t w, con
 void ST7735_DrawLine(const uint8_t x1, const uint8_t y1, const uint8_t x2, const uint8_t y2, const uint16_t color);
 
 // String drawing
+void ST7735_CharTest(void);
 void ST7735_ClearChar(const uint8_t x, const uint8_t y, const uint16_t backgroundColor);
 void ST7735_DrawChar(const uint8_t x, const uint8_t y, const char c, const uint16_t foregroundColor, const uint16_t backgroundColor);
 
