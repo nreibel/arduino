@@ -11,6 +11,6 @@ void __pad_right(const uint8_t *src, unsigned int len_src, uint8_t *dst, unsigne
 /**
  * Print a number nbr of length len into the string buffer at position pos
  */
-void __int_to_str(uint8_t *buffer, int nbr, int pos, int len);
+void __int_to_str(char *buffer, int nbr, int pos, int len);
 
 #endif /* OS_API_UTILS_H_ */

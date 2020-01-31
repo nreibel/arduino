@@ -9,7 +9,7 @@ void __pad_right(const uint8_t *src, unsigned int src_len, uint8_t *dst, unsigne
     memset(dst, ' ', dst_len-src_len);
 }
 
-void __int_to_str(uint8_t *buffer, int nbr, int pos, int len)
+void __int_to_str(char *buffer, int nbr, int pos, int len)
 {
     for (int i = 1 ; i <= len ; i++)
     {
