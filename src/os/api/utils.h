@@ -6,7 +6,7 @@
 /**
  * Right-align and pad with spaces a string of length len_buffer into a buffer of length len_padded.
  */
-void __pad_right(const uint8_t *src, unsigned int len_src, uint8_t *dst, unsigned int len_dst);
+void __pad_right(const char *src, unsigned int len_src, char *dst, unsigned int len_dst);
 
 /**
  * Print a number nbr of length len into the string buffer at position pos

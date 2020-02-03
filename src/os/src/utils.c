@@ -2,7 +2,7 @@
 #include <string.h>
 #include "types.h"
 
-void __pad_right(const uint8_t *src, unsigned int src_len, uint8_t *dst, unsigned int dst_len)
+void __pad_right(const char *src, unsigned int src_len, char *dst, unsigned int dst_len)
 {
     assert(dst_len >= src_len);
     memcpy(dst+dst_len-src_len, src, src_len);

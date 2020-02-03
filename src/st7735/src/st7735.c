@@ -133,7 +133,8 @@ void ST7735_DrawChar(const uint8_t x, const uint8_t y, const char chr, const uin
     {
         for (int dx = 0 ; dx < ST7735_CHARSET_WIDTH ; dx++)
         {
-            if (IS_SET_BIT(s_st7735_charset[chr-0x20][dx], dy))
+            uint8_t b = pgm_read_byte(&s_st7735_charset[chr-0x20][dx]);
+            if (IS_SET_BIT(b, dy))
             {
                 ST7735_Data(HIGH_BYTE(foregroundColor));
                 ST7735_Data(LOW_BYTE(foregroundColor));
@@ -182,7 +183,8 @@ void ST7735_ClearChar(const uint8_t x, const uint8_t y, const uint16_t backgroun
 
 void ST7735_DrawString(const uint8_t x, const uint8_t y, const char *str, const int length, const uint16_t foregroundColor, const uint16_t backgroundColor)
 {
-    for (int xOffset = x, i = 0 ; i < length ; i++)
+    uint8_t xOffset = x;
+    for (uint8_t i = 0 ; i < length ; i++)
     {
         ST7735_DrawChar(xOffset, y, str[i], foregroundColor, backgroundColor);
         xOffset += ST7735_CHARSET_WIDTH + ST7735_CHAR_SPACING;
