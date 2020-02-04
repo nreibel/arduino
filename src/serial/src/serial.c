@@ -18,6 +18,13 @@ void Serial_Init()
     #endif
 }
 
+Std_ReturnType Serial_WriteByte(const uint8_t chr)
+{
+    Serial_HAL_WriteByte(chr);
+    while( !Serial_HAL_TxIsReady() );
+    return Status_OK;
+}
+
 Std_ReturnType Serial_Print( const void * buffer, unsigned int length )
 {
     while ( length-- > 0 )
