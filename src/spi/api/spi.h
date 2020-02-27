@@ -13,7 +13,7 @@ Std_ReturnType Spi_BackgroundTask();
 
 boolean Spi_IsReady();
 void Spi_Init();
-void Spi_SelectSlave(uint8_t slave);
+void Spi_EnableSlave(uint8_t slave);
 void Spi_DisableSlave(uint8_t slave);
 
 Std_ReturnType Spi_WriteByte(uint8_t write, uint8_t *read);

@@ -26,9 +26,9 @@ void Spi_Init()
     spiState = Spi_Ready;
 }
 
-void Spi_SelectSlave(uint8_t slave)
+void Spi_EnableSlave(uint8_t slave)
 {
-    // Disable slave (active low)
+    // Enable slave (active low)
     Port_SetPinState(SlaveSelect_Pins[slave], Low);
 }
 
