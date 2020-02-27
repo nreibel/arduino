@@ -181,12 +181,17 @@ void ST7735_ClearChar(const uint8_t x, const uint8_t y, const uint16_t backgroun
     }
 }
 
-void ST7735_DrawString(const uint8_t x, const uint8_t y, const char *str, const int length, const uint16_t foregroundColor, const uint16_t backgroundColor)
+void ST7735_DrawString(const uint8_t x, const uint8_t y, const char* str, const uint16_t foregroundColor, const uint16_t backgroundColor)
 {
     uint8_t xOffset = x;
-    for (uint8_t i = 0 ; i < length ; i++)
+//     for (uint8_t i = 0 ; i < length ; i++)
+//     {
+//         ST7735_DrawChar(xOffset, y, str[i], foregroundColor, backgroundColor);
+//         xOffset += ST7735_CHARSET_WIDTH + ST7735_CHAR_SPACING;
+//     }
+    while( *str != 0 )
     {
-        ST7735_DrawChar(xOffset, y, str[i], foregroundColor, backgroundColor);
+        ST7735_DrawChar(xOffset, y, READ_PU8(str++), foregroundColor, backgroundColor);
         xOffset += ST7735_CHARSET_WIDTH + ST7735_CHAR_SPACING;
     }
 }

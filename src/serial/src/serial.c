@@ -36,6 +36,17 @@ Std_ReturnType Serial_Print( const void * buffer, unsigned int length )
     return Status_OK;
 }
 
+Std_ReturnType Serial_PrintString(const char* string )
+{
+    while ( *string != 0 )
+    {
+        Serial_HAL_WriteByte( READ_PU8(string++) );
+        while( !Serial_HAL_TxIsReady() ); // Wait for TX complete
+    }
+
+    return Status_OK;
+}
+
 #if SERIAL_ASYNC_RX == OFF
 Std_ReturnType Serial_Read(void *buffer, const unsigned int buffer_len, unsigned int *rcvd_len)
 {
