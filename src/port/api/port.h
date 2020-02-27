@@ -21,6 +21,17 @@ typedef enum
     High
 } PinState;
 
+typedef enum
+{
+    Edge_LowLevel,
+    Edge_Both,
+    Edge_Falling,
+    Edge_Rising
+} Edge;
+
+Std_ReturnType Port_EnableInt0          (Edge edge, Callback cbk);
+Std_ReturnType Port_EnableInt1          (Edge edge, Callback cbk);
+
 Std_ReturnType Port_SetDataDirection    (Port port, uint8_t direction);
 Std_ReturnType Port_GetDataDirection    (Port port, uint8_t* direction);
 Std_ReturnType Port_SetValue            (Port port, uint8_t portValue);
