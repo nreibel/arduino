@@ -4,10 +4,12 @@
 #include "types.h"
 #include "spi_cfg.h"
 
-#define SPI_CLOCK_DIV_4   0
-#define SPI_CLOCK_DIV_16  1
-#define SPI_CLOCK_DIV_64  2
-#define SPI_CLOCK_DIV_128 3
+typedef enum {
+    SPI_CLOCK_DIV_4 = 0,
+    SPI_CLOCK_DIV_16,
+    SPI_CLOCK_DIV_64,
+    SPI_CLOCK_DIV_128
+} Spi_SCK_Frequency;
 
 Std_ReturnType Spi_BackgroundTask();
 

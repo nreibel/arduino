@@ -9,8 +9,8 @@ void Spi_Init_HW(void)
     // Enable peripheral
     RESET_BIT(PRR, PRSPI);
 
-    // Enable SPI Master Mode, speed is CLK/4
-    SPCR = BIT(MSTR) | BIT(SPE) | SPI_CLOCK_SELECT_BITS;
+    // Enable SPI, Master Mode, set speed
+    SPCR = BIT(MSTR) | BIT(SPE) | MASK(SPI_CLOCK_SELECT, 0x3);
     if (SPI_CLOCK_DIV_2X) SPSR = BIT(SPI2X);
 }
 
