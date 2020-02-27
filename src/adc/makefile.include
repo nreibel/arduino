@@ -1,0 +1,5 @@
+INCLUDES+=\
+	$(SRC_DIR)/adc/api \
+	$(CFG_DIR)/adc \
+
+adc:    $(SRC_DIR)/adc/src/adc.o \
