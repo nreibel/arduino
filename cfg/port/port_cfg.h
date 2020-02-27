@@ -4,9 +4,9 @@
 #include "os.h"
 
 typedef enum {
-    Port_B = 0,
-    Port_C,
-    Port_D,
+    Port_B = 0x23,
+    Port_C = 0x26,
+    Port_D = 0x29,
     NbrOfPorts
 } Port;
 

@@ -3,4 +3,3 @@ INCLUDES+=\
 	$(CFG_DIR)/port \
 
 port:   $(SRC_DIR)/port/src/port.o \
-	$(CFG_DIR)/port/port_cfg.o \

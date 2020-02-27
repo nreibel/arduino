@@ -87,7 +87,7 @@ Std_ReturnType Port_SetDataDirection(Port port, uint8_t direction)
     if (port < NbrOfPorts )
     {
         /* Write DDRx */
-        WRITE_PU8(Port_Cfg_BaseAddr[port] + OFFSET_DDR, direction);
+        WRITE_PU8(port + OFFSET_DDR, direction);
         status = Status_OK;
     }
 
@@ -101,7 +101,7 @@ Std_ReturnType Port_GetDataDirection(Port port, uint8_t* direction)
     if ( port < NbrOfPorts )
     {
         /* Read DDRx */
-        *direction = READ_PU8(Port_Cfg_BaseAddr[port] + OFFSET_DDR);
+        *direction = READ_PU8(port + OFFSET_DDR);
         status = Status_OK;
     }
 
@@ -115,7 +115,7 @@ Std_ReturnType Port_SetValue(Port port, uint8_t portValue)
     if ( port < NbrOfPorts )
     {
         /* Write PORTx */
-        WRITE_PU8(Port_Cfg_BaseAddr[port] + OFFSET_PORT, portValue);
+        WRITE_PU8(port + OFFSET_PORT, portValue);
         status = Status_OK;
     }
 
@@ -129,7 +129,7 @@ Std_ReturnType Port_GetValue(Port port, uint8_t* portValue)
     if ( port < NbrOfPorts )
     {
         /* Read PINx */
-        *portValue = READ_PU8(Port_Cfg_BaseAddr[port] + OFFSET_PIN);
+        *portValue = READ_PU8(port + OFFSET_PIN);
         status = Status_OK;
     }
 
