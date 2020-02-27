@@ -1,10 +1,11 @@
 #include "port.h"
+#include "gpio_uno.h"
 
-PinDef Spi_MOSI = {Port_B, Pin_3};
-PinDef Spi_MISO = {Port_B, Pin_4};
-PinDef Spi_SCK = {Port_B, Pin_5};
+PinDef Spi_MOSI = GPIO_11;
+PinDef Spi_MISO = GPIO_12;
+PinDef Spi_SCK = GPIO_13;
 
 PinDef SlaveSelect_Pins[] =
 {
-    {Port_B, 2}, // SPI_Slave_TFT
+    GPIO_10, // SPI_Slave_TFT
 };
