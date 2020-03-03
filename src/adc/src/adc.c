@@ -4,6 +4,9 @@
 #include "bits.h"
 #include "avr/io.h"
 
+#include "port.h"
+#include "gpio_uno.h"
+
 void ADC_Init()
 {
     // Poweron ADC
@@ -14,11 +17,12 @@ void ADC_Init()
 
     // Enable ADC, set prescaler
     ADCSRA = BIT(ADEN) | MASK(ADC_PRESCALER_SELECT, 0x7);
+    ADCSRB = 0;
 }
 
 uint16_t ADC_Read(uint8_t channel)
 {
-    SET_BITS(ADMUX, channel, 0x0F);
+    SET_BITS(ADMUX, channel, 0x07);
     SET_BIT(ADCSRA, ADSC);
 
     // Wait for acquisition
