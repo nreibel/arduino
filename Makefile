@@ -24,7 +24,7 @@ FNAME=out-$(ARCH)
 # Compilation options and flags
 WARNINGS+=all extra undef
 CFLAGS+=-O3 -g0 -mmcu=$(ARCH) -ffunction-sections -fdata-sections
-LDFLAGS+=-Wl,-gc-sections -Wl,--relax
+LDFLAGS+=-Wl,-gc-sections -Wl,--relax -Wl,-Map,$(OUT)/$(FNAME).map
 
 # Serial monitor
 BAUD_RATE=19200
@@ -36,7 +36,7 @@ all: clean prepare hex
 
 hex: app $(MODULES)
 	@echo "Linking object files..."
-	@$(CC) $(LDFLAGS) -Wl,-Map,$(OUT)/$(FNAME).map $(CFLAGS) $(OBJ)/$(ARCH)/*.o -o $(OUT)/$(FNAME).elf
+	@$(CC) $(addprefix -l,$(LIBS)) $(LDFLAGS) $(CFLAGS) $(OBJ)/$(ARCH)/*.o -o $(OUT)/$(FNAME).elf
 	@echo "Creating HEX file..."
 	@$(OBJCOPY) -O ihex $(OUT)/$(FNAME).elf $(OUT)/$(FNAME).hex
 	@echo "=================================="

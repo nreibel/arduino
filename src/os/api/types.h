@@ -10,6 +10,10 @@ typedef enum {
     TRUE = 1
 } boolean;
 
+typedef uint8_t  byte;
+typedef uint16_t word;
+typedef uint32_t dword;
+
 #define NOT(b) ((b) == FALSE ? TRUE : FALSE)
 
 #define ON  1

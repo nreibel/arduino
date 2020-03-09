@@ -7,8 +7,8 @@
 void Serial_Init();
 
 Std_ReturnType Serial_WriteByte(const uint8_t chr);
-Std_ReturnType Serial_Print(const void * const buffer, const unsigned int length);
-Std_ReturnType Serial_PrintString(const char* string );
+Std_ReturnType Serial_WriteBytes(const void * const buffer, const unsigned int length);
+Std_ReturnType Serial_PrintString(const char* string);
 
 #if SERIAL_ASYNC_RX == ON
 Std_ReturnType Serial_RxReady(boolean *ready);
