@@ -25,12 +25,11 @@ Std_ReturnType Serial_WriteByte(const uint8_t chr)
     return Status_OK;
 }
 
-Std_ReturnType Serial_Print( const void * buffer, unsigned int length )
+Std_ReturnType Serial_WriteBytes(const void * buffer, unsigned int length)
 {
     while ( length-- > 0 )
     {
-        Serial_HAL_WriteByte( READ_PU8(buffer++) );
-        while( !Serial_HAL_TxIsReady() ); // Wait for TX complete
+        Serial_WriteByte(READ_PU8(buffer++));
     }
 
     return Status_OK;
