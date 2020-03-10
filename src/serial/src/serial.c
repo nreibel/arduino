@@ -39,8 +39,7 @@ Std_ReturnType Serial_PrintString(const char* string )
 {
     while ( *string != 0 )
     {
-        Serial_HAL_WriteByte( READ_PU8(string++) );
-        while( !Serial_HAL_TxIsReady() ); // Wait for TX complete
+        Serial_WriteByte(READ_PU8(string++));
     }
 
     return Status_OK;

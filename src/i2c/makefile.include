@@ -3,4 +3,3 @@ INCLUDES+=\
 	$(CFG_DIR)/i2c \
 
 i2c:    $(SRC_DIR)/i2c/src/i2c.o \
-	$(CFG_DIR)/i2c/i2c_cfg.o \

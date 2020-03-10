@@ -14,7 +14,7 @@ void Serial_HAL_EnableTxInterrupts();
 void Serial_HAL_ISR_Tx();
 #endif
 
-/* Hardware abstraction */
+// Hardware abstraction
 void Serial_HAL_Init_HW(void);
 boolean Serial_HAL_TxIsReady(void);
 boolean Serial_HAL_RxIsReady(void);

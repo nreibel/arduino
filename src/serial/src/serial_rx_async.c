@@ -5,45 +5,101 @@
 
 #if SERIAL_ASYNC_RX == ON
 
-static volatile boolean s_dataReady = FALSE;
-static volatile uint8_t s_rxBuffer[SERIAL_RECEIVE_BUFFER_COUNT][SERIAL_RECEIVE_BUFFER_LENGTH];
-static volatile unsigned int s_rxLength = 0;
-static volatile uint8_t s_rxBufferId = 0;
+// FIFO buffer
+static void push(byte b);
+static byte poll();
+static byte s_rxBuffer[SERIAL_RECEIVE_BUFFER_LENGTH];
+static byte *s_readPtr = s_rxBuffer;
+static byte *s_writePtr = s_rxBuffer;
+
+// Keep track of FIFO length
+static unsigned int s_size = 0;
+
+// Keep track of the number of strings in the buffer
+static int s_nbstrings = 0;
+
+
+static void push(byte b)
+{
+    *s_writePtr = b;
+
+    s_writePtr++;
+    s_size++;
+
+    if (b == 0) s_nbstrings++;
+
+    // At the end of buffer
+    if (s_writePtr >= s_rxBuffer + SERIAL_RECEIVE_BUFFER_LENGTH)
+    {
+        s_writePtr = s_rxBuffer;
+    }
+}
+
+static byte poll()
+{
+    byte b = *s_readPtr;
+
+    s_readPtr++;
+    s_size--;
+
+    if (b == 0) s_nbstrings--;
+
+    if (s_readPtr >= s_rxBuffer + SERIAL_RECEIVE_BUFFER_LENGTH)
+    {
+        s_readPtr = s_rxBuffer;
+    }
+
+    return b;
+}
 
 void Serial_HAL_ISR_Rx()
 {
-    uint8_t received = Serial_HAL_ReadByte();
-    if (received == SERIAL_LINE_TERMINATOR)
-    {
-        s_dataReady = TRUE;
-    }
-    else if (s_dataReady != TRUE && s_rxLength < SERIAL_RECEIVE_BUFFER_LENGTH)
-    {
-        s_rxBuffer[s_rxBufferId][s_rxLength++] = received;
-    }
+    push( Serial_HAL_ReadByte() );
 }
 
-Std_ReturnType Serial_RxReady(boolean *ready)
+boolean Serial_HasByte()
 {
-    *ready = FALSE;
-    if (s_dataReady || s_rxLength >= SERIAL_RECEIVE_BUFFER_LENGTH)
-    {
-        *ready = TRUE;
-    }
-    return Status_OK;
+    return s_size > 0;
 }
 
-Std_ReturnType Serial_GetRxBuffer(void **buffer, unsigned int *rcvd_len)
+boolean Serial_HasString()
 {
-    *buffer = UINT8_PTR(s_rxBuffer[s_rxBufferId]);
-    *rcvd_len = s_rxLength;
+    return s_size > 0 && s_nbstrings > 0;
+}
 
-    // Switch buffer
-    INCREMENT_MOD(s_rxBufferId, SERIAL_RECEIVE_BUFFER_COUNT);
-    s_rxLength = 0;
-    s_dataReady = FALSE;
+void Serial_ClearBuffer()
+{
+    s_readPtr = s_rxBuffer;
+    s_writePtr = s_rxBuffer;
+    s_size = 0;
+    s_nbstrings = 0;
+}
 
-    return Status_OK;
+unsigned int Serial_Received()
+{
+    return s_size;
+}
+
+unsigned int Serial_ReadString(void *buffer, unsigned int len)
+{
+    unsigned int rcvd = 0;
+    while(rcvd < len && s_size > 0 && s_nbstrings > 0)
+    {
+        byte b = poll();
+        UINT8_PTR(buffer)[rcvd++] = b;
+        if (b == 0) break;
+    }
+    return rcvd;
+}
+
+unsigned int Serial_Read(void *buffer, unsigned int len)
+{
+    unsigned int rcvd = 0;
+    while(rcvd < len && s_size > 0)
+    {
+        UINT8_PTR(buffer)[rcvd++] = poll();
+    }
+    return rcvd;
 }
 
 #endif // SERIAL_ASYNC_RX
