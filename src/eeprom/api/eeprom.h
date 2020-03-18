@@ -15,14 +15,14 @@ Std_ReturnType EEPROM_SyncWrite (word ucAddress, void* ucData, int length);
 Std_ReturnType EEPROM_SyncRead  (word ucAddress, void* ucData, int length);
 Std_ReturnType EEPROM_MemSet    (word ucAddress, byte val, int length);
 
+#if EEPROM_ENABLE_SERIAL_DUMP == ON
+    Std_ReturnType EEPROM_DumpEEPROM(word from, word to, int line_length);
+#endif
+
 #if EEPROM_ENABLE_BLOCK_API == ON
     Std_ReturnType EEPROM_GetLastBlock(void* blk, byte type);
     Std_ReturnType EEPROM_WriteBlock(void* blk);
     Std_ReturnType EEPROM_IterateBlocks(byte type, void *buffer, Callback cbk);
-
-    #if EEPROM_ENABLE_SERIAL_DUMP == ON
-        Std_ReturnType EEPROM_DumpEEPROM(word from, word to, unsigned int len);
-    #endif
 #endif
 
 #endif /* SRC_EEPROM_API_EEPROM_H_ */

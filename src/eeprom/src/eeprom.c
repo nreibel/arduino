@@ -204,6 +204,41 @@ Std_ReturnType EEPROM_SyncRead(word ucAddress, void *ucData, int length)
 }
 
 
+#if EEPROM_ENABLE_SERIAL_DUMP == ON
+
+Std_ReturnType EEPROM_DumpEEPROM(word from, word to, int line_length)
+{
+    byte b = 0;
+    char buffer[10];
+
+    // Keep track of line length
+    int cpt = 0;
+
+    for ( word addr = from ; addr < to ; addr++ )
+    {
+        EEPROM_SyncRead(addr, &b, 1);
+        cpt++;
+
+        if ( cpt == 1 )
+        {
+            sprintf(buffer, "0x%04X |", addr);
+            Serial_Print(buffer);
+        }
+
+        sprintf(buffer, " %02X", b);
+        if ( cpt == line_length )
+        {
+            Serial_Println(buffer);
+            cpt = 0;
+        }
+        else Serial_Print(buffer);
+    }
+
+    return Status_OK;
+}
+
+#endif
+
 #if EEPROM_ENABLE_BLOCK_API == ON
 
 Std_ReturnType EEPROM_IterateBlocks(byte type, void *buffer, Callback cbk)
@@ -230,34 +265,6 @@ Std_ReturnType EEPROM_IterateBlocks(byte type, void *buffer, Callback cbk)
 
     return Status_OK;
 }
-
-#if EEPROM_ENABLE_SERIAL_DUMP == ON
-Std_ReturnType EEPROM_DumpEEPROM(word from, word to, unsigned int len)
-{
-    byte b = 0;
-    char strBuffer[16];
-    for ( word addr = from ; addr < to ; addr++ )
-    {
-        EEPROM_SyncRead(addr, &b, 1);
-
-        if (addr % len == 0)
-        {
-            sprintf(strBuffer, "0x%04X | %02X ", addr, b);
-        }
-        else if (addr % len == len-1)
-        {
-            sprintf(strBuffer, "%02X\r\n", b);
-        }
-        else
-        {
-            sprintf(strBuffer, "%02X ", b);
-        }
-
-        Serial_Print(strBuffer);
-    }
-    return Status_OK;
-}
-#endif
 
 Std_ReturnType EEPROM_GetLastBlock(void* blk, byte type)
 {
@@ -302,8 +309,10 @@ Std_ReturnType EEPROM_WriteBlock(void* blk)
 
     Header *blockHeader = TYPECAST(blk, Header*);
 
+    blockHeader->id++;
+
     // Look for last write address
-    while (addr < EEPROM_SIZE - sizeof(Header))
+    while ( addr < EEPROM_SIZE - blockHeader->size )
     {
         EEPROM_SyncRead(addr, &hdr, sizeof(Header));
         if ( hdr.id != 0xFFFF ) addr += hdr.size;

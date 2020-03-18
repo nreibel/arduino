@@ -142,8 +142,7 @@ void ST7735_CharTest(void)
 
 void ST7735_DrawChar(int x, int y, char chr, uint16_t foregroundColor, uint16_t backgroundColor)
 {
-//     if ( ! BETWEEN(chr, 0x20, 0x7F) ) return;
-    if (chr < 0x20 /* || chr > 0x7F*/) return;
+    if ( ! BETWEEN(chr, 0x20, 0x7E) ) return;
 
     ST7735_SetDrawWindow(x, y, x+ST7735_CHARSET_WIDTH-1, y+ST7735_CHARSET_HEIGHT-1);
 

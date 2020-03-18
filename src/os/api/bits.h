@@ -5,7 +5,7 @@
 #define BETWEEN(a, b, c) ((a >= b) && (a <= c))
 
 // Returns a mask with the bit at rank x set
-#define BIT(x)               (1 << (x))
+#define BIT(x)               (1ULL << (x))
 
 // Apply mask
 #define MASK(x, m)           ((x) & (m))
