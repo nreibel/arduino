@@ -13,7 +13,7 @@ static byte *s_readPtr = s_rxBuffer;
 static byte *s_writePtr = s_rxBuffer;
 
 // Keep track of FIFO length
-static unsigned int s_size = 0;
+static int s_size = 0;
 
 // Keep track of the number of strings in the buffer
 static int s_nbstrings = 0;
@@ -44,6 +44,7 @@ static byte poll()
 
     if (b == 0) s_nbstrings--;
 
+    // At the end of buffer
     if (s_readPtr >= s_rxBuffer + SERIAL_RECEIVE_BUFFER_LENGTH)
     {
         s_readPtr = s_rxBuffer;
@@ -57,12 +58,12 @@ void Serial_HAL_ISR_Rx()
     push( Serial_HAL_ReadByte() );
 }
 
-boolean Serial_HasByte()
+bool Serial_HasByte()
 {
     return s_size > 0;
 }
 
-boolean Serial_HasString()
+bool Serial_HasString()
 {
     return s_size > 0 && s_nbstrings > 0;
 }
@@ -75,14 +76,14 @@ void Serial_ClearBuffer()
     s_nbstrings = 0;
 }
 
-unsigned int Serial_Received()
+int Serial_Received()
 {
     return s_size;
 }
 
-unsigned int Serial_ReadString(void *buffer, unsigned int len)
+int Serial_ReadString(void *buffer, int len)
 {
-    unsigned int rcvd = 0;
+    int rcvd = 0;
     while(rcvd < len && s_size > 0 && s_nbstrings > 0)
     {
         byte b = poll();
@@ -92,9 +93,9 @@ unsigned int Serial_ReadString(void *buffer, unsigned int len)
     return rcvd;
 }
 
-unsigned int Serial_Read(void *buffer, unsigned int len)
+int Serial_Read(void *buffer, int len)
 {
-    unsigned int rcvd = 0;
+    int rcvd = 0;
     while(rcvd < len && s_size > 0)
     {
         UINT8_PTR(buffer)[rcvd++] = poll();

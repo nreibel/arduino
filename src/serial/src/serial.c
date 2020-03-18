@@ -18,14 +18,14 @@ void Serial_Init()
     #endif
 }
 
-Std_ReturnType Serial_WriteByte(const uint8_t chr)
+Std_ReturnType Serial_WriteByte(uint8_t chr)
 {
     Serial_HAL_WriteByte(chr);
     while( !Serial_HAL_TxIsReady() );
     return Status_OK;
 }
 
-Std_ReturnType Serial_WriteBytes(const void * buffer, unsigned int length)
+Std_ReturnType Serial_WriteBytes(void *buffer, int length)
 {
     while ( length-- > 0 )
     {
@@ -35,40 +35,42 @@ Std_ReturnType Serial_WriteBytes(const void * buffer, unsigned int length)
     return Status_OK;
 }
 
-Std_ReturnType Serial_PrintString(const char* string )
+Std_ReturnType Serial_Print(void *string )
 {
-    while ( *string != 0 )
+    do
+    {
+        Serial_WriteByte(READ_PU8(string));
+    }
+    while ( READ_PU8(string++) != 0 );
+
+    return Status_OK;
+}
+
+Std_ReturnType Serial_Println(void *string )
+{
+    while ( READ_PU8(string) != 0 )
     {
         Serial_WriteByte(READ_PU8(string++));
     }
+    Serial_WriteByte('\r');
+    Serial_WriteByte('\n');
+    Serial_WriteByte(0);
 
     return Status_OK;
 }
 
 #if SERIAL_ASYNC_RX == OFF
-Std_ReturnType Serial_Read(void *buffer, const unsigned int buffer_len, unsigned int *rcvd_len)
+int Serial_Read(void *buffer, int buffer_len)
 {
-    Std_ReturnType retval = Status_Not_OK;
-    *rcvd_len = 0;
+    int rcvd_len = 0;
 
     // Stop when buffer full
-    while ( *rcvd_len < buffer_len )
+    while ( rcvd_len < buffer_len )
     {
         while( !Serial_HAL_RxIsReady() ); // Wait for RX complete
-        uint8_t received = Serial_HAL_ReadByte();
-
-        // Stop if last char is a line break
-        if ( received == SERIAL_LINE_TERMINATOR)
-        {
-            break;
-        }
-        else
-        {
-            UINT8_PTR(buffer)[*(rcvd_len++)] = received;
-            retval = Status_OK; // At least 1 byte has been read
-        }
+        UINT8_PTR(buffer)[rcvd_len++] = Serial_HAL_ReadByte();
     }
 
-    return retval;
+    return rcvd_len;
 }
 #endif // SERIAL_ASYNC_RX == OFF

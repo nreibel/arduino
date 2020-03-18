@@ -14,7 +14,7 @@ void Spi_Init_HW(void)
     if (SPI_CLOCK_DIV_2X) SPSR = BIT(SPI2X);
 }
 
-boolean Spi_HAL_IsReady(void)
+bool Spi_HAL_IsReady(void)
 {
     return IS_SET_BIT(SPSR, SPIF);
 }

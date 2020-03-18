@@ -1,0 +1,97 @@
+SHELL=/bin/sh
+
+ifndef SRC_DIR
+$(error SRC_DIR is not set)
+# SRC_DIR = ../libs/src
+endif
+
+ifndef CFG_DIR
+$(error CFG_DIR is not set)
+# CFG_DIR = ./cfg
+endif
+
+ifndef TARGET
+$(error TARGET is not set)
+# TARGET = ../libs/targets/uno.mk
+endif
+
+ifndef SERIAL_TTY
+$(error SERIAL_TTY is not set)
+# SERIAL_TTY = /dev/ttyUSB0
+endif
+
+ifndef MODULES
+$(error MODULES is not set)
+# MODULES = os timer serial spi st7735 i2c port
+endif
+
+ifndef INCLUDES
+$(error INCLUDES is not set)
+# INCLUDES = ./app ./res
+endif
+
+# app: $(APP_DIR)/src/app.o $(APP_DIR)/cfg/app_cfg.o
+
+# Path to build tools
+CC = avr-gcc
+OBJCOPY = avr-objcopy
+SIZE = avr-size
+UPLOAD = avrdude
+TERM = konsole --profile="Serial"
+MONITOR = picocom
+
+# Serial monitor
+BAUD_RATE = 19200
+
+# Output files
+OBJ = obj
+OUT = bin
+FNAME = out-$(ARCH)
+
+# Compilation options and flags
+WARNINGS += all extra undef
+CFLAGS += -O3 -g0 -mmcu=$(ARCH) -ffunction-sections -fdata-sections
+LDFLAGS += -gc-sections --relax -Map,$(OUT)/$(FNAME).map
+
+include $(TARGET)
+include $(MODULES:%=$(SRC_DIR)/%/makefile.include)
+
+Wl=-Wl,
+l=-l
+I=-I
+W=-W
+
+all: clean prepare hex
+
+hex: app $(MODULES)
+	@echo "Linking object files..."
+	@$(CC) $(addprefix $(l),$(LIBS)) $(addprefix $(Wl),$(LDFLAGS)) $(CFLAGS) $(OBJ)/$(ARCH)/*.o -o $(OUT)/$(FNAME).elf
+	@echo "Creating HEX file..."
+	@$(OBJCOPY) -O ihex $(OUT)/$(FNAME).elf $(OUT)/$(FNAME).hex
+	@echo "=================================="
+	@$(SIZE) -C --mcu=$(ARCH) $(OUT)/$(FNAME).elf
+	@echo "Done"
+
+clean:
+	@echo "Cleaning workspace"
+	@rm -Rf $(OBJ)
+	@rm -Rf $(OUT)
+
+prepare:
+	@echo "Preparing workspace"
+	@mkdir -p $(OBJ)/$(ARCH) $(OUT)
+
+upload: stop
+	$(UPLOAD) -b $(UPLOAD_BAUD_RATE) -c $(PROGRAMMER) -p $(ARCH) -P $(SERIAL_TTY) -U flash:w:$(OUT)/$(FNAME).hex
+
+# Generic rules for compiling objects
+%.o: %.c
+	@echo "Compiling $<"
+	@$(CC) $(addprefix $(I),$(INCLUDES)) $(addprefix $(W),$(WARNINGS)) $(CFLAGS) -c -o $(OBJ)/$(ARCH)/$(@F) $<
+
+# Serial monitor
+monitor: stop
+	@$(TERM) -e "$(MONITOR) -b $(BAUD_RATE) $(SERIAL_TTY)"
+
+stop:
+	@for pid in `pgrep $(MONITOR)`; do kill $$pid; done

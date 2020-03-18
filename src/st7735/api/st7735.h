@@ -1,6 +1,7 @@
 #ifndef SRC_ST7735_API_ST7735_H_
 #define SRC_ST7735_API_ST7735_H_
 
+#include "spi.h"
 #include "st7735_cfg.h"
 #include "types.h"
 #include "port.h"
@@ -40,20 +41,22 @@
 void ST7735_Init();
 
 // Pixel drawing
-void ST7735_DrawPixel(const uint8_t x, const uint8_t y, const uint16_t color);
-void ST7735_FillRectangle(const uint8_t x, const uint8_t y, const uint8_t w, const uint8_t h, const uint16_t color);
-void ST7735_DrawLine(const uint8_t x1, const uint8_t y1, const uint8_t x2, const uint8_t y2, const uint16_t color);
+void ST7735_DrawPixel(int x, int y, uint16_t color);
+void ST7735_FillRectangle(int x, int y, int w, int h, uint16_t color);
+void ST7735_DrawLine(int x1, int y1, int x2, int y2, uint16_t color);
 
-// String drawing
+// String and chars drawing
 void ST7735_CharTest(void);
-void ST7735_ClearChar(const uint8_t x, const uint8_t y, const uint16_t backgroundColor);
-void ST7735_DrawChar(const uint8_t x, const uint8_t y, const char c, const uint16_t foregroundColor, const uint16_t backgroundColor);
 
-void ST7735_ClearString(const uint8_t x, const uint8_t y, const int length, const uint16_t backgroundColor);
-void ST7735_DrawString(const uint8_t x, const uint8_t y, const char* str, const uint16_t foregroundColor, const uint16_t backgroundColor);
-void ST7735_DrawBytes(const uint8_t x, const uint8_t y, const uint8_t* str, const int length, const uint16_t foregroundColor, const uint16_t backgroundColor);
+void ST7735_ClearChar(int x, int y, uint16_t backgroundColor);
+void ST7735_ClearChars(int x, int y, int length, uint16_t backgroundColor);
+
+void ST7735_DrawChar(int x, int y, char c, uint16_t foregroundColor, uint16_t backgroundColor);
+void ST7735_DrawChars(int x, int y, char *bytes, int length, uint16_t foregroundColor, uint16_t backgroundColor);
+
+void ST7735_DrawString(int x, int y, char *str, uint16_t foregroundColor, uint16_t backgroundColor);
 
 // Imaging
-void ST7735_DrawXBM(const uint8_t *bits, const uint8_t xPos, const uint8_t yPos, const uint8_t width, const uint8_t height, const uint16_t foregroundColor, const uint16_t backgroundColor);
+void ST7735_DrawXBM(const uint8_t *bits, int xPos, int yPos, int width, int height, uint16_t foregroundColor, uint16_t backgroundColor);
 
 #endif // SRC_ST7735_API_ST7735_H_

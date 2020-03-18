@@ -16,11 +16,12 @@ void Timer_CyclicTaskInit(void)
         timerCfg[i].triggerTime = 0;
         timerCfg[i].lastTrigger = 0;
         timerCfg[i].callback    = NULL_PTR;
+        timerCfg[i].param       = NULL_PTR;
     }
 }
 
 /* Initializes a specific timer channel with a trigger value and a callback each time the trigger expires */
-Std_ReturnType Timer_StartTask(TimerChannel channel, time_t triggerValue, Callback cbk)
+Std_ReturnType Timer_StartTask(TimerChannel channel, time_t triggerValue, Callback cbk, void* callback_param)
 {
     Std_ReturnType status = Status_Not_OK;
 
@@ -30,6 +31,7 @@ Std_ReturnType Timer_StartTask(TimerChannel channel, time_t triggerValue, Callba
         timerCfg[channel].triggerTime = triggerValue;
         timerCfg[channel].lastTrigger = Os_GetCurrentTimeMs();
         timerCfg[channel].callback    = cbk;
+        timerCfg[channel].param       = callback_param;
         status = Status_OK;
     }
 
@@ -47,6 +49,7 @@ Std_ReturnType Timer_StartTimer(TimerChannel channel, time_t triggerValue)
         timerCfg[channel].triggerTime = triggerValue;
         timerCfg[channel].lastTrigger = Os_GetCurrentTimeMs();
         timerCfg[channel].callback    = NULL_PTR;
+        timerCfg[channel].param       = NULL_PTR;
         status = Status_OK;
     }
 
@@ -83,7 +86,7 @@ Std_ReturnType Timer_Enable(TimerChannel channel)
     return status;
 }
 
-Std_ReturnType Timer_IsEnabled(TimerChannel channel, boolean *isEnabled)
+Std_ReturnType Timer_IsEnabled(TimerChannel channel, bool *isEnabled)
 {
     Std_ReturnType status = Status_Not_OK;
     if (channel < TIMER_NUMBER_OF_CHANNELS)
@@ -137,7 +140,7 @@ Std_ReturnType Timer_SetTriggerTime(TimerChannel channel, time_t triggerTime)
 */
 void Timer_CyclicTask(void)
 {
-    boolean isElapsed = FALSE;
+    bool isElapsed = FALSE;
 
     for (TimerChannel i = 0 ; i < TIMER_NUMBER_OF_CHANNELS ; i++)
     {
@@ -146,7 +149,7 @@ void Timer_CyclicTask(void)
         {
             if (Timer_IsElapsed(i, &isElapsed) == Status_OK && isElapsed)
             {
-                timerCfg[i].callback();
+                timerCfg[i].callback(timerCfg[i].param);
             }
         }
     }
@@ -157,7 +160,7 @@ void Timer_CyclicTask(void)
 * If the timer has expired and this function is called, it is re-triggered.
 * Do NOT call this function with a channel timer used for a callback, it might re-trigger the timer without executing the callback
 */
-Std_ReturnType Timer_IsElapsed(TimerChannel channel, boolean *isElapsed)
+Std_ReturnType Timer_IsElapsed(TimerChannel channel, bool *isElapsed)
 {
     Std_ReturnType status = Status_Not_OK;
     time_t currentTime = Os_GetCurrentTimeMs();

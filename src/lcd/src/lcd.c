@@ -7,7 +7,7 @@
 #include "os.h"
 #include "avr/io.h"
 
-static boolean requestRefresh = FALSE;
+static bool requestRefresh = FALSE;
 static LcdStatus lcdState = Uninitialized;
 static char buffer[33] = {0};
 
@@ -167,7 +167,7 @@ Std_ReturnType LCD_ReturnHome()
     return retval;
 }
 
-Std_ReturnType LCD_SetEntryMode(CursorMoveDirection direction, boolean automaticDisplayShift)
+Std_ReturnType LCD_SetEntryMode(CursorMoveDirection direction, bool automaticDisplayShift)
 {
     Std_ReturnType retval = Status_OK;
 
@@ -190,7 +190,7 @@ Std_ReturnType LCD_SetEntryMode(CursorMoveDirection direction, boolean automatic
     return retval;
 }
 
-Std_ReturnType LCD_DisplayControl(boolean displayOn, boolean cursonOn, boolean cursorBlinking)
+Std_ReturnType LCD_DisplayControl(bool displayOn, bool cursonOn, bool cursorBlinking)
 {
     Std_ReturnType retval = Status_OK;
 

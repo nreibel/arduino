@@ -30,8 +30,8 @@ typedef enum
 Std_ReturnType LCD_Init();
 Std_ReturnType LCD_ClearDisplay();
 Std_ReturnType LCD_ReturnHome();
-Std_ReturnType LCD_SetEntryMode(CursorMoveDirection direction, boolean autoamticDisplayShift);
-Std_ReturnType LCD_DisplayControl(boolean displayOn, boolean cursonOn, boolean cursorBlinking);
+Std_ReturnType LCD_SetEntryMode(CursorMoveDirection direction, bool autoamticDisplayShift);
+Std_ReturnType LCD_DisplayControl(bool displayOn, bool cursonOn, bool cursorBlinking);
 Std_ReturnType LCD_FunctionSet(InterfaceDataWidth dataWidth, CharacterFont characterFont, DisplayLines displayLines);
 Std_ReturnType LCD_SetCursor(uint8_t line, uint8_t pos);
 

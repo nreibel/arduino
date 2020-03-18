@@ -23,14 +23,19 @@ typedef enum
 
 typedef enum
 {
-    Edge_LowLevel,
-    Edge_Both,
-    Edge_Falling,
-    Edge_Rising
+    Edge_LowLevel = 0,
+    Edge_Both     = 1,
+    Edge_Falling  = 2,
+    Edge_Rising   = 3,
 } Edge;
 
-Std_ReturnType Port_EnableInt0          (Edge edge, Callback cbk);
-Std_ReturnType Port_EnableInt1          (Edge edge, Callback cbk);
+typedef enum
+{
+    ExtInt_INT0 = 0,
+    ExtInt_INT1 = 1,
+} ExtInt;
+
+Std_ReturnType Port_EnableInt           (ExtInt input, Edge edge, Callback cbk, void *data);
 
 Std_ReturnType Port_SetDataDirection    (Port port, uint8_t direction);
 Std_ReturnType Port_GetDataDirection    (Port port, uint8_t* direction);

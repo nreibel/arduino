@@ -5,8 +5,8 @@
 
 #if SERIAL_ASYNC_TX == ON
 
-volatile const void *s_txBuffer = NULL_PTR;
-volatile unsigned int s_txLength = 0;
+volatile void *s_txBuffer = NULL_PTR;
+volatile int s_txLength = 0;
 
 void Serial_HAL_ISR_Tx()
 {
@@ -22,7 +22,7 @@ void Serial_HAL_ISR_Tx()
     }
 }
 
-Std_ReturnType Serial_TxReady(boolean *ready)
+Std_ReturnType Serial_TxReady(bool *ready)
 {
     *ready = FALSE;
     if (s_txBuffer == NULL_PTR && s_txLength == 0)
@@ -32,7 +32,7 @@ Std_ReturnType Serial_TxReady(boolean *ready)
     return Status_OK;
 }
 
-Std_ReturnType Serial_SetTxBuffer(const void *buffer, const unsigned int length)
+Std_ReturnType Serial_SetTxBuffer(void *buffer, int length)
 {
     s_txBuffer = buffer;
     s_txLength = length;

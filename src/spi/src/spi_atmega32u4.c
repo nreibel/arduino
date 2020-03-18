@@ -11,7 +11,7 @@ void Spi_Init_HW(void)
     SPCR = BIT(MSTR) | BIT(SPE);
 }
 
-boolean Spi_HAL_IsReady(void)
+bool Spi_HAL_IsReady(void)
 {
     return IS_SET_BIT(SPSR, SPIF);
 }

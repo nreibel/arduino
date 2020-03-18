@@ -16,8 +16,8 @@ void Serial_HAL_ISR_Tx();
 
 // Hardware abstraction
 void Serial_HAL_Init_HW(void);
-boolean Serial_HAL_TxIsReady(void);
-boolean Serial_HAL_RxIsReady(void);
+bool Serial_HAL_TxIsReady(void);
+bool Serial_HAL_RxIsReady(void);
 void Serial_HAL_WriteByte(uint8_t byte);
 uint8_t Serial_HAL_ReadByte(void);
 

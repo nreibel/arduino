@@ -6,7 +6,7 @@
 
 void I2C_Init();
 
-boolean I2C_TransmitReady();
+bool I2C_TransmitReady();
 
 void I2C_StartCondition();
 void I2C_RestartCondition();
@@ -23,7 +23,7 @@ Std_ReturnType I2C_ReadSync(uint8_t addr, void *buffer, int writeLen, int readLe
 Std_ReturnType I2C_WriteSync(uint8_t addr, void *buffer, int len);
 
 Std_ReturnType I2C_BackgroundTask(void);
-boolean I2C_IsReady();
+bool I2C_IsReady();
 void I2C_SetupTransmission(uint8_t addr, void *buffer);
 void I2C_StartWrite(int writeLen);
 void I2C_StartRead(int writeLen, int readLen);

@@ -90,7 +90,7 @@ Std_ReturnType I2C_BackgroundTask()
     return retval;
 }
 
-boolean I2C_IsReady()
+bool I2C_IsReady()
 {
     return state == I2C_State_Ready;
 }
@@ -181,7 +181,7 @@ void I2C_Init()
     state = I2C_State_Ready;
 }
 
-boolean I2C_TransmitReady()
+bool I2C_TransmitReady()
 {
     return IS_SET_BIT(TWCR, TWINT);
 }

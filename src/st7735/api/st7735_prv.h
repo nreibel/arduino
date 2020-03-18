@@ -26,8 +26,8 @@
 extern PinDef ST7735_Pin_DC; // Data/command pin
 extern PinDef ST7735_Pin_RS; // Reset pin
 
-void ST7735_Data(const uint8_t data);
-void ST7735_Command(const uint8_t command);
-void ST7735_SetDrawWindow(const uint8_t x1, const uint8_t y1, const uint8_t x2, const uint8_t y2);
+void ST7735_Data(uint8_t data);
+void ST7735_Command(uint8_t command);
+void ST7735_SetDrawWindow(int x1, int y1, int x2, int y2);
 
 #endif // SRC_ST7735_API_ST7735_PRV_H_

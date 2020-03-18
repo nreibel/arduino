@@ -1,6 +1,9 @@
 #ifndef SRC_OS_API_BITS_H_
 #define SRC_OS_API_BITS_H_
 
+// Check if a is between b and c
+#define BETWEEN(a, b, c) ((a >= b) && (a <= c))
+
 // Returns a mask with the bit at rank x set
 #define BIT(x)               (1 << (x))
 

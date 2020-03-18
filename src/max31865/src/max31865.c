@@ -13,7 +13,7 @@
 void MAX31865_Init()
 {
     // VBIAS = On, Conversion mode = Auto, 3-wire RTD
-    byte configuration = BIT(7) | BIT(6) | BIT(4);
+    byte configuration = BIT(7) | BIT(6) | BIT(4) | BIT(1) | BIT(0);
 
     Spi_WriteByte(MAX31865_REG_CONFIG | MAX31865_WRITE, NULL_PTR);
     Spi_WriteByte(configuration, NULL_PTR);
@@ -24,12 +24,12 @@ void MAX31865_Init()
 double MAX31865_RTD_To_Temperature(double rtd)
 {
     double acc = 0;
-    acc = rtd/MAX31865_PT_RES;
+    acc = rtd/MAX31865_RTD_RES_0;
     acc = 1 - acc;
-    acc = 4 * MAX31865_B * acc;
-    acc = (MAX31865_A * MAX31865_A) - acc;
-    acc = sqrt(acc) - MAX31865_A;
-    return acc / (2 * MAX31865_B);
+    acc = 4 * MAX31865_RTD_B * acc;
+    acc = (MAX31865_RTD_A * MAX31865_RTD_A) - acc;
+    acc = sqrt(acc) - MAX31865_RTD_A;
+    return acc / (2 * MAX31865_RTD_B);
 }
 
 Std_ReturnType MAX31865_ReadRTD(double *rtd)
@@ -49,8 +49,8 @@ Std_ReturnType MAX31865_ReadRTD(double *rtd)
     }
     else
     {
-        word w = (msb << 8) | lsb;
-        *rtd = (MAX31865_REF * TYPECAST(w, double)) / 0x7FFFULL;
+        word w = ((msb << 8) | lsb);
+        *rtd = (MAX31865_RES_REF * TYPECAST(w, double)) / MAX31865_ADC_RESOLUTION;
         retval = Status_OK;
     }
 

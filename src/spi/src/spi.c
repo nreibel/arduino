@@ -91,9 +91,9 @@ Std_ReturnType Spi_WriteBufferAsync(const void *data, int length)
     return ret;
 }
 
-boolean Spi_IsReady()
+bool Spi_IsReady()
 {
-    boolean status = FALSE;
+    bool status = FALSE;
 
     if (spiState == Spi_Ready)
     {

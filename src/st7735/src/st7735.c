@@ -31,7 +31,7 @@ void ST7735_Init()
     ST7735_Command(ST7735_DISPON);
 }
 
-void ST7735_DrawXBM(const uint8_t *bits, const uint8_t xPos, const uint8_t yPos, const uint8_t width, const uint8_t height, const uint16_t foregroundColor, const uint16_t backgroundColor)
+void ST7735_DrawXBM(const uint8_t *bits, int xPos, int yPos, int width, int height, uint16_t foregroundColor, uint16_t backgroundColor)
 {
     ST7735_SetDrawWindow(xPos, yPos, xPos+width-1, yPos+height-1);
     for(int row = 0 ; row < height ; row++)
@@ -58,18 +58,18 @@ void ST7735_DrawXBM(const uint8_t *bits, const uint8_t xPos, const uint8_t yPos,
     }
 }
 
-void ST7735_DrawPixel(const uint8_t x, const uint8_t y, const uint16_t color)
+void ST7735_DrawPixel(int x, int y, uint16_t color)
 {
     ST7735_FillRectangle(x, y, 1, 1, color);
 }
 
-void ST7735_DrawLine(const uint8_t x1, const uint8_t y1, const uint8_t x2, const uint8_t y2, const uint16_t color)
+void ST7735_DrawLine(int x1, int y1, int x2, int y2, uint16_t color)
 {
     // Integer only implementation of Bresenham's algorythm
-    uint16_t CurrentX = x1, CurrentY = y1;
-    int8_t Xinc = 1, Yinc = 1;
-    int16_t Dx = x2-x1;
-    int16_t Dy = y2-y1;
+    int CurrentX = x1, CurrentY = y1;
+    int Xinc = 1, Yinc = 1;
+    int Dx = x2-x1;
+    int Dy = y2-y1;
 
     if (Dx < 0)
     {
@@ -87,7 +87,7 @@ void ST7735_DrawLine(const uint8_t x1, const uint8_t y1, const uint8_t x2, const
 
     if (Dy <= Dx)
     {
-        int16_t TwoDxAccumulatedError = 0;
+        int TwoDxAccumulatedError = 0;
         do
         {
             CurrentX += Xinc;
@@ -104,7 +104,7 @@ void ST7735_DrawLine(const uint8_t x1, const uint8_t y1, const uint8_t x2, const
     }
     else
     {
-        int16_t TwoDyAccumulatedError = 0;
+        int TwoDyAccumulatedError = 0;
         do
         {
             CurrentY += Yinc;
@@ -123,9 +123,27 @@ void ST7735_DrawLine(const uint8_t x1, const uint8_t y1, const uint8_t x2, const
     ST7735_DrawPixel(x2, y2, color);
 }
 
-void ST7735_DrawChar(const uint8_t x, const uint8_t y, const char chr, const uint16_t foregroundColor, const uint16_t backgroundColor)
+void ST7735_CharTest(void)
 {
-    if (chr < 0x20 /* || chr > 0x7F */ ) return;
+    int line = 0;
+    int chr = 0;
+
+    for (int i = 0x20 ; i <= 0x7F ; i++)
+    {
+        ST7735_DrawChar(8*chr++, 10*line, i, ST7735_COLOR_RED, ST7735_COLOR_BLACK);
+
+        if (chr % 16 == 0)
+        {
+            line++;
+            chr = 0;
+        }
+    }
+}
+
+void ST7735_DrawChar(int x, int y, char chr, uint16_t foregroundColor, uint16_t backgroundColor)
+{
+//     if ( ! BETWEEN(chr, 0x20, 0x7F) ) return;
+    if (chr < 0x20 /* || chr > 0x7F*/) return;
 
     ST7735_SetDrawWindow(x, y, x+ST7735_CHARSET_WIDTH-1, y+ST7735_CHARSET_HEIGHT-1);
 
@@ -133,7 +151,7 @@ void ST7735_DrawChar(const uint8_t x, const uint8_t y, const char chr, const uin
     {
         for (int dx = 0 ; dx < ST7735_CHARSET_WIDTH ; dx++)
         {
-            uint8_t b = pgm_read_byte(&s_st7735_charset[chr-0x20][dx]);
+            byte b = pgm_read_byte(&s_st7735_charset[chr-0x20][dx]);
             if (IS_SET_BIT(b, dy))
             {
                 ST7735_Data(HIGH_BYTE(foregroundColor));
@@ -148,24 +166,16 @@ void ST7735_DrawChar(const uint8_t x, const uint8_t y, const char chr, const uin
     }
 }
 
-void ST7735_CharTest(void)
+void ST7735_DrawChars(int x, int y, char *chars, int length, uint16_t foregroundColor, uint16_t backgroundColor)
 {
-    uint8_t line = 0;
-    uint8_t chr = 0;
-
-    for (int i = 0x20 ; i <= 0x7F ; i++)
+    for (int i = 0 ; i < length ; i++)
     {
-        ST7735_DrawChar(8*chr++, 10*line, i, ST7735_COLOR_RED, ST7735_COLOR_BLACK);
-
-        if (chr % 16 == 0)
-        {
-            line++;
-            chr = 0;
-        }
+        ST7735_DrawChar(x, y, chars[i], foregroundColor, backgroundColor);
+        x += ST7735_CHARSET_WIDTH + ST7735_CHAR_SPACING;
     }
 }
 
-void ST7735_ClearChar(const uint8_t x, const uint8_t y, const uint16_t backgroundColor)
+void ST7735_ClearChar(int x, int y, uint16_t backgroundColor)
 {
     ST7735_SetDrawWindow(x, y, x+ST7735_CHARSET_WIDTH-1, y+ST7735_CHARSET_HEIGHT-1);
 
@@ -181,41 +191,25 @@ void ST7735_ClearChar(const uint8_t x, const uint8_t y, const uint16_t backgroun
     }
 }
 
-void ST7735_DrawBytes(const uint8_t x, const uint8_t y, const uint8_t* str, const int length, const uint16_t foregroundColor, const uint16_t backgroundColor)
+void ST7735_ClearChars(int x, int y, int length, uint16_t backgroundColor)
 {
-    uint8_t xOffset = x;
-    for (uint8_t i = 0 ; i < length ; i++)
+    for (int i = 0 ; i < length ; i++)
     {
-        ST7735_DrawChar(xOffset, y, str[i], foregroundColor, backgroundColor);
-        xOffset += ST7735_CHARSET_WIDTH + ST7735_CHAR_SPACING;
+        ST7735_ClearChar(x, y, backgroundColor);
+        x += ST7735_CHARSET_WIDTH + ST7735_CHAR_SPACING;
     }
 }
 
-void ST7735_DrawString(const uint8_t x, const uint8_t y, const char* str, const uint16_t foregroundColor, const uint16_t backgroundColor)
+void ST7735_DrawString(int x, int y, char* str, uint16_t foregroundColor, uint16_t backgroundColor)
 {
-    uint8_t xOffset = x;
-//     for (uint8_t i = 0 ; i < length ; i++)
-//     {
-//         ST7735_DrawChar(xOffset, y, str[i], foregroundColor, backgroundColor);
-//         xOffset += ST7735_CHARSET_WIDTH + ST7735_CHAR_SPACING;
-//     }
-    while( *str != 0 )
+    while(*str != 0)
     {
-        ST7735_DrawChar(xOffset, y, READ_PU8(str++), foregroundColor, backgroundColor);
-        xOffset += ST7735_CHARSET_WIDTH + ST7735_CHAR_SPACING;
+        ST7735_DrawChar(x, y, READ_PU8(str++), foregroundColor, backgroundColor);
+        x += ST7735_CHARSET_WIDTH + ST7735_CHAR_SPACING;
     }
 }
 
-void ST7735_ClearString(const uint8_t x, const uint8_t y, const int length, const uint16_t backgroundColor)
-{
-    for (int xOffset = x, i = 0 ; i < length ; i++)
-    {
-        ST7735_ClearChar(xOffset, y, backgroundColor);
-        xOffset += ST7735_CHARSET_WIDTH + ST7735_CHAR_SPACING;
-    }
-}
-
-void ST7735_FillRectangle(const uint8_t x, const uint8_t y, const uint8_t w, const uint8_t h, const uint16_t color)
+void ST7735_FillRectangle(int x, int y, int w, int h, uint16_t color)
 {
     //Set the drawing region
     ST7735_SetDrawWindow(x, y, x+w-1, y+h-1);
@@ -228,7 +222,7 @@ void ST7735_FillRectangle(const uint8_t x, const uint8_t y, const uint8_t w, con
     }
 }
 
-void ST7735_SetDrawWindow(const uint8_t x1, const uint8_t y1, const uint8_t x2, const uint8_t y2)
+void ST7735_SetDrawWindow(int x1, int y1, int x2, int y2)
 {
     // Set the column to write to
     ST7735_Command(ST7735_CASET);
@@ -248,14 +242,14 @@ void ST7735_SetDrawWindow(const uint8_t x1, const uint8_t y1, const uint8_t x2, 
     ST7735_Command(ST7735_RAMWR);
 }
 
-void ST7735_Command(const uint8_t command)
+void ST7735_Command(uint8_t command)
 {
     Port_SetPinState(ST7735_Pin_DC, Low);
     Spi_WriteByte(command, NULL_PTR);
     Port_SetPinState(ST7735_Pin_DC, High);
 }
 
-void ST7735_Data(const uint8_t data)
+void ST7735_Data(uint8_t data)
 {
     Spi_WriteByte(data, NULL_PTR);
 }

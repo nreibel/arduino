@@ -10,9 +10,15 @@ typedef enum {
 } EepromState;
 
 typedef struct {
-    uint8_t* ramAddr;
-    int      romAddr;
-    int      length;
+    void *ramAddr;
+    word  romAddr;
+    int   length;
 } EepromDataBuffer;
+
+typedef struct {
+    word id;
+    byte type;
+    byte size;
+} Header;
 
 #endif /* SRC_EEPROM_API_EEPROM_PRV_H_ */

@@ -49,12 +49,12 @@ void Serial_HAL_Init_HW(void)
     UCSR0C = 0x06;
 }
 
-boolean Serial_HAL_TxIsReady(void)
+bool Serial_HAL_TxIsReady(void)
 {
     return IS_SET_BIT(UCSR0A, UDRE0);
 }
 
-boolean Serial_HAL_RxIsReady(void)
+bool Serial_HAL_RxIsReady(void)
 {
     return IS_SET_BIT(UCSR0A, RXC0);
 }

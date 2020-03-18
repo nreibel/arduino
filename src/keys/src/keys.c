@@ -26,7 +26,7 @@ void Keys_Init()
     }
 }
 
-boolean Keys_IsKeyPressed()
+bool Keys_IsKeyPressed()
 {
     for (int cpt = 0 ; cpt < NUMBER_OF_KEYS ; cpt++)
     {

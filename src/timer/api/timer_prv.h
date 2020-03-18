@@ -11,10 +11,11 @@ typedef enum {
 
 /* Holds the status of each timer channel */
 typedef struct {
-    time_t    triggerTime;
-    time_t    lastTrigger;
-    Callback    callback;
     TimerStatus status;
+    time_t      triggerTime;
+    time_t      lastTrigger;
+    Callback    callback;
+    void*       param;
 } TimerConfig;
 
 #endif /* SRC_TIMER_API_TIMER_PRV_H_ */

@@ -6,76 +6,46 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-static Callback Callback_INT0 = NULL_PTR;
-static Callback Callback_INT1 = NULL_PTR;
+#define PORT_NUMBER_OF_INT 2
+
+static void* Data_INT[PORT_NUMBER_OF_INT] = {NULL_PTR};
+static Callback Callback_INT[PORT_NUMBER_OF_INT] = {NULL_PTR};
 
 ISR(INT0_vect)
 {
-    if (Callback_INT0 != NULL_PTR)
+    if (Callback_INT[0] != NULL_PTR)
     {
-        (*Callback_INT0)();
+        ( *Callback_INT[0] )( Data_INT[0] );
     }
 }
 
 ISR(INT1_vect)
 {
-    if (Callback_INT1 != NULL_PTR)
+    if (Callback_INT[1] != NULL_PTR)
     {
-        (*Callback_INT1)();
+        ( *Callback_INT[1] )( Data_INT[1] );
     }
 }
 
-
-Std_ReturnType Port_EnableInt0(Edge edge, Callback cbk)
+Std_ReturnType Port_EnableInt(ExtInt input, Edge edge, Callback cbk, void *data)
 {
-    Callback_INT0 = cbk;
-
-    switch(edge)
+    switch(input)
     {
-        case Edge_LowLevel:
-            SET_MASK(EICRA, 0);
+        case ExtInt_INT0:
+            Data_INT[0] = data;
+            Callback_INT[0] = cbk;
+            SET_BITS(EICRA, edge, 0x3);
+            SET_BIT(EIMSK, INT0);
             break;
-        case Edge_Both:
-            SET_MASK(EICRA, BIT(ISC00));
-            break;
-        case Edge_Falling:
-            SET_MASK(EICRA, BIT(ISC01));
-            break;
-        case Edge_Rising:
-            SET_MASK(EICRA, BIT(ISC01) | BIT(ISC00));
+        case ExtInt_INT1:
+            Data_INT[1] = data;
+            Callback_INT[1] = cbk;
+            SET_BITS(EICRA, edge << 2, 0xC);
+            SET_BIT(EIMSK, INT1);
             break;
         default:
             HALT; // Should not get here
     }
-
-    SET_BIT(EIMSK, INT0);
-
-    return Status_OK;
-}
-
-Std_ReturnType Port_EnableInt1(Edge edge, Callback cbk)
-{
-    Callback_INT1 = cbk;
-
-    switch(edge)
-    {
-        case Edge_LowLevel:
-            SET_MASK(EICRA, 0);
-            break;
-        case Edge_Both:
-            SET_MASK(EICRA, BIT(ISC10));
-            break;
-        case Edge_Falling:
-            SET_MASK(EICRA, BIT(ISC11));
-            break;
-        case Edge_Rising:
-            SET_MASK(EICRA, BIT(ISC11) | BIT(ISC10));
-            break;
-        default:
-            HALT; // Should not get here
-    }
-
-    SET_BIT(EIMSK, INT1);
 
     return Status_OK;
 }

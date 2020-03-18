@@ -7,7 +7,7 @@
 void Keys_Init();
 void Keys_CyclicTask();
 
-boolean Keys_IsKeyPressed();
+bool Keys_IsKeyPressed();
 Std_ReturnType Keys_GetKeyPressed(Key *key);
 
 #endif /* SRC_KEYS_API_KEYS_H_ */
