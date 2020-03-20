@@ -228,7 +228,7 @@ Std_ReturnType EEPROM_DumpEEPROM(word from, word to, int line_length)
         sprintf(buffer, " %02X", b);
         if ( cpt == line_length )
         {
-            Serial_Println(buffer);
+            Serial_PrintLine(buffer);
             cpt = 0;
         }
         else Serial_Print(buffer);

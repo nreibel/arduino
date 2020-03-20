@@ -21,6 +21,6 @@ typedef enum {
 } ADC_Prescaler;
 
 void ADC_Init();
-uint16_t ADC_Read(uint8_t channel);
+uint16_t ADC_ReadSync(uint8_t channel);
 
 #endif /* SRC_ADC_API_ADC_H_ */

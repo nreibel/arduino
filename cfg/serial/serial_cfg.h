@@ -1,6 +1,8 @@
 #ifndef SRC_SERIAL_CFG_SERIAL_CFG_H_
 #define SRC_SERIAL_CFG_SERIAL_CFG_H_
 
+#include "types.h"
+
 #define SERIAL_BAUD_RATE 19200U
 
 #define SERIAL_ASYNC_RX OFF

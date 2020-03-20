@@ -1,6 +1,5 @@
 #include "os.h"
 #include "app.h"
-#include "timer.h"
 #include "port.h"
 #include "serial.h"
 #include "bits.h"
@@ -17,7 +16,7 @@ void App_Init()
     Serial_Init();
 
     // Set up tasks
-    Timer_StartTask(Timer_MainTask, 1000, &Task_MainCyclic, NULL_PTR);
+    Os_SetupTask(Timer_MainTask, 1000, &Task_MainCyclic, NULL_PTR);
 }
 
 // Main task
@@ -30,13 +29,13 @@ Std_ReturnType Task_MainCyclic(void* data)
     if (state == High)
     {
         Port_SetPinState(Pin_LED, High);
-        Serial_Println("Tick");
+        Serial_PrintLine("Tick");
         state = Low;
     }
     else
     {
         Port_SetPinState(Pin_LED, Low);
-        Serial_Println("Tock");
+        Serial_PrintLine("Tock");
         state = High;
     }
 

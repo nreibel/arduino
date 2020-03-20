@@ -2,13 +2,14 @@
 #define OS_API_OS_H_
 
 #include "types.h"
-#include "timer_cfg.h"
 #include "os_cfg.h"
 
 typedef Std_ReturnType (*BackgroundTask)(void);
 
-void Os_Init();
-void Os_Sleep();
+void   Os_ResetTimer(Timer timer);
+time_t Os_GetTimerValue(Timer timer);
+time_t Os_GetTriggerTime(Timer timer);
+void   Os_SetupTask(Timer timer, time_t interval, Callback callback, void* param);
 
 time_t Os_GetCurrentTimeMs();
 void   Os_Wait(time_t ms);

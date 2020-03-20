@@ -1,5 +1,0 @@
-INCLUDES+=\
-	$(SRC_DIR)/timer/api \
-	$(CFG_DIR)/timer \
-
-timer:  $(SRC_DIR)/timer/src/timer.o \

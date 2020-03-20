@@ -16,6 +16,8 @@
 
 #if EEPROM_ENABLE_BLOCK_API == ON
 
+    #define DEVICE_ID_LENGTH 16
+
     typedef enum {
         BlockType_Data,
         BlockType_DeviceInfo,
@@ -23,7 +25,7 @@
 
     typedef struct {
         Header   header;
-        byte     device_id[16];
+        byte     device_id[DEVICE_ID_LENGTH;
         uint32_t unlock_crc32;
     } DeviceInfoBlock;
 

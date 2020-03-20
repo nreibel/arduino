@@ -5,6 +5,8 @@
 #include "types.h"
 #include "bits.h"
 
+#include <avr/pgmspace.h>
+
 void Serial_Init()
 {
     Serial_HAL_Init_HW();
@@ -35,25 +37,29 @@ Std_ReturnType Serial_WriteBytes(void *buffer, int length)
     return Status_OK;
 }
 
-Std_ReturnType Serial_Print(void *string )
+Std_ReturnType Serial_NewLine()
 {
-    do
-    {
-        Serial_WriteByte(READ_PU8(string));
-    }
-    while ( READ_PU8(string++) != 0 );
-
-    return Status_OK;
+    static byte nl[2] = {'\r', '\n'};
+    return Serial_WriteBytes(nl, 2);
 }
 
-Std_ReturnType Serial_Println(void *string )
+Std_ReturnType Serial_PrintString(const void* string, bool newLine, bool progMem)
 {
-    while ( READ_PU8(string) != 0 )
+    byte b = 0;
+
+    while (TRUE)
     {
-        Serial_WriteByte(READ_PU8(string++));
+        b = progMem ? pgm_read_byte(string) : READ_PU8(string);
+        if (b != 0) Serial_WriteByte(b);
+        else break;
+        string++;
     }
-    Serial_WriteByte('\r');
-    Serial_WriteByte('\n');
+
+    if ( newLine )
+    {
+        Serial_NewLine();
+    }
+
     Serial_WriteByte(0);
 
     return Status_OK;

@@ -21,6 +21,10 @@ typedef uint8_t  byte;
 typedef uint16_t word;
 typedef uint32_t dword;
 
+// Stringize preprocessor macro
+#define STRING(s) #s
+#define STRINGIZE(s) STRING(s)
+
 #define UNUSED(x) (void)(x)
 
 #define NOT(b) ((b) == FALSE ? TRUE : FALSE)
