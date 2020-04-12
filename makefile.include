@@ -37,7 +37,6 @@ CC = avr-gcc
 OBJCOPY = avr-objcopy
 SIZE = avr-size
 UPLOAD = avrdude
-TERM = konsole --profile="Serial"
 MONITOR = picocom
 
 # Serial monitor
@@ -91,7 +90,7 @@ upload: stop
 
 # Serial monitor
 monitor: stop
-	@$(TERM) -e "$(MONITOR) -b $(BAUD_RATE) $(SERIAL_TTY)"
+	@$(MONITOR) -b $(BAUD_RATE) $(SERIAL_TTY)
 
 stop:
 	@for pid in `pgrep $(MONITOR)`; do kill $$pid; done
