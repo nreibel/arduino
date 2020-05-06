@@ -1,0 +1,29 @@
+#!/bin/bash
+
+MAKE_TARGET="all"
+SERIAL_TTY="/dev/ttyUSB0"
+
+TARGET="arduino/libs:latest"
+PACKAGES="make gcc-avr avrdude avr-libc picocom"
+WORKDIR="/work"
+
+DOCKER_UID=$(id -u)
+DOCKER_GID=$(getent group dialout | cut -d: -f3)
+
+docker build -t $TARGET - << EOF
+	FROM ubuntu:20.04
+	RUN	apt-get update && \
+		apt-get install -y $PACKAGES && \
+		rm -rf /var/lib/apt/lists/*
+EOF
+
+[ $? -eq 0 ] || exit 0
+[ -e $SERIAL_TTY ] && MOUNT_SERIAL="--device $SERIAL_TTY:/dev/ttyUSB0"
+[ $# -gt 0 ] && MAKE_TARGET=$@
+
+docker run -ti --rm --net host \
+	--volume  $PWD:$WORKDIR \
+	--workdir $WORKDIR \
+	--user    $DOCKER_UID:$DOCKER_GID \
+	$MOUNT_SERIAL \
+	$TARGET make $MAKE_TARGET
