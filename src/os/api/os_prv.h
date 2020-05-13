@@ -6,6 +6,7 @@
 
 /* Holds the status of each timer channel */
 typedef struct {
+    volatile time_t value;
     time_t   interval;
     Callback callback;
     void*    param;

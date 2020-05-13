@@ -6,11 +6,15 @@
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
 
+extern volatile time_t osTimer;
+extern TimerConfig timerCfg[NUMBER_OF_TIMERS];
+
 ISR(TIMER2_COMPA_vect)
 {
+    osTimer += OS_TIMER_GRANULARITY;
     for ( int i = 0 ; i < NUMBER_OF_TIMERS ; i++ )
     {
-        counters[i] += 16;
+        timerCfg[i].value += OS_TIMER_GRANULARITY;
     }
 }
 
@@ -50,11 +54,32 @@ void Os_Init()
     PORTC = 0xFF;
     PORTD = 0xFF;
 
-    // Init Timer2 as 16ms counter with interrupts
+    // Init Timer2 as CTC counter with interrupts
     RESET_BIT(PRR, PRTIM2);  // Enable peripheral
     SET_BIT(TIMSK2, OCIE2A); // Enable interrupt on Compare Match A
     TCNT2  = 0;              // Reset timer value
     TCCR2A = 0x2;            // CTC mode
-    OCR2A  = 250;            // Count 250 ticks
-    TCCR2B = 0x7;            // Set prescaler to 16ms resolution
+
+#if F_CPU == 16000000
+    #if OS_TIMER_GRANULARITY == 16
+        OCR2A  = 250;            // Count 250 ticks
+        TCCR2B = 0x7;            // Set prescaler to 1024
+    #elif OS_TIMER_GRANULARITY == 8
+        OCR2A  = 125;            // Count 125 ticks
+        TCCR2B = 0x7;            // Set prescaler to 1024
+    #elif OS_TIMER_GRANULARITY == 4
+        OCR2A  = 250;            // Count 125 ticks
+        TCCR2B = 0x6;            // Set prescaler to 256
+    #elif OS_TIMER_GRANULARITY == 2
+        OCR2A  = 125;            // Count 125 ticks
+        TCCR2B = 0x6;            // Set prescaler to 256
+    #elif OS_TIMER_GRANULARITY == 1
+        OCR2A  = 125;            // Count 125 ticks
+        TCCR2B = 0x5;            // Set prescaler to 128
+    #else
+        #error OS_TIMER_GRANULARITY value is not supported
+    #endif
+#else
+    #error F_CPU value is not supported
+#endif
 }

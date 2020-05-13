@@ -7,11 +7,10 @@
 typedef uint16_t time_t;
 
 #define F_CPU 16000000UL
+#define OS_TIMER_GRANULARITY 1
 #define NUMBER_OF_BACKGROUND_TASKS 0
 
 typedef enum {
-    Timer_Timestamp,
-    Timer_Delay,
     Timer_MainTask,
     NUMBER_OF_TIMERS
 } Timer;
