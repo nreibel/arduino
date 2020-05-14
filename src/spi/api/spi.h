@@ -5,16 +5,27 @@
 #include "spi_cfg.h"
 
 typedef enum {
-    SPI_CLOCK_DIV_4 = 0,
+    SPI_CLOCK_DIV_2,
+    SPI_CLOCK_DIV_4,
+    SPI_CLOCK_DIV_8,
     SPI_CLOCK_DIV_16,
+    SPI_CLOCK_DIV_32,
     SPI_CLOCK_DIV_64,
     SPI_CLOCK_DIV_128
-} Spi_SCK_Frequency;
+} Spi_Clock;
+
+typedef enum {
+    SPI_MODE_0,
+    SPI_MODE_1,
+    SPI_MODE_2,
+    SPI_MODE_3
+} Spi_Mode;
 
 Std_ReturnType Spi_BackgroundTask();
 
 bool Spi_IsReady();
 void Spi_Init();
+void Spi_Configure(Spi_Clock clock, Spi_Mode mode);
 void Spi_EnableSlave(uint8_t slave);
 void Spi_DisableSlave(uint8_t slave);
 

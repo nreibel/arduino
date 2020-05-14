@@ -2,6 +2,7 @@
 #define SRC_SPI_API_SPI_PRV_H_
 
 #include "port.h"
+#include "spi.h"
 #include "spi_cfg.h"
 
 typedef enum {
@@ -16,6 +17,7 @@ extern PinDef Spi_MOSI;
 extern PinDef Spi_SCK;
 extern PinDef SlaveSelect_Pins[];
 
-void Spi_Init_HW(void);
+void Spi_HAL_Enable();
+void Spi_HAL_Configure(Spi_Clock clock, Spi_Mode mode);
 
 #endif // SRC_SPI_API_SPI_PRV_H_
