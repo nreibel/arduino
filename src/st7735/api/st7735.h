@@ -39,6 +39,8 @@
 #define ST7735_SCREEN_ORIENTATION_PORTRAIT      0x0
 #define ST7735_SCREEN_ORIENTATION_PORTRAIT_INV  ST7735_MADCTL_MY | ST7735_MADCTL_MX
 
+typedef uint16_t (*ST7735_Renderer)(int x, int y, int w, int h, void* data);
+
 void ST7735_Init();
 
 // Pixel drawing
@@ -58,6 +60,7 @@ void ST7735_DrawChars(int x, int y, char *bytes, int length, uint16_t foreground
 void ST7735_DrawString(int x, int y, char *str, uint16_t foregroundColor, uint16_t backgroundColor);
 
 // Imaging
+void ST7735_Render(int x, int y, int w, int h, ST7735_Renderer renderer, void* param);
 void ST7735_DrawXBM(const uint8_t *bits, int xPos, int yPos, int width, int height, uint16_t foregroundColor, uint16_t backgroundColor);
 
 #endif // SRC_ST7735_API_ST7735_H_
