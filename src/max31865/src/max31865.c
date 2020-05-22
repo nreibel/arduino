@@ -4,19 +4,40 @@
 #include "spi.h"
 #include "bits.h"
 #include "types.h"
-
 #include <math.h>
 
-#include <stdio.h>
-#include "serial.h"
-
-void MAX31865_Init()
+Std_ReturnType MAX31865_Init(SpiSlave slave, MAX31865_WireMode mode, MAX31865_FilterMode filter)
 {
-    // VBIAS = On, Conversion mode = Auto, 3-wire RTD
-    byte configuration = BIT(7) | BIT(6) | BIT(4) | BIT(1) | BIT(0);
+    Std_ReturnType retval = Status_Not_OK;
 
+    // VBIAS = On, Conversion mode = Auto
+    byte configuration = BIT(7) | BIT(6);
+    byte read = 0;
+
+    if (mode == MAX31865_WireMode_3_Wires)  SET_BIT(configuration, 4);
+    if (filter == MAX31865_FilterMode_50Hz) SET_BIT(configuration, 0);
+
+    Spi_Configure(SPI_CLOCK_DIV_2, SPI_MODE_1);
+
+    // Write config
+    Spi_EnableSlave(slave);
     Spi_WriteByte(MAX31865_REG_CONFIG | MAX31865_WRITE, NULL_PTR);
     Spi_WriteByte(configuration, NULL_PTR);
+    Spi_DisableSlave(slave);
+
+    // Read back config
+    Spi_EnableSlave(slave);
+    Spi_WriteByte(MAX31865_REG_CONFIG | MAX31865_READ, NULL_PTR);
+    Spi_WriteByte(configuration, &read);
+    Spi_DisableSlave(slave);
+
+    // Same config should be read back if communication is set up properly
+    if (read == configuration)
+    {
+        retval = Status_OK;
+    }
+
+    return retval;
 }
 
 // Implementation of Callendar-Van Dusen equation
@@ -32,16 +53,20 @@ double MAX31865_RTD_To_Temperature(double rtd)
     return acc / (2 * MAX31865_RTD_B);
 }
 
-Std_ReturnType MAX31865_ReadRTD(double *rtd)
+Std_ReturnType MAX31865_ReadRTD(SpiSlave slave, double *rtd)
 {
     Std_ReturnType retval = Status_Not_OK;
 
     byte msb = 0;
     byte lsb = 0;
 
+    Spi_Configure(SPI_CLOCK_DIV_2, SPI_MODE_1);
+
+    Spi_EnableSlave(slave);
     Spi_WriteByte(MAX31865_REG_RTD_MSB | MAX31865_READ, NULL_PTR);
     Spi_WriteByte(0, &msb);
     Spi_WriteByte(0, &lsb);
+    Spi_DisableSlave(slave);
 
     if (IS_SET_BIT(lsb, 0))
     {
@@ -49,8 +74,8 @@ Std_ReturnType MAX31865_ReadRTD(double *rtd)
     }
     else
     {
-        word w = ((msb << 8) | lsb);
-        *rtd = (MAX31865_RES_REF * TYPECAST(w, double)) / MAX31865_ADC_RESOLUTION;
+        word w = (msb << 8) | lsb;
+        *rtd = (MAX31865_RES_REF * TYPECAST(w >> 1, double)) / MAX31865_ADC_RESOLUTION;
         retval = Status_OK;
     }
 

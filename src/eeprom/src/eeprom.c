@@ -206,6 +206,20 @@ Std_ReturnType EEPROM_SyncRead(word ucAddress, void *ucData, int length)
 
 #if EEPROM_ENABLE_SERIAL_DUMP == ON
 
+#define EEPROM_DUMP_CHUNKS_SIZE 16
+Std_ReturnType EEPROM_DumpEEPROM_Raw(word from, word to)
+{
+    byte b[EEPROM_DUMP_CHUNKS_SIZE];
+
+    for ( word addr = from ; addr < to ; addr += EEPROM_DUMP_CHUNKS_SIZE )
+    {
+        EEPROM_SyncRead(addr, b, EEPROM_DUMP_CHUNKS_SIZE);
+        Serial_WriteBytes(b, EEPROM_DUMP_CHUNKS_SIZE);
+    }
+
+    return Status_OK;
+}
+
 Std_ReturnType EEPROM_DumpEEPROM(word from, word to, int line_length)
 {
     byte b = 0;

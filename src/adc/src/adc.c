@@ -30,6 +30,7 @@ void ADC_Init()
 
     // Enable ADC with interrupts, set prescaler
     ADCSRA = BIT(ADEN) /*| BIT(ADIE)*/ | MASK(ADC_PRESCALER_SELECT, 0x7);
+
     ADCSRB = 0;
 }
 

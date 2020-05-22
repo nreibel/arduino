@@ -49,7 +49,7 @@ FNAME = out-$(ARCH)
 
 # Compilation options and flags
 WARNINGS += all extra undef
-CFLAGS += -O3 -g0 -mmcu=$(ARCH) -ffunction-sections -fdata-sections
+CFLAGS += -O2 -g0 -mmcu=$(ARCH) -ffunction-sections -fdata-sections
 LDFLAGS += -gc-sections --relax -Map,$(OUT)/$(FNAME).map
 
 include $(TARGET)

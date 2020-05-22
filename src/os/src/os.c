@@ -5,28 +5,26 @@
 #include "bits.h"
 #include "port.h"
 
-volatile time_t counters[NUMBER_OF_TIMERS] = {0};
-static TimerConfig timerCfg[NUMBER_OF_TIMERS] = {0};
+volatile time_t osTimer = {0};
+TimerConfig timerCfg[NUMBER_OF_TIMERS] = {0};
 
 void Os_Wait(time_t ms)
 {
-    counters[Timer_Delay] = 0;
-    while (counters[Timer_Delay] < ms) Os_Sleep();
+    osTimer = 0;
+    while (osTimer < ms)
+    {
+        Os_Sleep();
+    }
 }
 
 void Os_ResetTimer(Timer timer)
 {
-    counters[timer] = 0;
+    timerCfg[timer].value = 0;
 }
 
 time_t Os_GetTimerValue(Timer timer)
 {
-    return counters[timer];
-}
-
-time_t Os_GetCurrentTimeMs()
-{
-    return counters[Timer_Timestamp];
+    return timerCfg[timer].value;
 }
 
 void Os_SetupTask(Timer timer, time_t interval, Callback callback, void* param)
@@ -34,17 +32,17 @@ void Os_SetupTask(Timer timer, time_t interval, Callback callback, void* param)
     timerCfg[timer].interval = interval;
     timerCfg[timer].callback = callback;
     timerCfg[timer].param = param;
-    counters[timer] = 0;
+    timerCfg[timer].value = 0;
 }
 
 void Os_CyclicTasks()
 {
     for (int i = 0 ; i < NUMBER_OF_TIMERS ; i++ )
     {
-        if ( timerCfg[i].interval > 0 && timerCfg[i].callback != NULL_PTR && counters[i] >= timerCfg[i].interval )
+        if ( timerCfg[i].interval > 0 && timerCfg[i].callback != NULL_PTR && timerCfg[i].value >= timerCfg[i].interval )
         {
             timerCfg[i].callback( timerCfg[i].param );
-            counters[i] %= timerCfg[i].interval;
+            timerCfg[i].value %= timerCfg[i].interval; // TODO : avoid modulo
         }
     }
 }

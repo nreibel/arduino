@@ -21,9 +21,14 @@ void Spi_Init()
         Port_SetPinState(SlaveSelect_Pins[i], High);
     }
 
-    Spi_Init_HW();
+    Spi_HAL_Enable();
 
     spiState = Spi_Ready;
+}
+
+void Spi_Configure(Spi_Clock clock, Spi_Mode mode)
+{
+    Spi_HAL_Configure(clock, mode);
 }
 
 void Spi_EnableSlave(uint8_t slave)

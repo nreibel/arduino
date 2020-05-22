@@ -16,6 +16,7 @@ Std_ReturnType EEPROM_SyncRead  (word ucAddress, void* ucData, int length);
 Std_ReturnType EEPROM_MemSet    (word ucAddress, byte val, int length);
 
 #if EEPROM_ENABLE_SERIAL_DUMP == ON
+    Std_ReturnType EEPROM_DumpEEPROM_Raw(word from, word to);
     Std_ReturnType EEPROM_DumpEEPROM(word from, word to, int line_length);
 #endif
 

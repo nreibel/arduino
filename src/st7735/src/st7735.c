@@ -63,6 +63,23 @@ void ST7735_DrawPixel(int x, int y, uint16_t color)
     ST7735_FillRectangle(x, y, 1, 1, color);
 }
 
+void ST7735_Render(int x, int y, int w, int h, ST7735_Renderer renderer, void* param)
+{
+    //Set the drawing region
+    ST7735_SetDrawWindow(x, y, x+w-1, y+h-1);
+
+    //Write color to each pixel
+    for(int y = 0; y < h; y++)
+    {
+        for(int x = 0; x < w; x++)
+        {
+            uint16_t color = renderer(x, y, w, h, param);
+            ST7735_Data(HIGH_BYTE(color));
+            ST7735_Data(LOW_BYTE(color));
+        }
+    }
+}
+
 void ST7735_DrawLine(int x1, int y1, int x2, int y2, uint16_t color)
 {
     // Integer only implementation of Bresenham's algorythm

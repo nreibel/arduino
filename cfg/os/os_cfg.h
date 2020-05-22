@@ -6,12 +6,15 @@
 // uint32_t has a max value of ~49,7 days
 typedef uint16_t time_t;
 
+// In Hz
 #define F_CPU 16000000UL
+
+// In ms
+#define OS_TIMER_GRANULARITY 1
+
 #define NUMBER_OF_BACKGROUND_TASKS 0
 
 typedef enum {
-    Timer_Timestamp,
-    Timer_Delay,
     Timer_MainTask,
     NUMBER_OF_TIMERS
 } Timer;
