@@ -3,6 +3,7 @@
 
 // Check if a is between b and c
 #define BETWEEN(a, b, c) ((a >= b) && (a <= c))
+#define ABS(v)           ((v) >= 0 ? (v) : -(v))
 
 // Returns a mask with the bit at rank x set
 #define BIT(x)               (1ULL << (x))
