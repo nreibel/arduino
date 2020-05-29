@@ -4,7 +4,6 @@
 #include "types.h"
 #include "port.h"
 #include "bits.h"
-#include "port_cfg.h"
 #include "avr/interrupt.h"
 #include "avr/io.h"
 

@@ -5,7 +5,7 @@
 #include "bits.h"
 #include "gpio_uno.h"
 
-PinDef Pin_LED = GPIO_13;
+GPIO Pin_LED = GPIO_13;
 
 // App entry point
 void App_Init()
@@ -24,7 +24,7 @@ Std_ReturnType Task_MainCyclic(void* data)
 {
     UNUSED(data);
 
-    static PinState state = High;
+    static State state = High;
 
     if (state == High)
     {

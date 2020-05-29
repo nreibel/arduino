@@ -1,5 +1,4 @@
 #include "port.h"
-#include "port_prv.h"
 #include "bits.h"
 #include "types.h"
 
@@ -31,13 +30,13 @@ Std_ReturnType Port_EnableInt(ExtInt input, Edge edge, Callback cbk, void *data)
 {
     switch(input)
     {
-        case ExtInt_INT0:
+        case ExtInt_0:
             Data_INT[0] = data;
             Callback_INT[0] = cbk;
             SET_BITS(EICRA, edge, 0x3);
             SET_BIT(EIMSK, INT0);
             break;
-        case ExtInt_INT1:
+        case ExtInt_1:
             Data_INT[1] = data;
             Callback_INT[1] = cbk;
             SET_BITS(EICRA, edge << 2, 0xC);
@@ -54,11 +53,22 @@ Std_ReturnType Port_SetDataDirection(Port port, uint8_t direction)
 {
     Std_ReturnType status = Status_Not_OK;
 
-    if (port < NbrOfPorts )
+    switch(port)
     {
-        /* Write DDRx */
-        WRITE_PU8(port + OFFSET_DDR, direction);
-        status = Status_OK;
+        case Port_B:
+            DDRB = direction;
+            status = Status_OK;
+            break;
+
+        case Port_C:
+            DDRC = direction;
+            status = Status_OK;
+            break;
+
+        case Port_D:
+            DDRD = direction;
+            status = Status_OK;
+            break;
     }
 
     return status;
@@ -68,136 +78,148 @@ Std_ReturnType Port_GetDataDirection(Port port, uint8_t* direction)
 {
     Std_ReturnType status = Status_Not_OK;
 
-    if ( port < NbrOfPorts )
+    switch(port)
     {
-        /* Read DDRx */
-        *direction = READ_PU8(port + OFFSET_DDR);
-        status = Status_OK;
+        case Port_B:
+            *direction = DDRB;
+            status = Status_OK;
+            break;
+
+        case Port_C:
+            *direction = DDRC;
+            status = Status_OK;
+            break;
+
+        case Port_D:
+            *direction = DDRD;
+            status = Status_OK;
+            break;
     }
 
     return status;
 }
 
-Std_ReturnType Port_SetValue(Port port, uint8_t portValue)
+Std_ReturnType Port_SetValue(Port port, uint8_t value)
 {
     Std_ReturnType status = Status_Not_OK;
 
-    if ( port < NbrOfPorts )
+    switch(port)
     {
-        /* Write PORTx */
-        WRITE_PU8(port + OFFSET_PORT, portValue);
-        status = Status_OK;
+        case Port_B:
+            PORTB = value;
+            status = Status_OK;
+            break;
+
+        case Port_C:
+            PORTC = value;
+            status = Status_OK;
+            break;
+
+        case Port_D:
+            PORTD = value;
+            status = Status_OK;
+            break;
     }
 
     return status;
 }
 
-Std_ReturnType Port_GetValue(Port port, uint8_t* portValue)
+Std_ReturnType Port_GetValue(Port port, uint8_t* value)
 {
     Std_ReturnType status = Status_Not_OK;
 
-    if ( port < NbrOfPorts )
+    switch(port)
     {
-        /* Read PINx */
-        *portValue = READ_PU8(port + OFFSET_PIN);
-        status = Status_OK;
+        case Port_B:
+            *value = PINB;
+            status = Status_OK;
+            break;
+
+        case Port_C:
+            *value = PINC;
+            status = Status_OK;
+            break;
+
+        case Port_D:
+            *value = PIND;
+            status = Status_OK;
+            break;
     }
 
     return status;
 }
 
-Std_ReturnType Port_SetPinDataDirection(PinDef pinDef, DataDirection direction)
+Std_ReturnType Port_SetPinDataDirection(GPIO pinDef, DataDirection direction)
 {
     Std_ReturnType status = Status_Not_OK;
-    uint8_t portValue;
 
-    if (pinDef.port < NbrOfPorts && pinDef.pin < NbrOfPins )
+    uint8_t reg;
+    status = Port_GetDataDirection(pinDef.port, &reg);
+    if (status == Status_OK)
     {
-        /* Read DDRx */
-        status = Port_GetDataDirection(pinDef.port, &portValue);
-
-        if (status == Status_OK)
+        switch (direction)
         {
-            switch (direction)
-            {
-                case Input:
-                    RESET_BIT(portValue, pinDef.pin);
-                    status = Status_OK;
-                    break;
-                case Output:
-                    SET_BIT(portValue, pinDef.pin);
-                    status = Status_OK;
-                    break;
-                default:
-                    status = Status_Not_OK;
-                    break;
-            }
-        }
-
-        if (status == Status_OK)
-        {
-            status = Port_SetDataDirection(pinDef.port, portValue);
-        }
-    }
-
-    return status;
-}
-
-Std_ReturnType Port_SetPinState(PinDef pinDef, PinState pinValue)
-{
-    Std_ReturnType status = Status_Not_OK;
-    uint8_t portValue;
-
-    if ( pinDef.port < NbrOfPorts && pinDef.pin < NbrOfPins )
-    {
-        status = Port_GetValue(pinDef.port, &portValue);
-
-        if (status == Status_OK)
-        {
-            switch(pinValue)
-            {
-                case Low:
-                    RESET_BIT(portValue, pinDef.pin);
-                    status = Status_OK;
-                    break;
-                case High:
-                    SET_BIT(portValue, pinDef.pin);
-                    status = Status_OK;
-                    break;
-                default:
-                    status = Status_Not_OK;
-                    break;
-            }
-        }
-
-        if (status == Status_OK)
-        {
-            status = Port_SetValue(pinDef.port, portValue);
+            case Input:
+                RESET_BIT(reg, pinDef.pin);
+                status = Port_SetDataDirection(pinDef.port, reg);
+                break;
+            case Output:
+                SET_BIT(reg, pinDef.pin);
+                status = Port_SetDataDirection(pinDef.port, reg);
+                break;
         }
     }
 
     return status;
 }
 
-Std_ReturnType Port_GetPinState(PinDef pinDef, PinState *pinValue)
+Std_ReturnType Port_GetPinDataDirection(GPIO pinDef, DataDirection *direction)
 {
     Std_ReturnType status = Status_Not_OK;
-    uint8_t portValue;
 
-    if ( pinDef.port < NbrOfPorts && pinDef.pin < NbrOfPins )
+    uint8_t reg;
+    status = Port_GetDataDirection(pinDef.port, &reg);
+    if (status == Status_OK)
     {
-        status = Port_GetValue(pinDef.port, &portValue);
-        if ( status == Status_OK )
+        *direction = IS_SET_BIT(reg, pinDef.pin) ? Output : Input;
+    }
+
+    return status;
+}
+
+Std_ReturnType Port_SetPinState(GPIO pinDef, State pinState)
+{
+    Std_ReturnType status = Status_Not_OK;
+
+    uint8_t reg;
+    status = Port_GetValue(pinDef.port, &reg);
+    if (status == Status_OK)
+    {
+        switch(pinState)
         {
-            if (IS_SET_BIT(portValue, pinDef.pin))
-            {
-                *pinValue = High;
-            }
-            else
-            {
-                *pinValue = Low;
-            }
+            case Low:
+                RESET_BIT(reg, pinDef.pin);
+                status = Port_SetValue(pinDef.port, reg);
+                break;
+            case High:
+                SET_BIT(reg, pinDef.pin);
+                status = Port_SetValue(pinDef.port, reg);
+                break;
         }
+    }
+
+    return status;
+}
+
+Std_ReturnType Port_GetPinState(GPIO pinDef, State *pinState)
+{
+    Std_ReturnType status = Status_Not_OK;
+
+    uint8_t reg;
+    status = Port_GetValue(pinDef.port, &reg);
+    if (status == Status_OK)
+    {
+        *pinState = IS_SET_BIT(reg, pinDef.pin) ? High : Low;
     }
 
     return status;

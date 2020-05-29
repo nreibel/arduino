@@ -3,7 +3,7 @@
 
 #include "port.h"
 
-extern PinDef pinA;
-extern PinDef pinB;
+extern GPIO pinA;
+extern GPIO pinB;
 
 #endif /* SRC_PWM_API_PWM_PRV_H_ */

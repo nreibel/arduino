@@ -12,10 +12,10 @@ typedef enum {
     Spi_Waiting,
 } Spi_TransmitState;
 
-extern PinDef Spi_MISO;
-extern PinDef Spi_MOSI;
-extern PinDef Spi_SCK;
-extern PinDef SlaveSelect_Pins[];
+extern GPIO Spi_MISO;
+extern GPIO Spi_MOSI;
+extern GPIO Spi_SCK;
+extern GPIO SlaveSelect_Pins[];
 
 void Spi_HAL_Enable();
 void Spi_HAL_Configure(Spi_Clock clock, Spi_Mode mode);

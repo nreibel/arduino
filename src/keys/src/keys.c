@@ -6,13 +6,13 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-static volatile PinState keyState[NUMBER_OF_KEYS];
+static volatile State keyState[NUMBER_OF_KEYS];
 
 void Keys_CyclicTask()
 {
     for (int cpt = 0 ; cpt < NUMBER_OF_KEYS ; cpt++)
     {
-        Port_GetPinState(Keys_PinMapping[cpt], &PTR(keyState, PinState)[cpt]);
+        Port_GetPinState(Keys_PinMapping[cpt], &PTR(keyState, State)[cpt]);
     }
 }
 

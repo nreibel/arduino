@@ -2,12 +2,29 @@
 #define SRC_PORT_API_PORT_H_
 
 #include "types.h"
-#include "port_cfg.h"
+
+typedef enum {
+    Port_B,
+    Port_C,
+    Port_D
+} Port;
+
+typedef enum
+{
+    Pin_0 = 0,
+    Pin_1,
+    Pin_2,
+    Pin_3,
+    Pin_4,
+    Pin_5,
+    Pin_6,
+    Pin_7,
+} Pin;
 
 typedef struct {
     Port port;
-    Pin pin;
-} PinDef;
+    Pin  pin;
+} GPIO;
 
 typedef enum
 {
@@ -19,7 +36,7 @@ typedef enum
 {
     Low,
     High
-} PinState;
+} State;
 
 typedef enum
 {
@@ -31,19 +48,20 @@ typedef enum
 
 typedef enum
 {
-    ExtInt_INT0 = 0,
-    ExtInt_INT1 = 1,
+    ExtInt_0,
+    ExtInt_1,
 } ExtInt;
 
 Std_ReturnType Port_EnableInt           (ExtInt input, Edge edge, Callback cbk, void *data);
 
-Std_ReturnType Port_SetDataDirection    (Port port, uint8_t direction);
+Std_ReturnType Port_SetDataDirection    (Port port, uint8_t  direction);
 Std_ReturnType Port_GetDataDirection    (Port port, uint8_t* direction);
-Std_ReturnType Port_SetValue            (Port port, uint8_t portValue);
-Std_ReturnType Port_GetValue            (Port port, uint8_t* portValue);
+Std_ReturnType Port_SetValue            (Port port, uint8_t  value);
+Std_ReturnType Port_GetValue            (Port port, uint8_t* value);
 
-Std_ReturnType Port_SetPinDataDirection (PinDef pinDef, DataDirection direction);
-Std_ReturnType Port_SetPinState         (PinDef pinDef, PinState pinState);
-Std_ReturnType Port_GetPinState         (PinDef pinDef, PinState* pinState);
+Std_ReturnType Port_SetPinDataDirection (GPIO pinDef, DataDirection  direction);
+Std_ReturnType Port_GetPinDataDirection (GPIO pinDef, DataDirection *direction);
+Std_ReturnType Port_SetPinState         (GPIO pinDef, State  pinState);
+Std_ReturnType Port_GetPinState         (GPIO pinDef, State* pinState);
 
 #endif /* SRC_PORT_API_PORT_H_ */

@@ -26,14 +26,14 @@ void HC595_Delay()
     _delay_us(1);
 }
 
-void HC595_RisingEdge(PinDef pin)
+void HC595_RisingEdge(GPIO pin)
 {
     Port_SetPinState(pin, High);
     HC595_Delay();
     Port_SetPinState(pin, Low);
 }
 
-void HC595_FallingEdge(PinDef pin)
+void HC595_FallingEdge(GPIO pin)
 {
     Port_SetPinState(pin, Low);
     HC595_Delay();

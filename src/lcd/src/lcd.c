@@ -273,7 +273,7 @@ Std_ReturnType LCD_FunctionSet(InterfaceDataWidth dataWidth, CharacterFont chara
     return retval;
 }
 
-Std_ReturnType LCD_WriteByte(uint8_t data, PinState rs)
+Std_ReturnType LCD_WriteByte(uint8_t data, State rs)
 {
     Std_ReturnType retval = Status_Not_OK;
     Std_ReturnType retval_high_nibble = Status_Not_OK;
@@ -293,7 +293,7 @@ Std_ReturnType LCD_WriteByte(uint8_t data, PinState rs)
     return retval;
 }
 
-Std_ReturnType LCD_WriteNibble(uint8_t data, PinState rs)
+Std_ReturnType LCD_WriteNibble(uint8_t data, State rs)
 {
     Std_ReturnType retval = Status_Not_OK;
 

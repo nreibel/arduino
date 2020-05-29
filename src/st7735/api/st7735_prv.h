@@ -23,8 +23,8 @@
 #define ST7735_MADCTL_MX 0x40
 #define ST7735_MADCTL_MV 0x20
 
-extern PinDef ST7735_Pin_DC; // Data/command pin
-extern PinDef ST7735_Pin_RS; // Reset pin
+extern GPIO ST7735_Pin_DC; // Data/command pin
+extern GPIO ST7735_Pin_RS; // Reset pin
 
 void ST7735_Data(uint8_t data);
 void ST7735_Command(uint8_t command);
