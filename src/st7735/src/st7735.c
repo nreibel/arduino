@@ -2,6 +2,7 @@
 #include "st7735.h"
 #include "st7735_prv.h"
 #include "st7735_cfg.h"
+#include "os.h"
 #include "spi.h"
 #include "port.h"
 #include "bits.h"

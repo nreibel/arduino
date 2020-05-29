@@ -231,12 +231,7 @@ Std_ReturnType I2C_Init(I2C_Mode i2cMode, byte address)
 
         case I2C_Mode_Slave:
 
-            if (s_buffer == NULL_PTR)
-            {
-                // Buffer must be set before I2C init
-                retval = Status_Precondition_Failed;
-            }
-            else
+            if (s_buffer != NULL_PTR)
             {
                 // Enable peripheral
                 RESET_BIT(PRR, PRTWI);
