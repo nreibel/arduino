@@ -17,8 +17,6 @@ Std_ReturnType MAX31865_Init(SpiSlave slave, MAX31865_WireMode mode, MAX31865_Fi
     if (mode == MAX31865_WireMode_3_Wires)  SET_BIT(configuration, 4);
     if (filter == MAX31865_FilterMode_50Hz) SET_BIT(configuration, 0);
 
-    Spi_Configure(SPI_CLOCK_DIV_2, SPI_MODE_1);
-
     // Write config
     Spi_EnableSlave(slave);
     Spi_WriteByte(MAX31865_REG_CONFIG | MAX31865_WRITE, NULL_PTR);
@@ -60,15 +58,17 @@ Std_ReturnType MAX31865_ReadRTD(SpiSlave slave, double *rtd)
     byte msb = 0;
     byte lsb = 0;
 
-    Spi_Configure(SPI_CLOCK_DIV_2, SPI_MODE_1);
-
     Spi_EnableSlave(slave);
     Spi_WriteByte(MAX31865_REG_RTD_MSB | MAX31865_READ, NULL_PTR);
     Spi_WriteByte(0, &msb);
     Spi_WriteByte(0, &lsb);
     Spi_DisableSlave(slave);
 
-    if (IS_SET_BIT(lsb, 0))
+    if ( lsb == 0 && msb == 0 )
+    {
+        // TODO : device disconnected
+    }
+    else if ( IS_SET_BIT(lsb, 0) )
     {
         // TODO : handle fault bit
     }
