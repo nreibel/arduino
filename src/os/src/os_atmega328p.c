@@ -30,7 +30,7 @@ void Os_EnableInterrupts()
 
 void Os_Sleep()
 {
-    set_sleep_mode(SLEEP_MODE_IDLE);
+    set_sleep_mode(OS_SLEEP_MODE);
     sleep_enable();
     sleep_cpu();
 
