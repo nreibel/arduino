@@ -24,8 +24,9 @@
 #define LOW_NIBBLE(b)        MASK((b), 0xF)
 
 // Split word into bytes
-#define HIGH_BYTE(b)         MASK((b) >> 8, 0xFF)
-#define LOW_BYTE(b)          MASK((b), 0xFF)
+#define BYTE(b, n)           MASK((b) >> 8*(n), 0xFF)
+#define HIGH_BYTE(b)         BYTE((b), 1)
+#define LOW_BYTE(b)          BYTE((b), 0)
 
 // (re)set bitmask in r
 #define SET_MASK(r, m)       (r |= (m))

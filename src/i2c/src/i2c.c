@@ -8,19 +8,8 @@
 
 Std_ReturnType I2C_Init()
 {
-    // Enable peripheral
-    RESET_BIT(PRR, PRTWI);
-
-#if I2C_MODE == I2C_MODE_MASTER
-    TWSR = 0;  // Prescaler = 1
-    TWBR = ((F_CPU/F_I2C)-16)/2;
-#elif I2C_MODE == I2C_MODE_SLAVE
-    TWAR = I2C_SLAVE_ADRESS << 1;
-    TWCR = BIT(TWIE) | BIT(TWEA) | BIT(TWINT) | BIT(TWEN);
-#else
-    #error I2C_MODE not set or incorrect
-#endif
-
+    I2C_HAL_EnablePeripheral();
+    I2C_HAL_Init();
     return Status_OK;
 }
 

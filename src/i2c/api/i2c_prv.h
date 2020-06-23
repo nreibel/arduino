@@ -3,6 +3,8 @@
 
 #define I2C_ADDR(addr, rw) (((addr) << 1) | rw)
 
+void I2C_HAL_Init();
+void I2C_HAL_EnablePeripheral();
 bool I2C_HAL_TransmitReady();
 void I2C_HAL_StartCondition();
 void I2C_HAL_RestartCondition();

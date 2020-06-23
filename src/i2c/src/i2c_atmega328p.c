@@ -13,8 +13,8 @@
 ISR(TWI_vect)
 {
     static int offset = -1;
-    byte status = TW_STATUS;
 
+    byte status = TW_STATUS;
     switch(status)
     {
         case TW_SR_SLA_ACK: // Received SLA+W
@@ -41,6 +41,24 @@ ISR(TWI_vect)
 }
 
 #endif
+
+void I2C_HAL_Init()
+{
+#if I2C_MODE == I2C_MODE_MASTER
+    TWSR = 0;  // Prescaler = 1
+    TWBR = ((F_CPU/F_I2C)-16)/2;
+#elif I2C_MODE == I2C_MODE_SLAVE
+    TWAR = I2C_SLAVE_ADRESS << 1;
+    TWCR = BIT(TWIE) | BIT(TWEA) | BIT(TWINT) | BIT(TWEN);
+#else
+    #error I2C_MODE not set or incorrect
+#endif
+}
+
+void I2C_HAL_EnablePeripheral()
+{
+    RESET_BIT(PRR, PRTWI);
+}
 
 bool I2C_HAL_TransmitReady()
 {
