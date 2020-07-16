@@ -20,10 +20,22 @@ ISR(ADC_vect)
 }
 
 
-void ADC_Init()
+void ADC_Init(bool pullUpEnabled)
 {
     // Poweron ADC
     RESET_BIT(PRR, PRADC);
+
+    // Disable pull-up
+    if (pullUpEnabled)
+    {
+        DDRC  = 0x00;
+        PORTC = 0xFF;
+    }
+    else
+    {
+        DDRC  = 0x00;
+        PORTC = 0x00;
+    }
 
     // Select Vref
     ADMUX = MASK(ADC_VREF_SELECT, 0x3) << 6;

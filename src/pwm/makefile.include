@@ -1,6 +1,4 @@
 INCLUDES+=\
 	$(SRC_DIR)/pwm/api \
-	$(CFG_DIR)/pwm \
 
 pwm:    $(SRC_DIR)/pwm/src/pwm.o \
-	$(CFG_DIR)/pwm/pwm_cfg.o \

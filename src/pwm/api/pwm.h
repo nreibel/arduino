@@ -2,9 +2,15 @@
 #define SRC_PWM_API_PWM_H_
 
 #include "types.h"
+#include "port.h"
 
-void PWM_Init();
-void PWM_SetPWM(uint8_t dutyCycle);
-void PWM_StopPWM();
+typedef enum {
+    PWM_5,
+    PWM_6,
+} PWM;
+
+void PWM_Init   (PWM pin);
+void PWM_StopPWM(PWM pin);
+void PWM_SetPWM (PWM pin, uint8_t dutyCycle);
 
 #endif /* SRC_PWM_API_PWM_H_ */

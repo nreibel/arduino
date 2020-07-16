@@ -12,6 +12,8 @@ typedef uint16_t time_t;
 // In ms
 #define OS_TIMER_GRANULARITY 1
 
+#define OS_SLEEP_MODE SLEEP_MODE_IDLE
+
 #define NUMBER_OF_BACKGROUND_TASKS 0
 
 typedef enum {
