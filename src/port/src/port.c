@@ -7,38 +7,38 @@
 
 #define PORT_NUMBER_OF_INT 2
 
-static void* Data_INT[PORT_NUMBER_OF_INT] = {NULL_PTR};
-static Callback Callback_INT[PORT_NUMBER_OF_INT] = {NULL_PTR};
+static volatile void* Data_INT[PORT_NUMBER_OF_INT] = {NULL_PTR};
+static Interrupt Interrupts_INT[PORT_NUMBER_OF_INT] = {NULL_PTR};
 
 ISR(INT0_vect)
 {
-    if (Callback_INT[0] != NULL_PTR)
+    if (Interrupts_INT[0] != NULL_PTR)
     {
-        ( *Callback_INT[0] )( Data_INT[0] );
+        ( *Interrupts_INT[0] )( Data_INT[0] );
     }
 }
 
 ISR(INT1_vect)
 {
-    if (Callback_INT[1] != NULL_PTR)
+    if (Interrupts_INT[1] != NULL_PTR)
     {
-        ( *Callback_INT[1] )( Data_INT[1] );
+        ( *Interrupts_INT[1] )( Data_INT[1] );
     }
 }
 
-Std_ReturnType Port_EnableInt(ExtInt input, Edge edge, Callback cbk, void *data)
+Std_ReturnType Port_EnableInt(ExtInt input, Edge edge, Interrupt cbk, volatile void *data)
 {
     switch(input)
     {
         case ExtInt_0:
             Data_INT[0] = data;
-            Callback_INT[0] = cbk;
+            Interrupts_INT[0] = cbk;
             SET_BITS(EICRA, edge, 0x3);
             SET_BIT(EIMSK, INT0);
             break;
         case ExtInt_1:
             Data_INT[1] = data;
-            Callback_INT[1] = cbk;
+            Interrupts_INT[1] = cbk;
             SET_BITS(EICRA, edge << 2, 0xC);
             SET_BIT(EIMSK, INT1);
             break;

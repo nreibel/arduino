@@ -52,7 +52,7 @@ typedef enum
     ExtInt_1,
 } ExtInt;
 
-Std_ReturnType Port_EnableInt           (ExtInt input, Edge edge, Callback cbk, void *data);
+Std_ReturnType Port_EnableInt           (ExtInt input, Edge edge, Interrupt cbk, volatile void *data);
 
 Std_ReturnType Port_SetDataDirection    (Port port, uint8_t  direction);
 Std_ReturnType Port_GetDataDirection    (Port port, uint8_t* direction);
