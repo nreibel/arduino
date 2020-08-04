@@ -7,7 +7,6 @@
 void HC595_Init();
 void HC595_Latch();
 void HC595_ShiftBit(uint8_t bit);
-
 void HC595_ShiftByte(uint8_t val);
 
 #if HC595_DAISY_CHAIN_COUNT > 1

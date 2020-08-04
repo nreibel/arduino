@@ -1,5 +1,4 @@
-#include "hc595.h"
-#include "hc595_prv.h"
+#include "hc595_cfg.h"
 #include "port.h"
 
 GPIO pinSerial = {Port_B, 0};

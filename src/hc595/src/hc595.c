@@ -2,6 +2,7 @@
 #include "hc595_prv.h"
 #include "hc595_cfg.h"
 #include "port.h"
+#include "os_cfg.h"
 
 #include <util/delay.h>
 
@@ -23,6 +24,7 @@ void HC595_Init()
 
 void HC595_Delay()
 {
+
     _delay_us(1);
 }
 
@@ -55,6 +57,7 @@ void HC595_ShiftByte(uint8_t val)
 {
     for (int i = 0 ; i < 8 ; i++)
     {
+        // TODO : use macros
         HC595_ShiftBit(val >> 7);
         val = val << 1;
     }
@@ -65,6 +68,7 @@ void HC595_ShiftWord(uint16_t val)
 {
     for (int i = 0 ; i < 16 ; i++)
     {
+        // TODO : use macros
         HC595_ShiftBit(val >> 15);
         val = val << 1;
     }
@@ -76,6 +80,7 @@ void HC595_ShiftDWord(uint32_t val)
 {
     for (int i = 0 ; i < 32 ; i++)
     {
+        // TODO : use macros
         HC595_ShiftBit(val >> 31);
         val = val << 1;
     }

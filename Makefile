@@ -1,5 +1,6 @@
 # Serial
 SERIAL_TTY = /dev/ttyUSB0
+SERIAL_BAUDRATE = 19200
 
 ARDUINO_LIBS = ./
 
