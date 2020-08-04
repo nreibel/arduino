@@ -24,7 +24,6 @@ void HC595_Init()
 
 void HC595_Delay()
 {
-
     _delay_us(1);
 }
 

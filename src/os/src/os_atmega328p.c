@@ -60,6 +60,8 @@ void Os_Init()
     TCNT2  = 0;              // Reset timer value
     TCCR2A = 0x2;            // CTC mode
 
+// TODO : OCR2A = ticks - 1 ??
+
 #if F_CPU == 16000000
     #if OS_TIMER_GRANULARITY == 16
         OCR2A  = 250;            // Count 250 ticks
