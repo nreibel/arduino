@@ -5,10 +5,12 @@
 #include "port.h"
 #include "hc595_cfg.h"
 
-extern GPIO pinSerial, pinLatch, pinClock;
+extern GPIO HC595_Pin_Serial;
+extern GPIO HC595_Pin_Latch;
+extern GPIO HC595_Pin_Clock;
 
 #if HC595_PIN_CLEAR == ON
-extern GPIO pinClear;
+extern GPIO HC595_Pin_Clear;
 #endif
 
 void HC595_Delay();

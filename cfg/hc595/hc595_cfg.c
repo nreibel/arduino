@@ -1,10 +1,10 @@
 #include "hc595_cfg.h"
 #include "port.h"
 
-GPIO pinSerial = {Port_B, 0};
-GPIO pinLatch  = {Port_B, 1};
-GPIO pinClock  = {Port_B, 2};
+GPIO HC595_Pin_Serial = {Port_B, 0};
+GPIO HC595_Pin_Latch  = {Port_B, 1};
+GPIO HC595_Pin_Clock  = {Port_B, 2};
 
 #if HC595_PIN_CLEAR == ON
-GPIO pinClear  = {Port_B, 3};
+GPIO HC595_Pin_Clear  = {Port_B, 3};
 #endif

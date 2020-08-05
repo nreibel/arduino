@@ -8,17 +8,17 @@
 
 void HC595_Init()
 {
-    Port_SetPinDataDirection(pinSerial, Output);
-    Port_SetPinDataDirection(pinClock,  Output);
-    Port_SetPinDataDirection(pinLatch,  Output);
+    Port_SetPinDataDirection(HC595_Pin_Serial, Output);
+    Port_SetPinDataDirection(HC595_Pin_Clock, Output);
+    Port_SetPinDataDirection(HC595_Pin_Latch, Output);
 
-    Port_SetPinState(pinSerial, Low);
-    Port_SetPinState(pinClock,  Low);
-    Port_SetPinState(pinLatch,  Low);
+    Port_SetPinState(HC595_Pin_Serial, Low);
+    Port_SetPinState(HC595_Pin_Clock, Low);
+    Port_SetPinState(HC595_Pin_Latch, Low);
 
 #if HC595_PIN_CLEAR == ON
-    Port_SetPinDataDirection(pinClear, Output);
-    Port_SetPinState(pinClear, High);
+    Port_SetPinDataDirection(HC595_Pin_Clear, Output);
+    Port_SetPinState(HC595_Pin_Clear, High);
 #endif
 }
 
@@ -43,13 +43,13 @@ void HC595_FallingEdge(GPIO pin)
 
 void HC595_ShiftBit(uint8_t bit)
 {
-    Port_SetPinState(pinSerial, bit ? High : Low);
-    HC595_RisingEdge(pinClock);
+    Port_SetPinState(HC595_Pin_Serial, bit ? High : Low);
+    HC595_RisingEdge(HC595_Pin_Clock);
 }
 
 void HC595_Latch()
 {
-    HC595_RisingEdge(pinLatch);
+    HC595_RisingEdge(HC595_Pin_Latch);
 }
 
 void HC595_ShiftByte(uint8_t val)
@@ -89,6 +89,6 @@ void HC595_ShiftDWord(uint32_t val)
 #if HC595_PIN_CLEAR == ON
 void HC595_Clear()
 {
-    HC595_FallingEdge(pinClear);
+    HC595_FallingEdge(HC595_Pin_Clear);
 }
 #endif
