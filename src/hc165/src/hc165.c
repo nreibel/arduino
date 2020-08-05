@@ -1,7 +1,6 @@
-#include "bits.h"
 #include "hc165.h"
 #include "hc165_prv.h"
-#include "hc165_cfg.h"
+#include "bits.h"
 #include "port.h"
 
 void HC165_Init()
