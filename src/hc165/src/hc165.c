@@ -13,20 +13,44 @@ void HC165_Init()
     Port_SetPinState(HC165_Pin_Latch, Low);
 }
 
-uint8_t HC165_ReadByte()
+int HC165_Read(void* buffer, int len)
 {
-    byte data = 0;
     State pinState;
 
     Port_SetPinState(HC165_Pin_Latch, High);
 
-    for (int i = 7 ; i >= 0 ; i--)
+    while(len-- > 0)
     {
-        Port_GetPinState(HC165_Pin_Serial, &pinState);
-        if (pinState == High) SET_BIT(data, i);
-        Port_RisingEdge(HC165_Pin_Clock);
+        byte *data = TYPECAST(buffer++, byte*);
+        for (int j = 7 ; j >= 0 ; j--)
+        {
+            Port_GetPinState(HC165_Pin_Serial, &pinState);
+            if (pinState == High) SET_BIT(*data, j);
+            Port_RisingEdge(HC165_Pin_Clock);
+        }
     }
 
     Port_SetPinState(HC165_Pin_Latch, Low);
+    return len;
+}
+
+uint8_t HC165_ReadByte()
+{
+    uint8_t data = 0;
+    HC165_Read(&data, 1);
+    return data;
+}
+
+uint16_t HC165_ReadWord()
+{
+    uint16_t data = 0;
+    HC165_Read(&data, 2);
+    return data;
+}
+
+uint32_t HC165_ReadDWord()
+{
+    uint32_t data = 0;
+    HC165_Read(&data, 4);
     return data;
 }
