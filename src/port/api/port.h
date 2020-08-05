@@ -59,6 +59,9 @@ Std_ReturnType Port_GetDataDirection    (Port port, uint8_t* direction);
 Std_ReturnType Port_SetValue            (Port port, uint8_t  value);
 Std_ReturnType Port_GetValue            (Port port, uint8_t* value);
 
+Std_ReturnType Port_RisingEdge          (GPIO gpio);
+Std_ReturnType Port_FallingEdge         (GPIO gpio);
+
 Std_ReturnType Port_SetPinDataDirection (GPIO pinDef, DataDirection  direction);
 Std_ReturnType Port_GetPinDataDirection (GPIO pinDef, DataDirection *direction);
 Std_ReturnType Port_SetPinState         (GPIO pinDef, State  pinState);

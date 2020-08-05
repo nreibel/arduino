@@ -2,9 +2,6 @@
 #include "hc595_prv.h"
 #include "hc595_cfg.h"
 #include "port.h"
-#include "os_cfg.h"
-
-#include <util/delay.h>
 
 void HC595_Init()
 {
@@ -22,34 +19,15 @@ void HC595_Init()
 #endif
 }
 
-void HC595_Delay()
-{
-    _delay_us(1);
-}
-
-void HC595_RisingEdge(GPIO pin)
-{
-    Port_SetPinState(pin, High);
-    HC595_Delay();
-    Port_SetPinState(pin, Low);
-}
-
-void HC595_FallingEdge(GPIO pin)
-{
-    Port_SetPinState(pin, Low);
-    HC595_Delay();
-    Port_SetPinState(pin, High);
-}
-
 void HC595_ShiftBit(uint8_t bit)
 {
     Port_SetPinState(HC595_Pin_Serial, bit ? High : Low);
-    HC595_RisingEdge(HC595_Pin_Clock);
+    Port_RisingEdge(HC595_Pin_Clock);
 }
 
 void HC595_Latch()
 {
-    HC595_RisingEdge(HC595_Pin_Latch);
+    Port_RisingEdge(HC595_Pin_Latch);
 }
 
 void HC595_ShiftByte(uint8_t val)
@@ -89,6 +67,6 @@ void HC595_ShiftDWord(uint32_t val)
 #if HC595_PIN_CLEAR == ON
 void HC595_Clear()
 {
-    HC595_FallingEdge(HC595_Pin_Clear);
+    Port_FallingEdge(HC595_Pin_Clear);
 }
 #endif

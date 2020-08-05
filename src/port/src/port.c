@@ -1,9 +1,11 @@
 #include "port.h"
 #include "bits.h"
 #include "types.h"
+#include "os_cfg.h"
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <util/delay.h>
 
 #define PORT_NUMBER_OF_INT 2
 
@@ -46,6 +48,22 @@ Std_ReturnType Port_EnableInt(ExtInt input, Edge edge, Interrupt cbk, volatile v
             HALT; // Should not get here
     }
 
+    return Status_OK;
+}
+
+Std_ReturnType Port_RisingEdge(GPIO pin)
+{
+    Port_SetPinState(pin, High);
+    _delay_us(1);
+    Port_SetPinState(pin, Low);
+    return Status_OK;
+}
+
+Std_ReturnType Port_FallingEdge(GPIO pin)
+{
+    Port_SetPinState(pin, Low);
+    _delay_us(1);
+    Port_SetPinState(pin, High);
     return Status_OK;
 }
 
