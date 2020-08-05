@@ -6,8 +6,7 @@
 #include "hc165_cfg.h"
 
 extern GPIO HC165_Pin_Serial;
-extern GPIO HC165_Pin_Load;
+extern GPIO HC165_Pin_Latch;
 extern GPIO HC165_Pin_Clock;
-extern GPIO HC165_Pin_ClockEnable;
 
 #endif /* SRC_HC165_API_PRV_H_ */
