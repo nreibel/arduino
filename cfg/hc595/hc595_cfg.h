@@ -1,7 +1,0 @@
-#ifndef SRC_HC595_CFG_H_
-#define SRC_HC595_CFG_H_
-
-#define HC595_PIN_CLEAR OFF
-#define HC595_DAISY_CHAIN_COUNT 2
-
-#endif /* SRC_HC595_CFG_H_ */
