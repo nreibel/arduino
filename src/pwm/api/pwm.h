@@ -9,7 +9,7 @@ typedef enum {
     PWM_6,
 } PWM;
 
-void PWM_Init   (PWM pin);
+void PWM_Init   (PWM pin, bool inverted);
 void PWM_StopPWM(PWM pin);
 void PWM_SetPWM (PWM pin, uint8_t dutyCycle);
 
