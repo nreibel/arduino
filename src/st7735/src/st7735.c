@@ -244,16 +244,16 @@ void ST7735_SetDrawWindow(int x1, int y1, int x2, int y2)
     // Set the column to write to
     ST7735_Command(ST7735_CASET);
     ST7735_Data(0);
-    ST7735_Data(x1);
+    ST7735_Data(x1 + ST7735_OFFXET_X);
     ST7735_Data(0);
-    ST7735_Data(x2);
+    ST7735_Data(x2 + ST7735_OFFXET_X);
 
     // Set the row range to write to
     ST7735_Command(ST7735_RASET);
     ST7735_Data(0);
-    ST7735_Data(y1);
+    ST7735_Data(y1 + ST7735_OFFXET_Y);
     ST7735_Data(0);
-    ST7735_Data(y2);
+    ST7735_Data(y2 + ST7735_OFFXET_Y);
 
     // Write to RAM
     ST7735_Command(ST7735_RAMWR);
