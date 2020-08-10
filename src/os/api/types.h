@@ -15,6 +15,7 @@ typedef enum {
     TRUE = 1
 } bool;
 
+typedef void (*Interrupt)(volatile void*);
 typedef Std_ReturnType (*Callback)(void*);
 
 typedef uint8_t  byte;

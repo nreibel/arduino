@@ -1,0 +1,9 @@
+#ifndef SRC_ADC_CFG_ADC_CFG_H_
+#define SRC_ADC_CFG_ADC_CFG_H_
+
+#include "adc.h"
+
+#define ADC_VREF_SELECT      ADC_VREF_AVCC
+#define ADC_PRESCALER_SELECT ADC_PRESCALER_128
+
+#endif // SRC_ADC_CFG_ADC_CFG_H_

@@ -1,90 +1,46 @@
 #include "hc595.h"
 #include "hc595_prv.h"
-#include "hc595_cfg.h"
+#include "bits.h"
 #include "port.h"
-
-#include <util/delay.h>
 
 void HC595_Init()
 {
-    Port_SetPinDataDirection(pinSerial, Output);
-    Port_SetPinDataDirection(pinClock,  Output);
-    Port_SetPinDataDirection(pinLatch,  Output);
+    Port_SetPinDataDirection(HC595_Pin_Serial, Output);
+    Port_SetPinDataDirection(HC595_Pin_Clock, Output);
+    Port_SetPinDataDirection(HC595_Pin_Latch, Output);
 
-    Port_SetPinState(pinSerial, Low);
-    Port_SetPinState(pinClock,  Low);
-    Port_SetPinState(pinLatch,  Low);
-
-#if HC595_PIN_CLEAR == ON
-    Port_SetPinDataDirection(pinClear, Output);
-    Port_SetPinState(pinClear, High);
-#endif
+    Port_SetPinState(HC595_Pin_Serial, Low);
+    Port_SetPinState(HC595_Pin_Clock, Low);
+    Port_SetPinState(HC595_Pin_Latch, Low);
 }
 
-void HC595_Delay()
+void HC595_Write(void* data, int len)
 {
-    _delay_us(1);
-}
-
-void HC595_RisingEdge(GPIO pin)
-{
-    Port_SetPinState(pin, High);
-    HC595_Delay();
-    Port_SetPinState(pin, Low);
-}
-
-void HC595_FallingEdge(GPIO pin)
-{
-    Port_SetPinState(pin, Low);
-    HC595_Delay();
-    Port_SetPinState(pin, High);
-}
-
-void HC595_ShiftBit(uint8_t bit)
-{
-    Port_SetPinState(pinSerial, bit ? High : Low);
-    HC595_RisingEdge(pinClock);
-}
-
-void HC595_Latch()
-{
-    HC595_RisingEdge(pinLatch);
-}
-
-void HC595_ShiftByte(uint8_t val)
-{
-    for (int i = 0 ; i < 8 ; i++)
+    for (int i = len-1 ; i >= 0 ; i--)
     {
-        HC595_ShiftBit(val >> 7);
-        val = val << 1;
+        byte val = READ_PU8(data+i);
+        for (int i = 0 ; i < 8 ; i++)
+        {
+            Port_SetPinState(HC595_Pin_Serial, GET_BIT(val, 7) ? High : Low);
+            Port_RisingEdge(HC595_Pin_Clock);
+            val = val << 1;
+        }
     }
+
+    Port_RisingEdge(HC595_Pin_Latch);
 }
 
-#if HC595_DAISY_CHAIN_COUNT > 1
-void HC595_ShiftWord(uint16_t val)
+void HC595_WriteByte(uint8_t val)
 {
-    for (int i = 0 ; i < 16 ; i++)
-    {
-        HC595_ShiftBit(val >> 15);
-        val = val << 1;
-    }
+    HC595_Write(&val, 1);
 }
-#endif
 
-#if HC595_DAISY_CHAIN_COUNT > 3
-void HC595_ShiftDWord(uint32_t val)
+void HC595_WriteWord(uint16_t val)
 {
-    for (int i = 0 ; i < 32 ; i++)
-    {
-        HC595_ShiftBit(val >> 31);
-        val = val << 1;
-    }
+    HC595_Write(&val, 2);
 }
-#endif
 
-#if HC595_PIN_CLEAR == ON
-void HC595_Clear()
+void HC595_WriteDWord(uint32_t val)
 {
-    HC595_FallingEdge(pinClear);
+    HC595_Write(&val, 4);
 }
-#endif

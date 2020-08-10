@@ -3,7 +3,6 @@
 #include "os_cfg.h"
 #include "app.h"
 #include "bits.h"
-#include "port.h"
 
 volatile time_t osTimer = {0};
 TimerConfig timerCfg[NUMBER_OF_TIMERS] = {0};
