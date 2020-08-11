@@ -95,37 +95,20 @@ Std_ReturnType ST7735_DrawXPM(char *xpm[], int xPos, int yPos, uint16_t bgColor,
     return Status_OK;
 }
 
-void ST7735_DrawXBM(const uint8_t *bits, int x, int y, int w, int h, uint16_t fgColor, uint16_t bgColor, int scale)
+uint16_t ST7735_RenderXbm(int x, int y, int w, int h, void *data)
 {
-    ST7735_SetDrawWindow(x, y, x+(scale*w)-1, y+(scale*h)-1);
-    for(int row = 0 ; row < h ; row++)
-    {
-        // Redraw line multiple times according to scaling
-        for (int _s1 = 0 ; _s1 < scale ; _s1++)
-        {
-            for(int col = 0 ; col < w ; col += 8)
-            {
-                // Handle end of line if width is not a multiple of 8
-                int num = col > w-8 ? w-col : 8;
+    UNUSED(h);
+    UNUSED(w);
 
-                byte b = pgm_read_byte(bits + col/8);
+    XbmRendererData *d = TYPECAST(data, XbmRendererData*);
+    byte b = pgm_read_byte(d->bits + y*d->bw + x/8);
+    return GET_BIT(b, x % 8) ? d->fgcolor : d->bgcolor;
+}
 
-                for(int k = 0 ; k < num ; k++)
-                {
-                    uint16_t color = GET_BIT(b, k) ? fgColor : bgColor;
-
-                    // Redraw pixel multiple times according to scaling
-                    for (int _s2 = 0 ; _s2 < scale ; _s2++)
-                    {
-                        ST7735_Color(color);
-                    }
-                }
-            }
-        }
-
-        // Advance 1 line
-        bits += (w+7)/8;
-    }
+void ST7735_DrawXBM(const uint8_t *bits, int x, int y, int w, int h, uint16_t fg, uint16_t bg, int scale)
+{
+    XbmRendererData data = { bits, fg, bg, (w+7)/8 };
+    ST7735_Render(x, y, w, h, ST7735_RenderXbm, &data, scale);
 }
 
 void ST7735_ClearScreen(uint16_t color)
@@ -138,18 +121,26 @@ void ST7735_DrawPixel(int x, int y, uint16_t color)
     ST7735_FillRectangle(x, y, 1, 1, color);
 }
 
-void ST7735_Render(int x, int y, int w, int h, ST7735_Renderer renderer, void* param)
+void ST7735_Render(int x, int y, int w, int h, ST7735_Renderer renderer, void* param, int scale)
 {
     //Set the drawing region
-    ST7735_SetDrawWindow(x, y, x+w-1, y+h-1);
+    ST7735_SetDrawWindow(x, y, x+(scale*w)-1, y+(scale*h)-1);
 
-    //Write color to each pixel
     for(int y = 0; y < h; y++)
     {
-        for(int x = 0; x < w; x++)
+        // Repeat each line according to scaling
+        for(int _s1 = 0; _s1 < scale; _s1++)
         {
-            uint16_t color = renderer(x, y, w, h, param);
-            ST7735_Color(color);
+            for(int x = 0; x < w; x++)
+            {
+                uint16_t color = renderer(x, y, w, h, param);
+
+                // Repeat each pixel according to scaling
+                for(int _s2 = 0; _s2 < scale; _s2++)
+                {
+                    ST7735_Color(color);
+                }
+            }
         }
     }
 }

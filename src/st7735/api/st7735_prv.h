@@ -31,4 +31,21 @@ void ST7735_Color(uint16_t color);
 void ST7735_Command(uint8_t command);
 void ST7735_SetDrawWindow(int x1, int y1, int x2, int y2);
 
+// Renderers
+uint16_t ST7735_RenderXbm(int x, int y, int w, int h, void *data);
+
+typedef struct {
+    // Bits making up the image
+    const uint8_t *bits;
+
+    // Foreground color
+    uint16_t fgcolor;
+
+    // Background color
+    uint16_t bgcolor;
+
+    // Speed up rendering by pre-calculating the number of bytes in a line
+    const int bw;
+} XbmRendererData;
+
 #endif // SRC_ST7735_API_ST7735_PRV_H_
