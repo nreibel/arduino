@@ -17,7 +17,7 @@
 // (re)set bit b in r, with mask m
 #define SET_BIT(r, b)        (r |= BIT(b))
 #define RESET_BIT(r, b)      (r &= ~BIT(b))
-#define SET_BITS(r, b, m)    (r = (r & ~(m)) | (b & m))
+#define SET_BITS(r, b, m)    (r = (r & ~(m)) | ((b) & (m)))
 
 // Split byte into half bytes
 #define HIGH_NIBBLE(b)       MASK((b) >> 4, 0xF)

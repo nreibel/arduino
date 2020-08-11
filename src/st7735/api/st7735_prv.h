@@ -27,6 +27,7 @@ extern GPIO ST7735_Pin_DC; // Data/command pin
 extern GPIO ST7735_Pin_RS; // Reset pin
 
 void ST7735_Data(uint8_t data);
+void ST7735_Color(uint16_t color);
 void ST7735_Command(uint8_t command);
 void ST7735_SetDrawWindow(int x1, int y1, int x2, int y2);
 

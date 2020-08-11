@@ -24,6 +24,7 @@
 #define ST7735_COLOR_NAVY     ST7735_BLUE(0x80)
 #define ST7735_COLOR_YELLOW   ST7735_RED(0xFF) | ST7735_GREEN(0xFF)
 #define ST7735_COLOR_FUSCHIA  ST7735_RED(0xFF) | ST7735_BLUE(0xFF)
+#define ST7735_COLOR_PINK     ST7735_RED(0xFF) | ST7735_GREEN(0xC0) | ST7735_BLUE(0xC0)
 #define ST7735_COLOR_CYAN     ST7735_GREEN(0xFF) | ST7735_BLUE(0xFF)
 #define ST7735_COLOR_PURPLE   ST7735_RED(0x80) | ST7735_BLUE(0x80)
 #define ST7735_COLOR_OLIVE    ST7735_RED(0x80) | ST7735_GREEN(0x80)
@@ -63,5 +64,6 @@ void ST7735_DrawString(int x, int y, char *str, uint16_t foregroundColor, uint16
 // Imaging
 void ST7735_Render(int x, int y, int w, int h, ST7735_Renderer renderer, void* param);
 void ST7735_DrawXBM(const uint8_t *bits, int xPos, int yPos, int width, int height, uint16_t foregroundColor, uint16_t backgroundColor);
+Std_ReturnType ST7735_DrawXPM(char *xpm[], int x, int y);
 
 #endif // SRC_ST7735_API_ST7735_H_
