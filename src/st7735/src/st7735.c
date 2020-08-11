@@ -32,27 +32,28 @@ void ST7735_Init()
     ST7735_Command(ST7735_DISPON);
 }
 
-void ST7735_DrawXBM(const uint8_t *bits, int xPos, int yPos, int width, int height, uint16_t foregroundColor, uint16_t backgroundColor)
+void ST7735_DrawXBM(const uint8_t *bits, int x, int y, int w, int h, uint16_t fgColor, uint16_t bgColor)
 {
-    ST7735_SetDrawWindow(xPos, yPos, xPos+width-1, yPos+height-1);
-    for(int row = 0 ; row < height ; row++)
+    ST7735_SetDrawWindow(x, y, x+w-1, y+h-1);
+    for(int row = 0 ; row < h ; row++)
     {
-        for(int col = 0 ; col < width ; /* do nothing */ )
+        for(int col = 0 ; col < w ; col += 8)
         {
-            int num = (col+8 >= width) ? width-col : 8;
+            // Handle end of line if width is not a multiple of 8
+            int num = col > w-8 ? w-col : 8;
+
             for(int k = 0 ; k < num ; k++)
             {
-                if (GET_BIT(pgm_read_byte(bits), k) != 0)
+                if ( GET_BIT(pgm_read_byte(bits), k) )
                 {
-                    ST7735_Data(HIGH_BYTE(foregroundColor));
-                    ST7735_Data(LOW_BYTE(foregroundColor));
+                    ST7735_Data(HIGH_BYTE(fgColor));
+                    ST7735_Data(LOW_BYTE(fgColor));
                 }
                 else
                 {
-                    ST7735_Data(HIGH_BYTE(backgroundColor));
-                    ST7735_Data(LOW_BYTE(backgroundColor));
+                    ST7735_Data(HIGH_BYTE(bgColor));
+                    ST7735_Data(LOW_BYTE(bgColor));
                 }
-                col++;
             }
             bits++;
         }
