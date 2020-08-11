@@ -63,7 +63,7 @@ Std_ReturnType Spi_WriteByte(uint8_t write, uint8_t *read)
     return retval;
 }
 
-Std_ReturnType Spi_WriteBufferSync(const void * data, int length)
+Std_ReturnType Spi_WriteBytes(void* data, int length)
 {
     Std_ReturnType retval = Status_Not_OK;
 
@@ -81,7 +81,7 @@ Std_ReturnType Spi_WriteBufferSync(const void * data, int length)
     return retval;
 }
 
-Std_ReturnType Spi_WriteBufferAsync(const void *data, int length)
+Std_ReturnType Spi_WriteAsync(void* data, int length)
 {
     Std_ReturnType ret = Status_Not_OK;
 
