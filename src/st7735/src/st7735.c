@@ -33,7 +33,7 @@ void ST7735_Init()
     ST7735_Command(ST7735_DISPON);
 }
 
-Std_ReturnType ST7735_DrawXPM(char *xpm[], int xPos, int yPos)
+Std_ReturnType ST7735_DrawXPM(char *xpm[], int xPos, int yPos, int scale)
 {
     int width, height, nbColors, sz;
     uint16_t colors[16];
@@ -53,19 +53,34 @@ Std_ReturnType ST7735_DrawXPM(char *xpm[], int xPos, int yPos)
         colors[i] = ST7735_RED(r) | ST7735_GREEN(g) | ST7735_BLUE(b);
 
         // Replace in image data all names with color index
-        for (int x = 1 + nbColors ; x < 1 + nbColors + height ; x++)
+        for (int x = 0 ; x < height ; x++)
+        {
             for (int y = 0 ; y < width ; y++)
-                if (xpm[x][y] == name) xpm[x][y] = i;
+            {
+                if (xpm[1 + nbColors + x][y] == name)
+                {
+                    xpm[1 + nbColors + x][y] = i;
+                }
+            }
+        }
     }
 
     // Draw the image
-    ST7735_SetDrawWindow(xPos, yPos, xPos+width-1, yPos+height-1);
-    for (int x = 1 + nbColors ; x < 1 + nbColors + height ; x++)
+    ST7735_SetDrawWindow(xPos, yPos, xPos+(width*scale)-1, yPos+(height*scale)-1);
+    for (int x = 0 ; x < height ; x++)
     {
-        for (int y = 0 ; y < width ; y++)
+        // Repeat each line with scale factor
+        for (int _s1 = 0 ; _s1 < scale ; _s1++)
         {
-            uint16_t idx = xpm[x][y];
-            ST7735_Color( colors[idx] );
+            for (int y = 0 ; y < width ; y++)
+            {
+                // Repeat each pixel with scale factor
+                uint16_t idx = xpm[1 + nbColors + x][y];
+                for (int _s2 = 0 ; _s2 < scale ; _s2++)
+                {
+                    ST7735_Color( colors[idx] );
+                }
+            }
         }
     }
 
