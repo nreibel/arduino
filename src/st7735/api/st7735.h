@@ -64,6 +64,6 @@ void ST7735_DrawString(int x, int y, char *str, uint16_t foregroundColor, uint16
 // Imaging
 void ST7735_Render(int x, int y, int w, int h, ST7735_Renderer renderer, void* param);
 void ST7735_DrawXBM(const uint8_t *bits, int xPos, int yPos, int width, int height, uint16_t foregroundColor, uint16_t backgroundColor);
-Std_ReturnType ST7735_DrawXPM(char *xpm[], int x, int y, int scale);
+Std_ReturnType ST7735_DrawXPM(char *xpm[], int x, int y, uint16_t bgColor, int scale);
 
 #endif // SRC_ST7735_API_ST7735_H_

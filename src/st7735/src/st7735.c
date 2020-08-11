@@ -33,7 +33,7 @@ void ST7735_Init()
     ST7735_Command(ST7735_DISPON);
 }
 
-Std_ReturnType ST7735_DrawXPM(char *xpm[], int xPos, int yPos, int scale)
+Std_ReturnType ST7735_DrawXPM(char *xpm[], int xPos, int yPos, uint16_t bgColor, int scale)
 {
     int width, height, nbColors, sz;
     uint16_t colors[16];
@@ -45,12 +45,21 @@ Std_ReturnType ST7735_DrawXPM(char *xpm[], int xPos, int yPos, int scale)
     // Read all colors
     for (int i = 0 ; i < nbColors ; i++)
     {
-        char name;
+        char name, chr;
         int r, g, b;
 
-        if ( sscanf(xpm[1+i], "%c c #%2x%2x%2x", &name, &r, &g, &b) != 4 ) return Status_Not_OK;
+        if ( sscanf(xpm[1+i], "%c c #%2x%2x%2x", &name, &r, &g, &b) == 4 )
+        {
+            // Actual color
+            colors[i] = ST7735_RED(r) | ST7735_GREEN(g) | ST7735_BLUE(b);
+        }
+        else if ( sscanf(xpm[1+i], "%c c Non%c", &name, &chr) == 2 && chr == 'e')
+        {
+            // Transparent color
+            colors[i] = bgColor;
+        }
+        else return Status_Not_OK;
 
-        colors[i] = ST7735_RED(r) | ST7735_GREEN(g) | ST7735_BLUE(b);
 
         // Replace in image data all names with color index
         for (int x = 0 ; x < height ; x++)
