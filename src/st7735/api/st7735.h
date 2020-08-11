@@ -42,6 +42,7 @@
 typedef uint16_t (*ST7735_Renderer)(int x, int y, int w, int h, void* data);
 
 void ST7735_Init();
+void ST7735_ClearScreen(uint16_t color);
 
 // Pixel drawing
 void ST7735_DrawPixel(int x, int y, uint16_t color);

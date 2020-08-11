@@ -59,6 +59,11 @@ void ST7735_DrawXBM(const uint8_t *bits, int xPos, int yPos, int width, int heig
     }
 }
 
+void ST7735_ClearScreen(uint16_t color)
+{
+    ST7735_FillRectangle(0, 0, ST7735_SCREEN_WIDTH, ST7735_SCREEN_HEIGHT, color);
+}
+
 void ST7735_DrawPixel(int x, int y, uint16_t color)
 {
     ST7735_FillRectangle(x, y, 1, 1, color);
