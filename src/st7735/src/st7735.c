@@ -60,7 +60,6 @@ Std_ReturnType ST7735_DrawXPM(char *xpm[], int xPos, int yPos, uint16_t bgColor,
         }
         else return Status_Not_OK;
 
-
         // Replace in image data all names with color index
         for (int x = 0 ; x < height ; x++)
         {
@@ -96,29 +95,36 @@ Std_ReturnType ST7735_DrawXPM(char *xpm[], int xPos, int yPos, uint16_t bgColor,
     return Status_OK;
 }
 
-void ST7735_DrawXBM(const uint8_t *bits, int x, int y, int w, int h, uint16_t fgColor, uint16_t bgColor)
+void ST7735_DrawXBM(const uint8_t *bits, int x, int y, int w, int h, uint16_t fgColor, uint16_t bgColor, int scale)
 {
-    ST7735_SetDrawWindow(x, y, x+w-1, y+h-1);
+    ST7735_SetDrawWindow(x, y, x+(scale*w)-1, y+(scale*h)-1);
     for(int row = 0 ; row < h ; row++)
     {
-        for(int col = 0 ; col < w ; col += 8)
+        // Redraw line multiple times according to scaling
+        for (int _s1 = 0 ; _s1 < scale ; _s1++)
         {
-            // Handle end of line if width is not a multiple of 8
-            int num = col > w-8 ? w-col : 8;
-
-            for(int k = 0 ; k < num ; k++)
+            for(int col = 0 ; col < w ; col += 8)
             {
-                if ( GET_BIT(pgm_read_byte(bits), k) )
+                // Handle end of line if width is not a multiple of 8
+                int num = col > w-8 ? w-col : 8;
+
+                byte b = pgm_read_byte(bits + col/8);
+
+                for(int k = 0 ; k < num ; k++)
                 {
-                    ST7735_Color(fgColor);
-                }
-                else
-                {
-                    ST7735_Color(bgColor);
+                    uint16_t color = GET_BIT(b, k) ? fgColor : bgColor;
+
+                    // Redraw pixel multiple times according to scaling
+                    for (int _s2 = 0 ; _s2 < scale ; _s2++)
+                    {
+                        ST7735_Color(color);
+                    }
                 }
             }
-            bits++;
         }
+
+        // Advance 1 line
+        bits += (w+7)/8;
     }
 }
 
