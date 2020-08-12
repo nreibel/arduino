@@ -3,7 +3,7 @@
 #include "gpio_uno.h"
 
 GPIO Spi_MOSI = GPIO_MOSI;
-GPIO Spi_MISO = GPIO_ISO;
+GPIO Spi_MISO = GPIO_MISO;
 GPIO Spi_SCK  = GPIO_SCK;
 
 GPIO SlaveSelect_Pins[SPI_NUMBER_OF_SLAVES] =

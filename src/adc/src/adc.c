@@ -19,7 +19,6 @@ ISR(ADC_vect)
     ready = TRUE;
 }
 
-
 void ADC_Init(bool pullUpEnabled)
 {
     // Poweron ADC
