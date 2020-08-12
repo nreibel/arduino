@@ -9,7 +9,6 @@
 #define GPIO_A3 {Port_C, 3}
 #define GPIO_A4 {Port_C, 4}
 #define GPIO_A5 {Port_C, 5}
-
 #define GPIO_13 {Port_B, 5}
 #define GPIO_12 {Port_B, 4}
 #define GPIO_11 {Port_B, 3}
