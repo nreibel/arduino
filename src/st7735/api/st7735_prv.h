@@ -36,7 +36,7 @@ uint16_t ST7735_RenderXbm(int x, int y, int w, int h, void *data);
 
 typedef struct {
     // Bits making up the image
-    const uint8_t *bits;
+    const __flash uint8_t *bits;
 
     // Foreground color
     uint16_t fgcolor;

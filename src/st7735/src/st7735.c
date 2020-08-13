@@ -101,11 +101,11 @@ uint16_t ST7735_RenderXbm(int x, int y, int w, int h, void *data)
     UNUSED(w);
 
     XbmRendererData *d = TYPECAST(data, XbmRendererData*);
-    byte b = pgm_read_byte(d->bits + y*d->bw + x/8);
+    byte b = d->bits[y*d->bw + x/8];
     return GET_BIT(b, x % 8) ? d->fgcolor : d->bgcolor;
 }
 
-void ST7735_DrawXBM(const uint8_t *bits, int x, int y, int w, int h, uint16_t fg, uint16_t bg, int scale)
+void ST7735_DrawXBM(const __flash uint8_t *bits, int x, int y, int w, int h, uint16_t fg, uint16_t bg, int scale)
 {
     XbmRendererData data = { bits, fg, bg, (w+7)/8 };
     ST7735_Render(x, y, w, h, ST7735_RenderXbm, &data, scale);
