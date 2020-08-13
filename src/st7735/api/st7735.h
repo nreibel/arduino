@@ -46,7 +46,8 @@ typedef char* st7735_xpm_t;
 typedef st7735_color_t (*ST7735_Renderer)(int x, int y, int w, int h, void* data);
 
 void ST7735_Init();
-void ST7735_ClearScreen(st7735_color_t c);
+void ST7735_ClearScreen();
+void ST7735_SetBackgroundColor(st7735_color_t c);
 
 // Pixel drawing
 void ST7735_DrawPixel(int x, int y, st7735_color_t c);
@@ -56,16 +57,16 @@ void ST7735_DrawLine(int x1, int y1, int x2, int y2, st7735_color_t c);
 // String and chars drawing
 void ST7735_CharTest(void);
 
-void ST7735_ClearChar(int x, int y, st7735_color_t bg);
-void ST7735_ClearChars(int x, int y, int length, st7735_color_t bg);
+void ST7735_ClearChar(int x, int y);
+void ST7735_ClearChars(int x, int y, int length);
 
-void ST7735_DrawChar(int x, int y, char c, st7735_color_t fg, st7735_color_t bg);
-void ST7735_DrawChars(int x, int y, char *bytes, int length, st7735_color_t fg, st7735_color_t bg);
-void ST7735_DrawString(int x, int y, char *str, st7735_color_t fg, st7735_color_t bg);
+void ST7735_DrawChar(int x, int y, char chr, st7735_color_t c);
+void ST7735_DrawChars(int x, int y, char *bytes, int length, st7735_color_t c);
+void ST7735_DrawString(int x, int y, char *str, st7735_color_t c);
 
 // Imaging
 void ST7735_Render(int x, int y, int w, int h, ST7735_Renderer renderer, void* param, int scale);
-void ST7735_DrawXBM(st7735_xbm_t *bits, int x, int y, int width, int height, st7735_color_t fg, st7735_color_t bg, int scale);
-Std_ReturnType ST7735_DrawXPM(st7735_xpm_t *xpm, int x, int y, st7735_color_t bg, int scale);
+void ST7735_DrawXBM(st7735_xbm_t *bits, int x, int y, int width, int height, st7735_color_t c, int scale);
+Std_ReturnType ST7735_DrawXPM(st7735_xpm_t *xpm, int x, int y, int scale);
 
 #endif // SRC_ST7735_API_ST7735_H_

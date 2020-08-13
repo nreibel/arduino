@@ -39,10 +39,7 @@ typedef struct {
     st7735_xbm_t *bits;
 
     // Foreground color
-    st7735_color_t fg;
-
-    // Background color
-    st7735_color_t bg;
+    st7735_color_t color;
 
     // Speed up rendering by pre-calculating the number of bytes in a line
     const int bw;

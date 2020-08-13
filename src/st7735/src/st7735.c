@@ -9,6 +9,8 @@
 #include "charset.h"
 #include "stdio.h"
 
+static st7735_color_t st7735_bg_color = ST7735_COLOR_BLACK;
+
 void ST7735_Init()
 {
     // Init GPIO's
@@ -33,7 +35,12 @@ void ST7735_Init()
     ST7735_Command(ST7735_DISPON);
 }
 
-Std_ReturnType ST7735_DrawXPM(st7735_xpm_t *xpm, int xPos, int yPos, st7735_color_t bg, int scale)
+void ST7735_SetBackgroundColor(st7735_color_t c)
+{
+    st7735_bg_color = c;
+}
+
+Std_ReturnType ST7735_DrawXPM(st7735_xpm_t *xpm, int xPos, int yPos, int scale)
 {
     int width, height, nbColors, sz;
     st7735_color_t colors[16];
@@ -61,7 +68,7 @@ Std_ReturnType ST7735_DrawXPM(st7735_xpm_t *xpm, int xPos, int yPos, st7735_colo
         else if ( sscanf(xpm[1+i], "%c c Non%c", &name, &chr) == 2 && chr == 'e')
         {
             // Transparent color
-            colors[i] = bg;
+            colors[i] = st7735_bg_color;
         }
         else return Status_Not_OK;
 
@@ -107,18 +114,18 @@ st7735_color_t ST7735_RenderXbm(int x, int y, int w, int h, void *data)
 
     XbmRendererData *d = TYPECAST(data, XbmRendererData*);
     byte b = d->bits[y*d->bw + x/8];
-    return GET_BIT(b, x % 8) ? d->fg : d->bg;
+    return GET_BIT(b, x % 8) ? d->color : st7735_bg_color;
 }
 
-void ST7735_DrawXBM(st7735_xbm_t *bits, int x, int y, int w, int h, st7735_color_t fg, st7735_color_t bg, int scale)
+void ST7735_DrawXBM(st7735_xbm_t *bits, int x, int y, int w, int h, st7735_color_t c, int scale)
 {
-    XbmRendererData data = { bits, fg, bg, (w+7)/8 };
+    XbmRendererData data = { bits, c, (w+7)/8 };
     ST7735_Render(x, y, w, h, ST7735_RenderXbm, &data, scale);
 }
 
-void ST7735_ClearScreen(st7735_color_t c)
+void ST7735_ClearScreen()
 {
-    ST7735_FillRectangle(0, 0, ST7735_SCREEN_WIDTH, ST7735_SCREEN_HEIGHT, c);
+    ST7735_FillRectangle(0, 0, ST7735_SCREEN_WIDTH, ST7735_SCREEN_HEIGHT, st7735_bg_color);
 }
 
 void ST7735_DrawPixel(int x, int y, st7735_color_t c)
@@ -217,7 +224,7 @@ void ST7735_CharTest(void)
 
     for (int i = 0x20 ; i <= 0x7F ; i++)
     {
-        ST7735_DrawChar(8*chr++, 10*line, i, ST7735_COLOR_RED, ST7735_COLOR_BLACK);
+        ST7735_DrawChar(8*chr++, 10*line, i, ST7735_COLOR_RED);
 
         if (chr % 16 == 0)
         {
@@ -227,7 +234,7 @@ void ST7735_CharTest(void)
     }
 }
 
-void ST7735_DrawChar(int x, int y, char chr, st7735_color_t fg, st7735_color_t bg)
+void ST7735_DrawChar(int x, int y, char chr, st7735_color_t c)
 {
     if ( ! BETWEEN(chr, 0x20, 0x7E) ) return;
 
@@ -238,28 +245,21 @@ void ST7735_DrawChar(int x, int y, char chr, st7735_color_t fg, st7735_color_t b
         for (int dx = 0 ; dx < ST7735_CHARSET_WIDTH ; dx++)
         {
             byte b = pgm_read_byte(&s_st7735_charset[chr-0x20][dx]);
-            if (IS_SET_BIT(b, dy))
-            {
-                ST7735_Color(fg);
-            }
-            else
-            {
-                ST7735_Color(bg);
-            }
+            ST7735_Color( IS_SET_BIT(b, dy) ? c : st7735_bg_color );
         }
     }
 }
 
-void ST7735_DrawChars(int x, int y, char *chars, int length, st7735_color_t fg, st7735_color_t bg)
+void ST7735_DrawChars(int x, int y, char *chars, int length, st7735_color_t c)
 {
     for (int i = 0 ; i < length ; i++)
     {
-        ST7735_DrawChar(x, y, chars[i], fg, bg);
+        ST7735_DrawChar(x, y, chars[i], c);
         x += ST7735_CHARSET_WIDTH + ST7735_CHAR_SPACING;
     }
 }
 
-void ST7735_ClearChar(int x, int y, st7735_color_t bg)
+void ST7735_ClearChar(int x, int y)
 {
     ST7735_SetDrawWindow(x, y, x+ST7735_CHARSET_WIDTH-1, y+ST7735_CHARSET_HEIGHT-1);
 
@@ -269,25 +269,25 @@ void ST7735_ClearChar(int x, int y, st7735_color_t bg)
         // 5 pixels width
         for (int dx = 0 ; dx < ST7735_CHARSET_WIDTH ; dx++)
         {
-            ST7735_Color(bg);
+            ST7735_Color(st7735_bg_color);
         }
     }
 }
 
-void ST7735_ClearChars(int x, int y, int length, st7735_color_t bg)
+void ST7735_ClearChars(int x, int y, int length)
 {
     for (int i = 0 ; i < length ; i++)
     {
-        ST7735_ClearChar(x, y, bg);
+        ST7735_ClearChar(x, y);
         x += ST7735_CHARSET_WIDTH + ST7735_CHAR_SPACING;
     }
 }
 
-void ST7735_DrawString(int x, int y, char* str, st7735_color_t fg, st7735_color_t bg)
+void ST7735_DrawString(int x, int y, char* str, st7735_color_t c)
 {
     while(*str != 0)
     {
-        ST7735_DrawChar(x, y, READ_PU8(str++), fg, bg);
+        ST7735_DrawChar(x, y, READ_PU8(str++), c);
         x += ST7735_CHARSET_WIDTH + ST7735_CHAR_SPACING;
     }
 }
