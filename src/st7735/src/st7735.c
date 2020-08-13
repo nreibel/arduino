@@ -33,10 +33,10 @@ void ST7735_Init()
     ST7735_Command(ST7735_DISPON);
 }
 
-Std_ReturnType ST7735_DrawXPM(st7735_xpm_t *xpm, int xPos, int yPos, uint16_t bgColor, int scale)
+Std_ReturnType ST7735_DrawXPM(st7735_xpm_t *xpm, int xPos, int yPos, st7735_color_t bg, int scale)
 {
     int width, height, nbColors, sz;
-    uint16_t colors[16];
+    st7735_color_t colors[16];
 
     // Read image attributes
     if ( sscanf(xpm[0], "%d %d %d %d", &width, &height, &nbColors, &sz) != 4 ) return Status_Not_OK;
@@ -61,7 +61,7 @@ Std_ReturnType ST7735_DrawXPM(st7735_xpm_t *xpm, int xPos, int yPos, uint16_t bg
         else if ( sscanf(xpm[1+i], "%c c Non%c", &name, &chr) == 2 && chr == 'e')
         {
             // Transparent color
-            colors[i] = bgColor;
+            colors[i] = bg;
         }
         else return Status_Not_OK;
 
@@ -88,7 +88,7 @@ Std_ReturnType ST7735_DrawXPM(st7735_xpm_t *xpm, int xPos, int yPos, uint16_t bg
             for (int y = 0 ; y < width ; y++)
             {
                 // Repeat each pixel with scale factor
-                uint16_t idx = xpm[1 + nbColors + x][y];
+                int idx = xpm[1 + nbColors + x][y];
                 for (int _s2 = 0 ; _s2 < scale ; _s2++)
                 {
                     ST7735_Color( colors[idx] );
@@ -100,30 +100,30 @@ Std_ReturnType ST7735_DrawXPM(st7735_xpm_t *xpm, int xPos, int yPos, uint16_t bg
     return Status_OK;
 }
 
-uint16_t ST7735_RenderXbm(int x, int y, int w, int h, void *data)
+st7735_color_t ST7735_RenderXbm(int x, int y, int w, int h, void *data)
 {
     UNUSED(h);
     UNUSED(w);
 
     XbmRendererData *d = TYPECAST(data, XbmRendererData*);
     byte b = d->bits[y*d->bw + x/8];
-    return GET_BIT(b, x % 8) ? d->fgcolor : d->bgcolor;
+    return GET_BIT(b, x % 8) ? d->fg : d->bg;
 }
 
-void ST7735_DrawXBM(st7735_xbm_t *bits, int x, int y, int w, int h, uint16_t fg, uint16_t bg, int scale)
+void ST7735_DrawXBM(st7735_xbm_t *bits, int x, int y, int w, int h, st7735_color_t fg, st7735_color_t bg, int scale)
 {
     XbmRendererData data = { bits, fg, bg, (w+7)/8 };
     ST7735_Render(x, y, w, h, ST7735_RenderXbm, &data, scale);
 }
 
-void ST7735_ClearScreen(uint16_t color)
+void ST7735_ClearScreen(st7735_color_t c)
 {
-    ST7735_FillRectangle(0, 0, ST7735_SCREEN_WIDTH, ST7735_SCREEN_HEIGHT, color);
+    ST7735_FillRectangle(0, 0, ST7735_SCREEN_WIDTH, ST7735_SCREEN_HEIGHT, c);
 }
 
-void ST7735_DrawPixel(int x, int y, uint16_t color)
+void ST7735_DrawPixel(int x, int y, st7735_color_t c)
 {
-    ST7735_FillRectangle(x, y, 1, 1, color);
+    ST7735_FillRectangle(x, y, 1, 1, c);
 }
 
 void ST7735_Render(int x, int y, int w, int h, ST7735_Renderer renderer, void* param, int scale)
@@ -138,19 +138,19 @@ void ST7735_Render(int x, int y, int w, int h, ST7735_Renderer renderer, void* p
         {
             for(int x = 0; x < w; x++)
             {
-                uint16_t color = renderer(x, y, w, h, param);
+                st7735_color_t c = renderer(x, y, w, h, param);
 
                 // Repeat each pixel according to scaling
                 for(int _s2 = 0; _s2 < scale; _s2++)
                 {
-                    ST7735_Color(color);
+                    ST7735_Color(c);
                 }
             }
         }
     }
 }
 
-void ST7735_DrawLine(int x1, int y1, int x2, int y2, uint16_t color)
+void ST7735_DrawLine(int x1, int y1, int x2, int y2, st7735_color_t c)
 {
     // Integer only implementation of Bresenham's algorythm
     int CurrentX = x1, CurrentY = y1;
@@ -170,7 +170,7 @@ void ST7735_DrawLine(int x1, int y1, int x2, int y2, uint16_t color)
         Dy = -Dy;
     }
 
-    ST7735_DrawPixel(x1, y1, color);
+    ST7735_DrawPixel(x1, y1, c);
 
     if (Dy <= Dx)
     {
@@ -185,7 +185,7 @@ void ST7735_DrawLine(int x1, int y1, int x2, int y2, uint16_t color)
                 TwoDxAccumulatedError -= 2*Dx;
             }
 
-            ST7735_DrawPixel(CurrentX, CurrentY, color);
+            ST7735_DrawPixel(CurrentX, CurrentY, c);
         }
         while(CurrentX != x2);
     }
@@ -202,12 +202,12 @@ void ST7735_DrawLine(int x1, int y1, int x2, int y2, uint16_t color)
                 TwoDyAccumulatedError -= 2*Dy;
             }
 
-            ST7735_DrawPixel(CurrentX, CurrentY, color);
+            ST7735_DrawPixel(CurrentX, CurrentY, c);
         }
         while(CurrentY != y2);
     }
 
-    ST7735_DrawPixel(x2, y2, color);
+    ST7735_DrawPixel(x2, y2, c);
 }
 
 void ST7735_CharTest(void)
@@ -227,7 +227,7 @@ void ST7735_CharTest(void)
     }
 }
 
-void ST7735_DrawChar(int x, int y, char chr, uint16_t foregroundColor, uint16_t backgroundColor)
+void ST7735_DrawChar(int x, int y, char chr, st7735_color_t fg, st7735_color_t bg)
 {
     if ( ! BETWEEN(chr, 0x20, 0x7E) ) return;
 
@@ -240,26 +240,26 @@ void ST7735_DrawChar(int x, int y, char chr, uint16_t foregroundColor, uint16_t 
             byte b = pgm_read_byte(&s_st7735_charset[chr-0x20][dx]);
             if (IS_SET_BIT(b, dy))
             {
-                ST7735_Color(foregroundColor);
+                ST7735_Color(fg);
             }
             else
             {
-                ST7735_Color(backgroundColor);
+                ST7735_Color(bg);
             }
         }
     }
 }
 
-void ST7735_DrawChars(int x, int y, char *chars, int length, uint16_t foregroundColor, uint16_t backgroundColor)
+void ST7735_DrawChars(int x, int y, char *chars, int length, st7735_color_t fg, st7735_color_t bg)
 {
     for (int i = 0 ; i < length ; i++)
     {
-        ST7735_DrawChar(x, y, chars[i], foregroundColor, backgroundColor);
+        ST7735_DrawChar(x, y, chars[i], fg, bg);
         x += ST7735_CHARSET_WIDTH + ST7735_CHAR_SPACING;
     }
 }
 
-void ST7735_ClearChar(int x, int y, uint16_t backgroundColor)
+void ST7735_ClearChar(int x, int y, st7735_color_t bg)
 {
     ST7735_SetDrawWindow(x, y, x+ST7735_CHARSET_WIDTH-1, y+ST7735_CHARSET_HEIGHT-1);
 
@@ -269,30 +269,30 @@ void ST7735_ClearChar(int x, int y, uint16_t backgroundColor)
         // 5 pixels width
         for (int dx = 0 ; dx < ST7735_CHARSET_WIDTH ; dx++)
         {
-            ST7735_Color(backgroundColor);
+            ST7735_Color(bg);
         }
     }
 }
 
-void ST7735_ClearChars(int x, int y, int length, uint16_t backgroundColor)
+void ST7735_ClearChars(int x, int y, int length, st7735_color_t bg)
 {
     for (int i = 0 ; i < length ; i++)
     {
-        ST7735_ClearChar(x, y, backgroundColor);
+        ST7735_ClearChar(x, y, bg);
         x += ST7735_CHARSET_WIDTH + ST7735_CHAR_SPACING;
     }
 }
 
-void ST7735_DrawString(int x, int y, char* str, uint16_t foregroundColor, uint16_t backgroundColor)
+void ST7735_DrawString(int x, int y, char* str, st7735_color_t fg, st7735_color_t bg)
 {
     while(*str != 0)
     {
-        ST7735_DrawChar(x, y, READ_PU8(str++), foregroundColor, backgroundColor);
+        ST7735_DrawChar(x, y, READ_PU8(str++), fg, bg);
         x += ST7735_CHARSET_WIDTH + ST7735_CHAR_SPACING;
     }
 }
 
-void ST7735_FillRectangle(int x, int y, int w, int h, uint16_t color)
+void ST7735_FillRectangle(int x, int y, int w, int h, st7735_color_t c)
 {
     //Set the drawing region
     ST7735_SetDrawWindow(x, y, x+w-1, y+h-1);
@@ -300,7 +300,7 @@ void ST7735_FillRectangle(int x, int y, int w, int h, uint16_t color)
     //Write color to each pixel
     for(int x = 0; x < w*h; x++)
     {
-        ST7735_Color(color);
+        ST7735_Color(c);
     }
 }
 
@@ -336,7 +336,7 @@ void ST7735_Data(uint8_t data)
     Spi_WriteByte(data, NULL_PTR);
 }
 
-void ST7735_Color(uint16_t color)
+void ST7735_Color(st7735_color_t color)
 {
     Spi_WriteByte(HIGH_BYTE(color), NULL_PTR);
     Spi_WriteByte(LOW_BYTE(color), NULL_PTR);
