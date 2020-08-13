@@ -40,6 +40,8 @@
 #define ST7735_SCREEN_ORIENTATION_PORTRAIT      0x0
 #define ST7735_SCREEN_ORIENTATION_PORTRAIT_INV  ST7735_MADCTL_MY | ST7735_MADCTL_MX
 
+typedef const __flash uint8_t st7735_xbm_t;
+typedef char* st7735_xpm_t;
 typedef uint16_t (*ST7735_Renderer)(int x, int y, int w, int h, void* data);
 
 void ST7735_Init();
@@ -63,7 +65,7 @@ void ST7735_DrawString(int x, int y, char *str, uint16_t foregroundColor, uint16
 
 // Imaging
 void ST7735_Render(int x, int y, int w, int h, ST7735_Renderer renderer, void* param, int scale);
-void ST7735_DrawXBM(const __flash uint8_t *bits, int x, int y, int width, int height, uint16_t foregroundColor, uint16_t backgroundColor, int scale);
-Std_ReturnType ST7735_DrawXPM(char *xpm[], int x, int y, uint16_t bgColor, int scale);
+void ST7735_DrawXBM(st7735_xbm_t *bits, int x, int y, int width, int height, uint16_t foregroundColor, uint16_t backgroundColor, int scale);
+Std_ReturnType ST7735_DrawXPM(st7735_xpm_t *xpm, int x, int y, uint16_t bgColor, int scale);
 
 #endif // SRC_ST7735_API_ST7735_H_

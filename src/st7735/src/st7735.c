@@ -33,13 +33,15 @@ void ST7735_Init()
     ST7735_Command(ST7735_DISPON);
 }
 
-Std_ReturnType ST7735_DrawXPM(char *xpm[], int xPos, int yPos, uint16_t bgColor, int scale)
+Std_ReturnType ST7735_DrawXPM(st7735_xpm_t *xpm, int xPos, int yPos, uint16_t bgColor, int scale)
 {
     int width, height, nbColors, sz;
     uint16_t colors[16];
 
     // Read image attributes
     if ( sscanf(xpm[0], "%d %d %d %d", &width, &height, &nbColors, &sz) != 4 ) return Status_Not_OK;
+
+    // Can't handle more than 1 byte color indices
     if (sz != 1) return Status_Not_OK;
 
     // Read all colors
@@ -105,7 +107,7 @@ uint16_t ST7735_RenderXbm(int x, int y, int w, int h, void *data)
     return GET_BIT(b, x % 8) ? d->fgcolor : d->bgcolor;
 }
 
-void ST7735_DrawXBM(const __flash uint8_t *bits, int x, int y, int w, int h, uint16_t fg, uint16_t bg, int scale)
+void ST7735_DrawXBM(st7735_xbm_t *bits, int x, int y, int w, int h, uint16_t fg, uint16_t bg, int scale)
 {
     XbmRendererData data = { bits, fg, bg, (w+7)/8 };
     ST7735_Render(x, y, w, h, ST7735_RenderXbm, &data, scale);
