@@ -44,6 +44,9 @@ Std_ReturnType ST7735_DrawXPM(st7735_xpm_t *xpm, int xPos, int yPos, uint16_t bg
     // Can't handle more than 1 byte color indices
     if (sz != 1) return Status_Not_OK;
 
+    // Can't handle more than 16 colors
+    if (nbColors > 16) return Status_Not_OK;
+
     // Read all colors
     for (int i = 0 ; i < nbColors ; i++)
     {
