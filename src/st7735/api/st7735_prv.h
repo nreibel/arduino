@@ -20,9 +20,13 @@
 #define ST7735_MADCTL  0x36
 #define ST7735_COLMOD  0x3A
 
-#define ST7735_MADCTL_MY 0x80
-#define ST7735_MADCTL_MX 0x40
-#define ST7735_MADCTL_MV 0x20
+#define ST7735_MADCTL_MY BIT(7)
+#define ST7735_MADCTL_MX BIT(6)
+#define ST7735_MADCTL_MV BIT(5)
+
+#define ST7735_COLMOD_12_BPP 3
+#define ST7735_COLMOD_16_BPP 5
+#define ST7735_COLMOD_18_BPP 6
 
 extern GPIO ST7735_Pin_DC; // Data/command pin
 

@@ -30,7 +30,7 @@ void ST7735_Init()
 
     // 16bits per pixel
     ST7735_Command(ST7735_COLMOD);
-    ST7735_Data(0x05);
+    ST7735_Data(ST7735_COLMOD_16_BPP);
 
     ST7735_Command(ST7735_DISPON);
 }
