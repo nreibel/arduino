@@ -32,8 +32,9 @@ ISR(TWI_vect)
         case TW_SR_STOP: // Received STOP or REPEATED START
             break;
         case TW_BUS_ERROR:
+            // TODO : handle bus error
+            break;
         default:
-            // TODO : handle bus error, unhandled case
             HALT;
     }
 

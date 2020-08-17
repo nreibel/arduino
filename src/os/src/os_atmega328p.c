@@ -6,8 +6,8 @@
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
 
-extern volatile time_t osTimer;
-extern TimerConfig timerCfg[NUMBER_OF_TIMERS];
+volatile time_t osTimer = {0};
+TimerConfig timerCfg[NUMBER_OF_TIMERS] = {0};
 
 ISR(TIMER2_COMPA_vect)
 {

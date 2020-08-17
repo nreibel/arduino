@@ -4,8 +4,8 @@
 #include "app.h"
 #include "bits.h"
 
-volatile time_t osTimer = {0};
-TimerConfig timerCfg[NUMBER_OF_TIMERS] = {0};
+extern volatile time_t osTimer;
+extern TimerConfig timerCfg[NUMBER_OF_TIMERS];
 
 void Os_Wait(time_t ms)
 {
