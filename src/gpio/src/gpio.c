@@ -4,7 +4,108 @@
 #include "os_cfg.h"
 
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include <util/delay.h>
+
+static volatile void* Data_INT0 = NULL_PTR;
+static volatile void* Data_INT1 = NULL_PTR;
+
+static Interrupt Interrupts_INT0 = NULL_PTR;
+static Interrupt Interrupts_INT1 = NULL_PTR;
+
+ISR(INT0_vect)
+{
+    if (Interrupts_INT0 != NULL_PTR)
+    {
+        (*Interrupts_INT0)(Data_INT0);
+    }
+}
+
+ISR(INT1_vect)
+{
+    if (Interrupts_INT1 != NULL_PTR)
+    {
+        (*Interrupts_INT1)(Data_INT1);
+    }
+}
+
+Std_ReturnType GPIO_EnableInterrupt(GPIO pin, GPIO_Edge edge, Interrupt cbk, volatile void *data)
+{
+    byte eicra = EICRA;
+    byte eimsk = EIMSK;
+
+    switch(pin)
+    {
+        case GPIO_INT0:
+        {
+            SET_BIT(eimsk, INT0);
+
+            switch(edge)
+            {
+                case GPIO_Edge_Low:
+                    RESET_BIT(eicra, ISC01);
+                    RESET_BIT(eicra, ISC00);
+                    break;
+                case GPIO_Edge_Both:
+                    RESET_BIT(eicra, ISC01);
+                    SET_BIT(eicra, ISC00);
+                    break;
+                case GPIO_Edge_Falling:
+                    SET_BIT(eicra, ISC01);
+                    RESET_BIT(eicra, ISC00);
+                    break;
+                case GPIO_Edge_Rising:
+                    SET_BIT(eicra, ISC01);
+                    SET_BIT(eicra, ISC00);
+                    break;
+                default:
+                    return Status_Not_OK;
+            }
+
+            Data_INT0 = data;
+            Interrupts_INT0 = cbk;
+
+            break;
+        }
+        case GPIO_INT1:
+        {
+            SET_BIT(eimsk, INT1);
+
+            switch(edge)
+            {
+                case GPIO_Edge_Low:
+                    RESET_BIT(eicra, ISC11);
+                    RESET_BIT(eicra, ISC10);
+                    break;
+                case GPIO_Edge_Both:
+                    RESET_BIT(eicra, ISC11);
+                    SET_BIT(eicra, ISC10);
+                    break;
+                case GPIO_Edge_Falling:
+                    SET_BIT(eicra, ISC11);
+                    RESET_BIT(eicra, ISC10);
+                    break;
+                case GPIO_Edge_Rising:
+                    SET_BIT(eicra, ISC11);
+                    SET_BIT(eicra, ISC10);
+                    break;
+                default:
+                    return Status_Not_OK;
+            }
+
+            Data_INT1 = data;
+            Interrupts_INT1 = cbk;
+
+            break;
+        }
+        default: return Status_Not_OK;
+    }
+
+    EICRA = eicra;
+    EIMSK = eimsk;
+
+    return Status_OK;
+}
 
 Std_ReturnType GPIO_SetDataDirection(GPIO pin, GPIO_DataDirection direction)
 {
@@ -61,7 +162,7 @@ Std_ReturnType GPIO_GetState(GPIO pin, GPIO_State *state)
         case GPIO_D5:
         case GPIO_D6:
         case GPIO_D7:
-            *state = GET_BIT(PIND, pin - GPIO_D0) ? GPIO_High : GPIO_Low;
+            *state = IS_SET_BIT(PIND, pin - GPIO_D0) ? GPIO_High : GPIO_Low;
             break;
 
         case GPIO_D8:
@@ -70,7 +171,7 @@ Std_ReturnType GPIO_GetState(GPIO pin, GPIO_State *state)
         case GPIO_D11:
         case GPIO_D12:
         case GPIO_D13:
-            *state = GET_BIT(PINB, pin - GPIO_D8) ? GPIO_High : GPIO_Low;
+            *state = IS_SET_BIT(PINB, pin - GPIO_D8) ? GPIO_High : GPIO_Low;
             break;
 
         case GPIO_A0:
@@ -79,7 +180,7 @@ Std_ReturnType GPIO_GetState(GPIO pin, GPIO_State *state)
         case GPIO_A3:
         case GPIO_A4:
         case GPIO_A5:
-            *state = GET_BIT(PINC, pin - GPIO_A0) ? GPIO_High : GPIO_Low;
+            *state = IS_SET_BIT(PINC, pin - GPIO_A0) ? GPIO_High : GPIO_Low;
             break;
 
         default:

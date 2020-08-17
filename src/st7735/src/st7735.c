@@ -114,7 +114,7 @@ st7735_color_t ST7735_RenderXbm(int x, int y, int w, int h, void *data)
 
     XbmRendererData *d = TYPECAST(data, XbmRendererData*);
     byte b = d->bits[y*d->bw + x/8];
-    return GET_BIT(b, x % 8) ? d->color : st7735_bg_color;
+    return IS_SET_BIT(b, x % 8) ? d->color : st7735_bg_color;
 }
 
 void ST7735_DrawXBM(st7735_xbm_t *bits, int x, int y, int w, int h, st7735_color_t c, int scale)

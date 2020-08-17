@@ -11,13 +11,10 @@
 // Apply mask
 #define MASK(x, m)           ((x) & (m))
 
-// Get bit at position n
-#define GET_BIT(x, n)        MASK((x) >> (n), 0x1)
-
 // (re)set bit b in r, with mask m
 #define SET_BIT(r, b)        (r |= BIT(b))
 #define RESET_BIT(r, b)      (r &= ~BIT(b))
-#define SET_BITS(r, b, m)    (r = (r & ~(m)) | ((b) & (m)))
+#define SET_BITS(r, b, m)    (r = MASK(r, ~(m)) | MASK(b, m))
 
 // Split byte into half bytes
 #define HIGH_NIBBLE(b)       MASK((b) >> 4, 0xF)

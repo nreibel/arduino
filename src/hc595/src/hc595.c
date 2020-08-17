@@ -21,7 +21,7 @@ void HC595_Write(buffer_t data, int len)
         byte val = READ_PU8(data+i-1);
         for (int j = 8 ; j > 0 ; j--)
         {
-            GPIO_State st = GET_BIT(val, j-1) ? GPIO_High : GPIO_Low;
+            GPIO_State st = IS_SET_BIT(val, j-1) ? GPIO_High : GPIO_Low;
             GPIO_SetState(HC595_Pin_Serial, st);
             GPIO_RisingEdge(HC595_Pin_Clock);
         }

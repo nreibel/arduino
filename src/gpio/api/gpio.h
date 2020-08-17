@@ -52,10 +52,20 @@ typedef enum
     GPIO_High
 } GPIO_State;
 
+typedef enum
+{
+    GPIO_Edge_Low,
+    GPIO_Edge_Both,
+    GPIO_Edge_Falling,
+    GPIO_Edge_Rising
+} GPIO_Edge;
+
 Std_ReturnType GPIO_SetDataDirection(GPIO pin, GPIO_DataDirection direction);
 Std_ReturnType GPIO_GetState(GPIO pin, GPIO_State *state);
 Std_ReturnType GPIO_SetState(GPIO pin, GPIO_State state);
 Std_ReturnType GPIO_RisingEdge(GPIO pin);
 Std_ReturnType GPIO_FallingEdge(GPIO pin);
+
+Std_ReturnType GPIO_EnableInterrupt(GPIO pin, GPIO_Edge edge, Interrupt cbk, volatile void *data);
 
 #endif /* SRC_GPIO_API_PORT_H_ */
