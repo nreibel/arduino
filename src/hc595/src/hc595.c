@@ -1,17 +1,17 @@
 #include "hc595.h"
 #include "hc595_prv.h"
 #include "bits.h"
-#include "port.h"
+#include "gpio.h"
 
 void HC595_Init()
 {
-    Port_SetPinDataDirection(HC595_Pin_Serial, Output);
-    Port_SetPinDataDirection(HC595_Pin_Clock, Output);
-    Port_SetPinDataDirection(HC595_Pin_Latch, Output);
+    GPIO_SetDataDirection(HC595_Pin_Serial, GPIO_Output);
+    GPIO_SetDataDirection(HC595_Pin_Clock, GPIO_Output);
+    GPIO_SetDataDirection(HC595_Pin_Latch, GPIO_Output);
 
-    Port_SetPinState(HC595_Pin_Serial, Low);
-    Port_SetPinState(HC595_Pin_Clock, Low);
-    Port_SetPinState(HC595_Pin_Latch, Low);
+    GPIO_Set(HC595_Pin_Serial, FALSE);
+    GPIO_Set(HC595_Pin_Clock, FALSE);
+    GPIO_Set(HC595_Pin_Latch, FALSE);
 }
 
 void HC595_Write(void* data, int len)
@@ -21,13 +21,13 @@ void HC595_Write(void* data, int len)
         byte val = READ_PU8(data+i);
         for (int i = 0 ; i < 8 ; i++)
         {
-            Port_SetPinState(HC595_Pin_Serial, GET_BIT(val, 7) ? High : Low);
-            Port_RisingEdge(HC595_Pin_Clock);
+            GPIO_Set(HC595_Pin_Serial, GET_BIT(val, 7) ? GPIO_High : GPIO_Low);
+            GPIO_RisingEdge(HC595_Pin_Clock);
             val = val << 1;
         }
     }
 
-    Port_RisingEdge(HC595_Pin_Latch);
+    GPIO_RisingEdge(HC595_Pin_Latch);
 }
 
 void HC595_WriteByte(uint8_t val)

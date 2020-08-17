@@ -9,15 +9,15 @@ void HC165_Init()
     GPIO_SetDataDirection(HC165_Pin_Clock, GPIO_Output);
     GPIO_SetDataDirection(HC165_Pin_Latch, GPIO_Output);
 
-    GPIO_Set(HC165_Pin_Clock, FALSE);
-    GPIO_Set(HC165_Pin_Latch, FALSE);
+    GPIO_Set(HC165_Pin_Clock, GPIO_Low);
+    GPIO_Set(HC165_Pin_Latch, GPIO_Low);
 }
 
 int HC165_Read(void* buffer, int len)
 {
-    bool pin = FALSE;
+    GPIO_State pin = GPIO_Low;
 
-    GPIO_Set(HC165_Pin_Latch, TRUE);
+    GPIO_Set(HC165_Pin_Latch, GPIO_High);
 
     for (int i = 0 ; i < len ; i++)
     {
@@ -26,13 +26,13 @@ int HC165_Read(void* buffer, int len)
         {
             GPIO_Get(HC165_Pin_Serial, &pin);
 
-            if (pin) SET_BIT(*data, j);
+            if (pin == GPIO_High) SET_BIT(*data, j);
 
             GPIO_RisingEdge(HC165_Pin_Clock);
         }
     }
 
-    GPIO_Set(HC165_Pin_Latch, FALSE);
+    GPIO_Set(HC165_Pin_Latch, GPIO_Low);
 
     return len;
 }

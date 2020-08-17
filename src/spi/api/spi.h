@@ -26,8 +26,8 @@ Std_ReturnType Spi_BackgroundTask();
 bool Spi_IsReady();
 void Spi_Init();
 void Spi_Configure(Spi_Clock clock, Spi_Mode mode);
-void Spi_EnableSlave(uint8_t slave);
-void Spi_DisableSlave(uint8_t slave);
+void Spi_EnableSlave(Spi_Slave slave);
+void Spi_DisableSlave(Spi_Slave slave);
 
 Std_ReturnType Spi_WriteByte(uint8_t write, uint8_t *read);
 Std_ReturnType Spi_WriteBytes(void* data, int length);

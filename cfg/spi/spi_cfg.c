@@ -1,12 +1,11 @@
-#include "port.h"
 #include "spi_cfg.h"
-#include "gpio_uno.h"
+#include "gpio.h"
 
-Port_GPIO Spi_MOSI = GPIO_MOSI;
-Port_GPIO Spi_MISO = GPIO_MISO;
-Port_GPIO Spi_SCK  = GPIO_SCK;
+GPIO Spi_SCK  = D13;
+GPIO Spi_MISO = D12;
+GPIO Spi_MOSI = D11;
 
-Port_GPIO SlaveSelect_Pins[SPI_NUMBER_OF_SLAVES] =
+GPIO SlaveSelect_Pins[SPI_NUMBER_OF_SLAVES] =
 {
-    GPIO_10, // SPI_Slave_TFT
+    D10, // SPI_Slave_TFT
 };

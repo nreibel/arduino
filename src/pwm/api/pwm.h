@@ -2,7 +2,6 @@
 #define SRC_PWM_API_PWM_H_
 
 #include "types.h"
-#include "port.h"
 
 typedef enum {
     PWM_5,

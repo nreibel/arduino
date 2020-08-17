@@ -1,7 +1,7 @@
 #include "spi.h"
 #include "spi_prv.h"
 #include "spi_cfg.h"
-#include "port.h"
+#include "gpio.h"
 #include "bits.h"
 
 static Spi_TransmitState spiState = Spi_Uninitialized;
@@ -11,14 +11,14 @@ static int txLength = 0;
 void Spi_Init()
 {
     // Enable MOSI, SCK
-    Port_SetPinDataDirection(Spi_MOSI, Output);
-    Port_SetPinDataDirection(Spi_SCK, Output);
+    GPIO_SetDataDirection(Spi_MOSI, GPIO_Output);
+    GPIO_SetDataDirection(Spi_SCK, GPIO_Output);
 
     // Disable slaves (active high)
     for (uint8_t i = 0 ; i < SPI_NUMBER_OF_SLAVES ; i++)
     {
-        Port_SetPinDataDirection(SlaveSelect_Pins[i], Output);
-        Port_SetPinState(SlaveSelect_Pins[i], High);
+        GPIO_SetDataDirection(SlaveSelect_Pins[i], GPIO_Output);
+        GPIO_Set(SlaveSelect_Pins[i], GPIO_High);
     }
 
     Spi_HAL_Enable();
@@ -31,16 +31,16 @@ void Spi_Configure(Spi_Clock clock, Spi_Mode mode)
     Spi_HAL_Configure(clock, mode);
 }
 
-void Spi_EnableSlave(uint8_t slave)
+void Spi_EnableSlave(Spi_Slave slave)
 {
     // Enable slave (active low)
-    Port_SetPinState(SlaveSelect_Pins[slave], Low);
+    GPIO_Set(SlaveSelect_Pins[slave], GPIO_Low);
 }
 
-void Spi_DisableSlave(uint8_t slave)
+void Spi_DisableSlave(Spi_Slave slave)
 {
     // Disable slave (active low)
-    Port_SetPinState(SlaveSelect_Pins[slave], High);
+    GPIO_Set(SlaveSelect_Pins[slave], GPIO_High);
 }
 
 Std_ReturnType Spi_WriteByte(uint8_t write, uint8_t *read)

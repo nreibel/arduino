@@ -4,7 +4,6 @@
 #include "spi.h"
 #include "st7735_cfg.h"
 #include "types.h"
-#include "port.h"
 
 #define ST7735_CHARSET_WIDTH  5
 #define ST7735_CHARSET_HEIGHT 7

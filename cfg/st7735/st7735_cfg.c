@@ -1,4 +1,3 @@
-#include "st7735.h"
-#include "gpio_uno.h"
+#include "gpio.h"
 
-Port_GPIO ST7735_Pin_DC = GPIO_7;
+GPIO ST7735_Pin_DC = D7;

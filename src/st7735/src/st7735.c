@@ -4,7 +4,7 @@
 #include "st7735_cfg.h"
 #include "os.h"
 #include "spi.h"
-#include "port.h"
+#include "gpio.h"
 #include "bits.h"
 #include "charset.h"
 #include "stdio.h"
@@ -14,8 +14,8 @@ static st7735_color_t st7735_bg_color = ST7735_COLOR_BLACK;
 void ST7735_Init()
 {
     // Init GPIO's
-    Port_SetPinDataDirection(ST7735_Pin_DC, Output);
-    Port_SetPinState(ST7735_Pin_DC, High);
+    GPIO_SetDataDirection(ST7735_Pin_DC, GPIO_Output);
+    GPIO_Set(ST7735_Pin_DC, GPIO_High);
 
     // TFT startup routine
     ST7735_Command(ST7735_SWRESET);
@@ -326,9 +326,9 @@ void ST7735_SetDrawWindow(int x1, int y1, int x2, int y2)
 
 void ST7735_Command(uint8_t command)
 {
-    Port_SetPinState(ST7735_Pin_DC, Low);
+    GPIO_Set(ST7735_Pin_DC, GPIO_Low);
     Spi_WriteByte(command, NULL_PTR);
-    Port_SetPinState(ST7735_Pin_DC, High);
+    GPIO_Set(ST7735_Pin_DC, GPIO_High);
 }
 
 void ST7735_Data(uint8_t data)

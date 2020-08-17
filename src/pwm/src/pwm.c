@@ -1,6 +1,5 @@
 #include "pwm.h"
 #include "types.h"
-#include "port.h"
 #include "bits.h"
 #include "avr/io.h"
 

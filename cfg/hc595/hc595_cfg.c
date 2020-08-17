@@ -1,6 +1,5 @@
-#include "port.h"
-#include "gpio_uno.h"
+#include "gpio.h"
 
-Port_GPIO HC595_Pin_Serial = GPIO_9;
-Port_GPIO HC595_Pin_Latch  = GPIO_8;
-Port_GPIO HC595_Pin_Clock  = GPIO_10;
+GPIO HC595_Pin_Serial = D2;
+GPIO HC595_Pin_Latch  = D3;
+GPIO HC595_Pin_Clock  = D4;

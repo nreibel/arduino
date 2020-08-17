@@ -7,8 +7,7 @@
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
 
-#include "port.h"
-#include "gpio_uno.h"
+#include "gpio.h"
 
 volatile word data = 0;
 volatile bool ready = FALSE;

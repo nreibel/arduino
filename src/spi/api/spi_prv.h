@@ -1,9 +1,9 @@
 #ifndef SRC_SPI_API_SPI_PRV_H_
 #define SRC_SPI_API_SPI_PRV_H_
 
-#include "port.h"
+#include "types.h"
 #include "spi.h"
-#include "spi_cfg.h"
+#include "gpio.h"
 
 typedef enum {
     Spi_Uninitialized,
@@ -12,10 +12,10 @@ typedef enum {
     Spi_Waiting,
 } Spi_TransmitState;
 
-extern Port_GPIO Spi_MISO;
-extern Port_GPIO Spi_MOSI;
-extern Port_GPIO Spi_SCK;
-extern Port_GPIO SlaveSelect_Pins[];
+extern GPIO Spi_MISO;
+extern GPIO Spi_MOSI;
+extern GPIO Spi_SCK;
+extern GPIO SlaveSelect_Pins[];
 
 void Spi_HAL_Enable();
 void Spi_HAL_Configure(Spi_Clock clock, Spi_Mode mode);

@@ -3,6 +3,7 @@
 
 #include "st7735.h"
 #include "st7735_cfg.h"
+#include "gpio.h"
 
 //Command definitions
 #define ST7735_NOP     0x00
@@ -23,8 +24,7 @@
 #define ST7735_MADCTL_MX 0x40
 #define ST7735_MADCTL_MV 0x20
 
-extern Port_GPIO ST7735_Pin_DC; // Data/command pin
-extern Port_GPIO ST7735_Pin_RS; // Reset pin
+extern GPIO ST7735_Pin_DC; // Data/command pin
 
 void ST7735_Data(uint8_t data);
 void ST7735_Color(st7735_color_t color);
