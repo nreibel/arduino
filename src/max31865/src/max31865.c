@@ -6,7 +6,7 @@
 #include "types.h"
 #include <math.h>
 
-Std_ReturnType MAX31865_Init(SpiSlave slave, MAX31865_WireMode mode, MAX31865_FilterMode filter)
+Std_ReturnType MAX31865_Init(Spi_Slave slave, MAX31865_WireMode mode, MAX31865_FilterMode filter)
 {
     Std_ReturnType retval = Status_Not_OK;
 
@@ -51,7 +51,7 @@ double MAX31865_RTD_To_Temperature(double rtd)
     return acc / (2 * MAX31865_RTD_B);
 }
 
-Std_ReturnType MAX31865_ReadRTD(SpiSlave slave, double *rtd)
+Std_ReturnType MAX31865_ReadRTD(Spi_Slave slave, double *rtd)
 {
     Std_ReturnType retval = Status_Not_OK;
 
