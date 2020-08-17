@@ -5,7 +5,7 @@
 
 void HC165_Init();
 
-int HC165_Read(void* buffer, int len);
+int HC165_Read(buffer_t buf, int len);
 uint8_t HC165_ReadByte();
 uint16_t HC165_ReadWord();
 uint32_t HC165_ReadDWord();

@@ -49,7 +49,7 @@ Std_ReturnType GPIO_SetDataDirection(GPIO pin, GPIO_DataDirection direction)
     return Status_OK;
 }
 
-Std_ReturnType GPIO_Get(GPIO pin, GPIO_State *state)
+Std_ReturnType GPIO_GetState(GPIO pin, GPIO_State *state)
 {
     switch(pin)
     {
@@ -89,7 +89,7 @@ Std_ReturnType GPIO_Get(GPIO pin, GPIO_State *state)
     return Status_OK;
 }
 
-Std_ReturnType GPIO_Set(GPIO pin, GPIO_State state)
+Std_ReturnType GPIO_SetState(GPIO pin, GPIO_State state)
 {
     switch(pin)
     {
@@ -134,16 +134,16 @@ Std_ReturnType GPIO_Set(GPIO pin, GPIO_State state)
 
 Std_ReturnType GPIO_RisingEdge(GPIO pin)
 {
-    GPIO_Set(pin, TRUE);
+    GPIO_SetState(pin, TRUE);
     _delay_us(1);
-    GPIO_Set(pin, FALSE);
+    GPIO_SetState(pin, FALSE);
     return Status_OK;
 }
 
 Std_ReturnType GPIO_FallingEdge(GPIO pin)
 {
-    GPIO_Set(pin, FALSE);
+    GPIO_SetState(pin, FALSE);
     _delay_us(1);
-    GPIO_Set(pin, TRUE);
+    GPIO_SetState(pin, TRUE);
     return Status_OK;
 }

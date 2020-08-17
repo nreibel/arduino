@@ -53,8 +53,8 @@ typedef enum
 } GPIO_State;
 
 Std_ReturnType GPIO_SetDataDirection(GPIO pin, GPIO_DataDirection direction);
-Std_ReturnType GPIO_Get(GPIO pin, GPIO_State *state);
-Std_ReturnType GPIO_Set(GPIO pin, GPIO_State state);
+Std_ReturnType GPIO_GetState(GPIO pin, GPIO_State *state);
+Std_ReturnType GPIO_SetState(GPIO pin, GPIO_State state);
 Std_ReturnType GPIO_RisingEdge(GPIO pin);
 Std_ReturnType GPIO_FallingEdge(GPIO pin);
 

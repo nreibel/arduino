@@ -9,21 +9,21 @@ void HC595_Init()
     GPIO_SetDataDirection(HC595_Pin_Clock, GPIO_Output);
     GPIO_SetDataDirection(HC595_Pin_Latch, GPIO_Output);
 
-    GPIO_Set(HC595_Pin_Serial, FALSE);
-    GPIO_Set(HC595_Pin_Clock, FALSE);
-    GPIO_Set(HC595_Pin_Latch, FALSE);
+    GPIO_SetState(HC595_Pin_Serial, FALSE);
+    GPIO_SetState(HC595_Pin_Clock, FALSE);
+    GPIO_SetState(HC595_Pin_Latch, FALSE);
 }
 
-void HC595_Write(void* data, int len)
+void HC595_Write(buffer_t data, int len)
 {
-    for (int i = len-1 ; i >= 0 ; i--)
+    for (int i = len ; i > 0 ; i--)
     {
-        byte val = READ_PU8(data+i);
-        for (int i = 0 ; i < 8 ; i++)
+        byte val = READ_PU8(data+i-1);
+        for (int j = 8 ; j > 0 ; j--)
         {
-            GPIO_Set(HC595_Pin_Serial, GET_BIT(val, 7) ? GPIO_High : GPIO_Low);
+            GPIO_State st = GET_BIT(val, j-1) ? GPIO_High : GPIO_Low;
+            GPIO_SetState(HC595_Pin_Serial, st);
             GPIO_RisingEdge(HC595_Pin_Clock);
-            val = val << 1;
         }
     }
 

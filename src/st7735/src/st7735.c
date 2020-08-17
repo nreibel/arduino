@@ -15,7 +15,7 @@ void ST7735_Init()
 {
     // Init GPIO's
     GPIO_SetDataDirection(ST7735_Pin_DC, GPIO_Output);
-    GPIO_Set(ST7735_Pin_DC, GPIO_High);
+    GPIO_SetState(ST7735_Pin_DC, GPIO_High);
 
     // TFT startup routine
     ST7735_Command(ST7735_SWRESET);
@@ -326,9 +326,9 @@ void ST7735_SetDrawWindow(int x1, int y1, int x2, int y2)
 
 void ST7735_Command(uint8_t command)
 {
-    GPIO_Set(ST7735_Pin_DC, GPIO_Low);
+    GPIO_SetState(ST7735_Pin_DC, GPIO_Low);
     Spi_WriteByte(command, NULL_PTR);
-    GPIO_Set(ST7735_Pin_DC, GPIO_High);
+    GPIO_SetState(ST7735_Pin_DC, GPIO_High);
 }
 
 void ST7735_Data(uint8_t data)

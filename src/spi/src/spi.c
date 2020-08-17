@@ -18,7 +18,7 @@ void Spi_Init()
     for (uint8_t i = 0 ; i < SPI_NUMBER_OF_SLAVES ; i++)
     {
         GPIO_SetDataDirection(SlaveSelect_Pins[i], GPIO_Output);
-        GPIO_Set(SlaveSelect_Pins[i], GPIO_High);
+        GPIO_SetState(SlaveSelect_Pins[i], GPIO_High);
     }
 
     Spi_HAL_Enable();
@@ -34,13 +34,13 @@ void Spi_Configure(Spi_Clock clock, Spi_Mode mode)
 void Spi_EnableSlave(Spi_Slave slave)
 {
     // Enable slave (active low)
-    GPIO_Set(SlaveSelect_Pins[slave], GPIO_Low);
+    GPIO_SetState(SlaveSelect_Pins[slave], GPIO_Low);
 }
 
 void Spi_DisableSlave(Spi_Slave slave)
 {
     // Disable slave (active low)
-    GPIO_Set(SlaveSelect_Pins[slave], GPIO_High);
+    GPIO_SetState(SlaveSelect_Pins[slave], GPIO_High);
 }
 
 Std_ReturnType Spi_WriteByte(uint8_t write, uint8_t *read)

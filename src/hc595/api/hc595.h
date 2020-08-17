@@ -6,7 +6,7 @@
 void HC595_Init();
 void HC595_Latch();
 
-void HC595_Write(void* data, int len);
+void HC595_Write(buffer_t data, int len);
 void HC595_WriteByte(uint8_t val);
 void HC595_WriteWord(uint16_t val);
 void HC595_WriteDWord(uint32_t val);

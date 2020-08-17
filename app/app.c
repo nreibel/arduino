@@ -27,13 +27,13 @@ Std_ReturnType Task_MainCyclic(void* data)
 
     if (state)
     {
-        GPIO_Set(Pin_LED, TRUE);
+        GPIO_SetState(Pin_LED, TRUE);
         Serial_PrintLine("Tick");
         state = FALSE;
     }
     else
     {
-        GPIO_Set(Pin_LED, FALSE);
+        GPIO_SetState(Pin_LED, FALSE);
         Serial_PrintLine("Tock");
         state = TRUE;
     }
