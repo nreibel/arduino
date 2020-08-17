@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+#warning "PORT module has been deprecated in favor of GPIO."
+
 typedef enum {
     Port_B,
     Port_C,
