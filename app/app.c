@@ -1,16 +1,15 @@
 #include "os.h"
 #include "app.h"
-#include "port.h"
 #include "serial.h"
 #include "bits.h"
-#include "gpio_uno.h"
+#include "gpio.h"
 
-GPIO Pin_LED = GPIO_13;
+GPIO Pin_LED = D13;
 
 // App entry point
 void App_Init()
 {
-    Port_SetPinDataDirection(Pin_LED, Output);
+    GPIO_SetDataDirection(Pin_LED, GPIO_Output);
 
     // Init serial debug communication
     Serial_Init();
@@ -24,19 +23,19 @@ Std_ReturnType Task_MainCyclic(void* data)
 {
     UNUSED(data);
 
-    static State state = High;
+    static bool state = TRUE;
 
-    if (state == High)
+    if (state)
     {
-        Port_SetPinState(Pin_LED, High);
+        GPIO_Set(Pin_LED, TRUE);
         Serial_PrintLine("Tick");
-        state = Low;
+        state = FALSE;
     }
     else
     {
-        Port_SetPinState(Pin_LED, Low);
+        GPIO_Set(Pin_LED, FALSE);
         Serial_PrintLine("Tock");
-        state = High;
+        state = TRUE;
     }
 
     return Status_OK;

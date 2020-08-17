@@ -12,7 +12,7 @@ void PWM_Init(PWM pin, bool inverted)
     // Set Fast PWM mode
     byte tccr0a = BIT(WGM01) | BIT(WGM00);
 
-    // Set GPIO as OUTPUT
+    // Set Port_GPIO as OUTPUT
     switch(pin)
     {
         case PWM_5:

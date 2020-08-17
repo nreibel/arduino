@@ -1,36 +1,39 @@
 #include "hc165.h"
 #include "hc165_prv.h"
 #include "bits.h"
-#include "port.h"
+#include "gpio.h"
 
 void HC165_Init()
 {
-    Port_SetPinDataDirection(HC165_Pin_Serial, Input);
-    Port_SetPinDataDirection(HC165_Pin_Clock, Output);
-    Port_SetPinDataDirection(HC165_Pin_Latch, Output);
+    GPIO_SetDataDirection(HC165_Pin_Serial, GPIO_Input);
+    GPIO_SetDataDirection(HC165_Pin_Clock, GPIO_Output);
+    GPIO_SetDataDirection(HC165_Pin_Latch, GPIO_Output);
 
-    Port_SetPinState(HC165_Pin_Clock, Low);
-    Port_SetPinState(HC165_Pin_Latch, Low);
+    GPIO_Set(HC165_Pin_Clock, FALSE);
+    GPIO_Set(HC165_Pin_Latch, FALSE);
 }
 
 int HC165_Read(void* buffer, int len)
 {
-    State pinState;
+    bool pin = FALSE;
 
-    Port_SetPinState(HC165_Pin_Latch, High);
+    GPIO_Set(HC165_Pin_Latch, TRUE);
 
-    while(len-- > 0)
+    for (int i = 0 ; i < len ; i++)
     {
         byte *data = TYPECAST(buffer++, byte*);
         for (int j = 7 ; j >= 0 ; j--)
         {
-            Port_GetPinState(HC165_Pin_Serial, &pinState);
-            if (pinState == High) SET_BIT(*data, j);
-            Port_RisingEdge(HC165_Pin_Clock);
+            GPIO_Get(HC165_Pin_Serial, &pin);
+
+            if (pin) SET_BIT(*data, j);
+
+            GPIO_RisingEdge(HC165_Pin_Clock);
         }
     }
 
-    Port_SetPinState(HC165_Pin_Latch, Low);
+    GPIO_Set(HC165_Pin_Latch, FALSE);
+
     return len;
 }
 

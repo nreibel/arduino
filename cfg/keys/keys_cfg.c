@@ -6,7 +6,7 @@
  * Assign a pin to each key.
  * Must be defined in the same order as enum Key
  */
-GPIO Keys_PinMapping[NUMBER_OF_KEYS] = {
+Port_GPIO Keys_PinMapping[NUMBER_OF_KEYS] = {
     {Port_D, Pin_7}, // ScrollUp
     {Port_D, Pin_6}, // ScrollDown
 };

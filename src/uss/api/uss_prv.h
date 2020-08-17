@@ -18,7 +18,7 @@ typedef enum {
 #define TICKS_TO_CM(ticks) (TICKS_TO_US(ticks)/58)
 
 /* To be defined in config file */
-extern GPIO pinTrigger;
-extern GPIO pinEcho;
+extern Port_GPIO pinTrigger;
+extern Port_GPIO pinEcho;
 
 #endif /* SRC_USS_API_USS_PRV_H_ */

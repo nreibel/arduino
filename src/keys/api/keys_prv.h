@@ -3,6 +3,6 @@
 
 #include "port.h"
 
-extern GPIO Keys_PinMapping[NUMBER_OF_KEYS];
+extern Port_GPIO Keys_PinMapping[NUMBER_OF_KEYS];
 
 #endif /* SRC_KEYS_API_KEYS_PRV_H_ */

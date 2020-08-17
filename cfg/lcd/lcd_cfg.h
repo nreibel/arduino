@@ -3,8 +3,8 @@
 
 #include "port.h"
 
-GPIO pin_RS = {Port_D, Pin_4};
-GPIO pin_EN = {Port_D, Pin_5};
+Port_GPIO pin_RS = {Port_D, Pin_4};
+Port_GPIO pin_EN = {Port_D, Pin_5};
 
 Port Port_Data = Port_B;
 

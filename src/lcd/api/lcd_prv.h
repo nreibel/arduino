@@ -1,8 +1,8 @@
 #ifndef SRC_LCD_API_LCD_PRV_H_
 #define SRC_LCD_API_LCD_PRV_H_
 
-extern GPIO pin_RS;
-extern GPIO pin_EN;
+extern Port_GPIO pin_RS;
+extern Port_GPIO pin_EN;
 
 typedef enum {
     Uninitialized,

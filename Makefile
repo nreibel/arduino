@@ -16,7 +16,7 @@ INCLUDES = ./app
 # LDFLAGS = -u,vfprintf
 # LIBS = printf_flt m
 
-MODULES = os port serial
+MODULES = os gpio serial
 app: app/app.o
 
 include $(ARDUINO_LIBS)/makefile.include

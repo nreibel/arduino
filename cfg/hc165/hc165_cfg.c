@@ -1,6 +1,6 @@
-#include "port.h"
-#include "gpio_uno.h"
+#include "gpio.h"
 
-GPIO HC165_Pin_Serial = GPIO_4;
-GPIO HC165_Pin_Latch = GPIO_5;
-GPIO HC165_Pin_Clock = GPIO_6;
+GPIO HC165_Pin_Serial = A1;
+GPIO HC165_Pin_Latch  = A2;
+GPIO HC165_Pin_Clock  = A3;
+

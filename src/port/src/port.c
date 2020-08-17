@@ -51,7 +51,7 @@ Std_ReturnType Port_EnableInt(ExtInt input, Edge edge, Interrupt cbk, volatile v
     return Status_OK;
 }
 
-Std_ReturnType Port_RisingEdge(GPIO pin)
+Std_ReturnType Port_RisingEdge(Port_GPIO pin)
 {
     Port_SetPinState(pin, High);
     _delay_us(1);
@@ -59,7 +59,7 @@ Std_ReturnType Port_RisingEdge(GPIO pin)
     return Status_OK;
 }
 
-Std_ReturnType Port_FallingEdge(GPIO pin)
+Std_ReturnType Port_FallingEdge(Port_GPIO pin)
 {
     Port_SetPinState(pin, Low);
     _delay_us(1);
@@ -167,7 +167,7 @@ Std_ReturnType Port_GetValue(Port port, uint8_t* value)
     return status;
 }
 
-Std_ReturnType Port_SetPinDataDirection(GPIO pinDef, DataDirection direction)
+Std_ReturnType Port_SetPinDataDirection(Port_GPIO pinDef, DataDirection direction)
 {
     Std_ReturnType status = Status_Not_OK;
 
@@ -191,7 +191,7 @@ Std_ReturnType Port_SetPinDataDirection(GPIO pinDef, DataDirection direction)
     return status;
 }
 
-Std_ReturnType Port_GetPinDataDirection(GPIO pinDef, DataDirection *direction)
+Std_ReturnType Port_GetPinDataDirection(Port_GPIO pinDef, DataDirection *direction)
 {
     Std_ReturnType status = Status_Not_OK;
 
@@ -205,7 +205,7 @@ Std_ReturnType Port_GetPinDataDirection(GPIO pinDef, DataDirection *direction)
     return status;
 }
 
-Std_ReturnType Port_SetPinState(GPIO pinDef, State pinState)
+Std_ReturnType Port_SetPinState(Port_GPIO pinDef, State pinState)
 {
     Std_ReturnType status = Status_Not_OK;
 
@@ -229,7 +229,7 @@ Std_ReturnType Port_SetPinState(GPIO pinDef, State pinState)
     return status;
 }
 
-Std_ReturnType Port_GetPinState(GPIO pinDef, State *pinState)
+Std_ReturnType Port_GetPinState(Port_GPIO pinDef, State *pinState)
 {
     Std_ReturnType status = Status_Not_OK;
 
