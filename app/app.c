@@ -4,7 +4,7 @@
 #include "bits.h"
 #include "gpio.h"
 
-GPIO Pin_LED = D13;
+GPIO Pin_LED = GPIO_D13;
 
 // App entry point
 void App_Init()

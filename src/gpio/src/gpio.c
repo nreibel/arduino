@@ -10,36 +10,36 @@ Std_ReturnType GPIO_SetDataDirection(GPIO pin, GPIO_DataDirection direction)
 {
     switch(pin)
     {
-        case D0:
-        case D1:
-        case D2:
-        case D3:
-        case D4:
-        case D5:
-        case D6:
-        case D7:
-            if (direction == GPIO_Output) SET_BIT(DDRD, pin - D0);
-            else RESET_BIT(DDRD, pin - D0);
+        case GPIO_D0:
+        case GPIO_D1:
+        case GPIO_D2:
+        case GPIO_D3:
+        case GPIO_D4:
+        case GPIO_D5:
+        case GPIO_D6:
+        case GPIO_D7:
+            if (direction == GPIO_Output) SET_BIT(DDRD, pin - GPIO_D0);
+            else RESET_BIT(DDRD, pin - GPIO_D0);
             break;
 
-        case D8:
-        case D9:
-        case D10:
-        case D11:
-        case D12:
-        case D13:
-            if (direction == GPIO_Output) SET_BIT(DDRB, pin - D8);
-            else RESET_BIT(DDRB, pin - D8);
+        case GPIO_D8:
+        case GPIO_D9:
+        case GPIO_D10:
+        case GPIO_D11:
+        case GPIO_D12:
+        case GPIO_D13:
+            if (direction == GPIO_Output) SET_BIT(DDRB, pin - GPIO_D8);
+            else RESET_BIT(DDRB, pin - GPIO_D8);
             break;
 
-        case A0:
-        case A1:
-        case A2:
-        case A3:
-        case A4:
-        case A5:
-            if (direction == GPIO_Output) SET_BIT(DDRC, pin - A0);
-            else RESET_BIT(DDRC, pin - A0);
+        case GPIO_A0:
+        case GPIO_A1:
+        case GPIO_A2:
+        case GPIO_A3:
+        case GPIO_A4:
+        case GPIO_A5:
+            if (direction == GPIO_Output) SET_BIT(DDRC, pin - GPIO_A0);
+            else RESET_BIT(DDRC, pin - GPIO_A0);
             break;
 
         default:
@@ -53,33 +53,33 @@ Std_ReturnType GPIO_Get(GPIO pin, GPIO_State *state)
 {
     switch(pin)
     {
-        case D0:
-        case D1:
-        case D2:
-        case D3:
-        case D4:
-        case D5:
-        case D6:
-        case D7:
-            *state = GET_BIT(PIND, pin - D0) ? GPIO_High : GPIO_Low;
+        case GPIO_D0:
+        case GPIO_D1:
+        case GPIO_D2:
+        case GPIO_D3:
+        case GPIO_D4:
+        case GPIO_D5:
+        case GPIO_D6:
+        case GPIO_D7:
+            *state = GET_BIT(PIND, pin - GPIO_D0) ? GPIO_High : GPIO_Low;
             break;
 
-        case D8:
-        case D9:
-        case D10:
-        case D11:
-        case D12:
-        case D13:
-            *state = GET_BIT(PINB, pin - D8) ? GPIO_High : GPIO_Low;
+        case GPIO_D8:
+        case GPIO_D9:
+        case GPIO_D10:
+        case GPIO_D11:
+        case GPIO_D12:
+        case GPIO_D13:
+            *state = GET_BIT(PINB, pin - GPIO_D8) ? GPIO_High : GPIO_Low;
             break;
 
-        case A0:
-        case A1:
-        case A2:
-        case A3:
-        case A4:
-        case A5:
-            *state = GET_BIT(PINC, pin - A0) ? GPIO_High : GPIO_Low;
+        case GPIO_A0:
+        case GPIO_A1:
+        case GPIO_A2:
+        case GPIO_A3:
+        case GPIO_A4:
+        case GPIO_A5:
+            *state = GET_BIT(PINC, pin - GPIO_A0) ? GPIO_High : GPIO_Low;
             break;
 
         default:
@@ -93,36 +93,36 @@ Std_ReturnType GPIO_Set(GPIO pin, GPIO_State state)
 {
     switch(pin)
     {
-        case D0:
-        case D1:
-        case D2:
-        case D3:
-        case D4:
-        case D5:
-        case D6:
-        case D7:
-            if (state == GPIO_High) SET_BIT(PORTD, pin - D0);
-            else RESET_BIT(PORTD, pin - D0);
+        case GPIO_D0:
+        case GPIO_D1:
+        case GPIO_D2:
+        case GPIO_D3:
+        case GPIO_D4:
+        case GPIO_D5:
+        case GPIO_D6:
+        case GPIO_D7:
+            if (state == GPIO_High) SET_BIT(PORTD, pin - GPIO_D0);
+            else RESET_BIT(PORTD, pin - GPIO_D0);
             break;
 
-        case D8:
-        case D9:
-        case D10:
-        case D11:
-        case D12:
-        case D13:
-            if (state == GPIO_High) SET_BIT(PORTB, pin - D8);
-            else RESET_BIT(PORTB, pin - D8);
+        case GPIO_D8:
+        case GPIO_D9:
+        case GPIO_D10:
+        case GPIO_D11:
+        case GPIO_D12:
+        case GPIO_D13:
+            if (state == GPIO_High) SET_BIT(PORTB, pin - GPIO_D8);
+            else RESET_BIT(PORTB, pin - GPIO_D8);
             break;
 
-        case A0:
-        case A1:
-        case A2:
-        case A3:
-        case A4:
-        case A5:
-            if (state == GPIO_High) SET_BIT(PORTC, pin - A0);
-            else RESET_BIT(PORTC, pin - A0);
+        case GPIO_A0:
+        case GPIO_A1:
+        case GPIO_A2:
+        case GPIO_A3:
+        case GPIO_A4:
+        case GPIO_A5:
+            if (state == GPIO_High) SET_BIT(PORTC, pin - GPIO_A0);
+            else RESET_BIT(PORTC, pin - GPIO_A0);
             break;
 
         default:

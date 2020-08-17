@@ -4,31 +4,40 @@
 #include "types.h"
 
 typedef enum {
-    // Port D
-    D0,
-    D1,
-    D2,
-    D3,
-    D4,
-    D5,
-    D6,
-    D7,
-
     // Port B
-    D8,
-    D9,
-    D10,
-    D11,
-    D12,
-    D13,
+    GPIO_D8,
+    GPIO_D9,
+    GPIO_D10,
+    GPIO_D11,
+    GPIO_D12,
+    GPIO_D13,
 
     // Port C
-    A0,
-    A1,
-    A2,
-    A3,
-    A4,
-    A5
+    GPIO_A0,
+    GPIO_A1,
+    GPIO_A2,
+    GPIO_A3,
+    GPIO_A4,
+    GPIO_A5,
+
+    // Port D
+    GPIO_D0,
+    GPIO_D1,
+    GPIO_D2,
+    GPIO_D3,
+    GPIO_D4,
+    GPIO_D5,
+    GPIO_D6,
+    GPIO_D7,
+
+    // Aliases
+    GPIO_RX   = GPIO_D0,
+    GPIO_TX   = GPIO_D1,
+    GPIO_INT0 = GPIO_D2,
+    GPIO_INT1 = GPIO_D3,
+    GPIO_MOSI = GPIO_D11,
+    GPIO_MISO = GPIO_D12,
+    GPIO_SCK  = GPIO_D13
 } GPIO;
 
 typedef enum

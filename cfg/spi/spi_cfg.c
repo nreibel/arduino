@@ -1,11 +1,11 @@
 #include "spi_cfg.h"
 #include "gpio.h"
 
-GPIO Spi_SCK  = D13;
-GPIO Spi_MISO = D12;
-GPIO Spi_MOSI = D11;
+GPIO Spi_SCK  = GPIO_SCK;
+GPIO Spi_MISO = GPIO_MISO;
+GPIO Spi_MOSI = GPIO_MOSI;
 
 GPIO SlaveSelect_Pins[SPI_NUMBER_OF_SLAVES] =
 {
-    D10, // SPI_Slave_TFT
+    GPIO_D10, // SPI_Slave_TFT
 };
