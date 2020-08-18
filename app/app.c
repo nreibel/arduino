@@ -20,7 +20,19 @@ typedef struct {
 } DeviceConfig_t;
 
 bool eepromUpdated = FALSE;
+bool transmitting = FALSE;
+
 DeviceConfig_t devCfg = {0};
+
+void I2C_Slave_StartCallback()
+{
+    transmitting = TRUE;
+}
+
+void I2C_Slave_StopCallback()
+{
+    transmitting = FALSE;
+}
 
 byte I2C_Slave_TransmitCallback(int offset)
 {
@@ -95,7 +107,7 @@ Std_ReturnType Task_MainCyclic(void* data)
     else Serial_PrintLine("Tock");
     state = !state;
 
-    if (eepromUpdated)
+    if (eepromUpdated && !transmitting)
     {
         EEPROM_SyncWrite(0, &devCfg, sizeof(DeviceConfig_t));
         eepromUpdated = FALSE;
