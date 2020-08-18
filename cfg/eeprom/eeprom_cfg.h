@@ -12,11 +12,12 @@
 #define EEPROM_ENABLE_SERIAL_DUMP ON
 
 // Enable Block API to store EEPROM data as a circular buffer of user-defined blocks
-#define EEPROM_ENABLE_BLOCK_API   ON
+#define EEPROM_ENABLE_BLOCK_API   OFF
 
 #if EEPROM_ENABLE_BLOCK_API == ON
 
     #define DEVICE_ID_LENGTH 16
+    #define SENSORS_COUNT    5
 
     typedef enum {
         BlockType_Data,
@@ -25,7 +26,7 @@
 
     typedef struct {
         Header   header;
-        byte     device_id[DEVICE_ID_LENGTH;
+        byte     device_id[DEVICE_ID_LENGTH];
         uint32_t unlock_crc32;
     } DeviceInfoBlock;
 
