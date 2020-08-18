@@ -34,10 +34,12 @@
 #define ST7735_COLOR_ORANGE   ST7735_RED(0xFF) | ST7735_GREEN(0x80)
 #define ST7735_COLOR_SPRING   ST7735_GREEN(0xFF) | ST7735_BLUE(0x80)
 
-#define ST7735_SCREEN_ORIENTATION_PORTRAIT      0x0
-#define ST7735_SCREEN_ORIENTATION_LANDSCAPE     ST7735_MADCTL_MV | ST7735_MADCTL_MY
-#define ST7735_SCREEN_ORIENTATION_PORTRAIT_INV  ST7735_MADCTL_MY | ST7735_MADCTL_MX
-#define ST7735_SCREEN_ORIENTATION_LANDSCAPE_INV ST7735_MADCTL_MV | ST7735_MADCTL_MX
+typedef enum {
+    ST7735_ScreenOrientation_Portrait,
+    ST7735_ScreenOrientation_Landscape,
+    ST7735_ScreenOrientation_Portrait_Inverted,
+    ST7735_ScreenOrientation_Landscape_Inverted
+} ST7735_ScreenOrientation;
 
 typedef uint16_t st7735_color_t;
 typedef const __flash uint8_t st7735_xbm_t;
@@ -47,6 +49,8 @@ typedef st7735_color_t (*ST7735_Renderer)(int x, int y, int w, int h, void* data
 void ST7735_Init();
 void ST7735_ClearScreen();
 void ST7735_SetBackgroundColor(st7735_color_t c);
+
+Std_ReturnType ST7735_SetScreenOrientation(ST7735_ScreenOrientation orientation);
 
 // Pixel drawing
 void ST7735_DrawPixel(int x, int y, st7735_color_t c);
@@ -60,8 +64,8 @@ void ST7735_ClearChar(int x, int y);
 void ST7735_ClearChars(int x, int y, int length);
 
 void ST7735_DrawChar(int x, int y, char chr, st7735_color_t c);
-void ST7735_DrawChars(int x, int y, char *bytes, int length, st7735_color_t c);
-void ST7735_DrawString(int x, int y, char *str, st7735_color_t c);
+void ST7735_DrawChars(int x, int y, buffer_t bytes, int length, st7735_color_t c);
+void ST7735_DrawString(int x, int y, char* str, st7735_color_t c);
 
 // Imaging
 void ST7735_Render(int x, int y, int w, int h, ST7735_Renderer renderer, void* param, int scale);

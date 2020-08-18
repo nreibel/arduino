@@ -9,7 +9,7 @@
 #include "charset.h"
 #include "stdio.h"
 
-static st7735_color_t st7735_bg_color = ST7735_COLOR_BLACK;
+st7735_color_t background_color = ST7735_COLOR_BLACK;
 
 void ST7735_Init()
 {
@@ -24,10 +24,6 @@ void ST7735_Init()
     ST7735_Command(ST7735_SLPOUT);
     Os_Wait(120);
 
-    // Screen orientation
-    ST7735_Command(ST7735_MADCTL);
-    ST7735_Data(ST7735_SCREEN_ORIENTATION);
-
     // 16bits per pixel
     ST7735_Command(ST7735_COLMOD);
     ST7735_Data(ST7735_COLMOD_16_BPP);
@@ -35,9 +31,35 @@ void ST7735_Init()
     ST7735_Command(ST7735_DISPON);
 }
 
+Std_ReturnType ST7735_SetScreenOrientation(ST7735_ScreenOrientation orientation)
+{
+    switch(orientation)
+    {
+        case ST7735_ScreenOrientation_Portrait:
+            ST7735_Command(ST7735_MADCTL);
+            ST7735_Data(0);
+            break;
+        case ST7735_ScreenOrientation_Landscape:
+            ST7735_Command(ST7735_MADCTL);
+            ST7735_Data(ST7735_MADCTL_MV | ST7735_MADCTL_MY);
+            break;
+        case ST7735_ScreenOrientation_Portrait_Inverted:
+            ST7735_Command(ST7735_MADCTL);
+            ST7735_Data(ST7735_MADCTL_MY | ST7735_MADCTL_MX);
+            break;
+        case ST7735_ScreenOrientation_Landscape_Inverted:
+            ST7735_Command(ST7735_MADCTL);
+            ST7735_Data(ST7735_MADCTL_MV | ST7735_MADCTL_MX);
+            break;
+        default: return Status_Not_OK;
+    }
+
+    return Status_OK;
+}
+
 void ST7735_SetBackgroundColor(st7735_color_t c)
 {
-    st7735_bg_color = c;
+    background_color = c;
 }
 
 Std_ReturnType ST7735_DrawXPM(st7735_xpm_t *xpm, int xPos, int yPos, int scale)
@@ -68,7 +90,7 @@ Std_ReturnType ST7735_DrawXPM(st7735_xpm_t *xpm, int xPos, int yPos, int scale)
         else if ( sscanf(xpm[1+i], "%c c Non%c", &name, &chr) == 2 && chr == 'e')
         {
             // Transparent color
-            colors[i] = st7735_bg_color;
+            colors[i] = background_color;
         }
         else return Status_Not_OK;
 
@@ -114,7 +136,7 @@ st7735_color_t ST7735_RenderXbm(int x, int y, int w, int h, void *data)
 
     XbmRendererData *d = TYPECAST(data, XbmRendererData*);
     byte b = d->bits[y*d->bw + x/8];
-    return IS_SET_BIT(b, x % 8) ? d->color : st7735_bg_color;
+    return IS_SET_BIT(b, x % 8) ? d->color : background_color;
 }
 
 void ST7735_DrawXBM(st7735_xbm_t *bits, int x, int y, int w, int h, st7735_color_t c, int scale)
@@ -125,7 +147,7 @@ void ST7735_DrawXBM(st7735_xbm_t *bits, int x, int y, int w, int h, st7735_color
 
 void ST7735_ClearScreen()
 {
-    ST7735_FillRectangle(0, 0, ST7735_SCREEN_WIDTH, ST7735_SCREEN_HEIGHT, st7735_bg_color);
+    ST7735_FillRectangle(0, 0, ST7735_SCREEN_WIDTH, ST7735_SCREEN_HEIGHT, background_color);
 }
 
 void ST7735_DrawPixel(int x, int y, st7735_color_t c)
@@ -245,16 +267,16 @@ void ST7735_DrawChar(int x, int y, char chr, st7735_color_t c)
         for (int dx = 0 ; dx < ST7735_CHARSET_WIDTH ; dx++)
         {
             byte b = pgm_read_byte(&s_st7735_charset[chr-0x20][dx]);
-            ST7735_Color( IS_SET_BIT(b, dy) ? c : st7735_bg_color );
+            ST7735_Color( IS_SET_BIT(b, dy) ? c : background_color );
         }
     }
 }
 
-void ST7735_DrawChars(int x, int y, char *chars, int length, st7735_color_t c)
+void ST7735_DrawChars(int x, int y, buffer_t chars, int length, st7735_color_t c)
 {
     for (int i = 0 ; i < length ; i++)
     {
-        ST7735_DrawChar(x, y, chars[i], c);
+        ST7735_DrawChar(x, y, TYPECAST(chars, char*)[i], c);
         x += ST7735_CHARSET_WIDTH + ST7735_CHAR_SPACING;
     }
 }
@@ -269,7 +291,7 @@ void ST7735_ClearChar(int x, int y)
         // 5 pixels width
         for (int dx = 0 ; dx < ST7735_CHARSET_WIDTH ; dx++)
         {
-            ST7735_Color(st7735_bg_color);
+            ST7735_Color(background_color);
         }
     }
 }
