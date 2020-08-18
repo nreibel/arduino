@@ -14,6 +14,7 @@ ISR(TWI_vect)
     switch(status)
     {
         case TW_SR_SLA_ACK: // Received SLA+W
+            I2C_Slave_StartCallback();
             offset = -1;
             break;
         case TW_ST_SLA_ACK: // Received SLA+R
@@ -26,6 +27,7 @@ ISR(TWI_vect)
             else I2C_Slave_ReceiveCallback(offset++, TWDR);
             break;
         case TW_SR_STOP: // Received STOP or REPEATED START
+            I2C_Slave_StopCallback();
             break;
         case TW_BUS_ERROR:
             // TODO : handle bus error
