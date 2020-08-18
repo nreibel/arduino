@@ -1,0 +1,6 @@
+INCLUDES+=\
+	$(SRC_DIR)/i2c_master/api \
+	$(CFG_DIR)/i2c_master \
+
+i2c_master:\
+	$(SRC_DIR)/i2c_master/src/i2c_master.o \

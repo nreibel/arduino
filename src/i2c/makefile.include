@@ -1,6 +1,0 @@
-INCLUDES+=\
-	$(SRC_DIR)/i2c/api \
-	$(CFG_DIR)/i2c \
-
-i2c:    $(SRC_DIR)/i2c/src/i2c.o \
-	$(SRC_DIR)/i2c/src/i2c_$(ARCH).o \

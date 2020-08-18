@@ -1,0 +1,5 @@
+INCLUDES+=\
+	$(SRC_DIR)/i2c_slave/api \
+
+i2c_slave:\
+	$(SRC_DIR)/i2c_slave/src/i2c_slave.o\
