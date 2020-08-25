@@ -9,6 +9,7 @@
 #include "pwm.h"
 #include "eeprom.h"
 #include "i2c_slave.h"
+#include "string.h"
 
 #include "nyan_cat.xpm"
 
@@ -21,6 +22,7 @@ typedef struct {
     byte screenOffsetY;
 } DeviceConfig_t;
 
+bool eepromReset = FALSE;
 bool eepromUpdated = FALSE;
 bool transmitting = FALSE;
 
@@ -36,38 +38,46 @@ void I2C_Slave_StopCallback()
     transmitting = FALSE;
 }
 
-byte I2C_Slave_TransmitCallback(int offset)
+byte I2C_Slave_TransmitCallback(unsigned int offset)
 {
-    if (offset < DEVICE_ID_LENGTH)
-        return devCfg.deviceId[offset];
+    // Read from Device Config
+    if ( offset < sizeof(DeviceConfig_t) )
+    {
+        byte* buf = TYPECAST(&devCfg, byte*);
+        return buf[offset];
+    }
 
-    if (offset == 0x10)
-        return devCfg.screenInverted;
+    // EEPROM Reset address
+    if (offset == 0xFE)
+        return 0;
 
-    if (offset == 0x11)
-        return devCfg.screenOffsetX;
-
-    if (offset == 0x12)
-        return devCfg.screenOffsetY;
+    // Device Reset address
+    if (offset == 0xFF)
+        return 0;
 
     return 0xFF;
 }
 
-void I2C_Slave_ReceiveCallback(int offset, byte data)
+void I2C_Slave_ReceiveCallback(unsigned int offset, byte data)
 {
-    if (offset < DEVICE_ID_LENGTH)
-        devCfg.deviceId[offset] = data;
+    // Write to Device Config
+    if ( offset < sizeof(DeviceConfig_t) )
+    {
+        byte* buf = TYPECAST(&devCfg, byte*);
+        buf[offset] = data;
+        eepromUpdated = TRUE;
+    }
 
-    if (offset == 0x10)
-        devCfg.screenInverted = data;
+    // EEPROM Reset address
+    if (offset == 0xFE && data == 0x01)
+    {
+        eepromReset = TRUE;
+        eepromUpdated = TRUE;
+    }
 
-    if (offset == 0x11)
-        devCfg.screenOffsetX = data;
-
-    if (offset == 0x12)
-        devCfg.screenOffsetY = data;
-
-    eepromUpdated = TRUE;
+    // Device Reset address
+    if (offset == 0xFF && data == 0x01)
+        Os_HardReset();
 }
 
 // App entry point
@@ -137,6 +147,12 @@ Std_ReturnType Task_MainCyclic(void* data)
 
     if (eepromUpdated && !transmitting)
     {
+        if (eepromReset)
+        {
+            memset(&devCfg, 0, sizeof(DeviceConfig_t));
+            eepromReset = FALSE;
+        }
+
         EEPROM_SyncWrite(0, &devCfg, sizeof(DeviceConfig_t));
         eepromUpdated = FALSE;
     }
