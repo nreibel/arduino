@@ -5,6 +5,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
+#include <avr/wdt.h>
 
 volatile time_t osTimer = {0};
 TimerConfig timerCfg[NUMBER_OF_TIMERS] = {0};
@@ -26,6 +27,13 @@ void Os_DisableInterrupts()
 void Os_EnableInterrupts()
 {
     sei();
+}
+
+void Os_HardReset()
+{
+  cli(); // disable interrupts
+  wdt_enable(WDTO_15MS); // enable watchdog
+  HALT; // wait for watchdog to reset processor
 }
 
 void Os_Sleep()

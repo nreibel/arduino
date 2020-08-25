@@ -15,4 +15,6 @@ void   Os_Wait(time_t ms);
 void Os_EnableInterrupts();
 void Os_DisableInterrupts();
 
+void Os_HardReset();
+
 #endif /* OS_API_OS_H_ */
