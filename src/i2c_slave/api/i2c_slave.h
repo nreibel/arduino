@@ -5,8 +5,8 @@
 
 Std_ReturnType I2C_Slave_Init(uint8_t addr);
 
-extern byte I2C_Slave_TransmitCallback(int offset);
-extern void I2C_Slave_ReceiveCallback(int offset, byte data);
+extern byte I2C_Slave_TransmitCallback(unsigned int offset);
+extern void I2C_Slave_ReceiveCallback(unsigned int offset, byte data);
 extern void I2C_Slave_StartCallback();
 extern void I2C_Slave_StopCallback();
 
