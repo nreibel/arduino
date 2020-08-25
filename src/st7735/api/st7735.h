@@ -34,12 +34,13 @@
 #define ST7735_COLOR_ORANGE   ST7735_RED(0xFF) | ST7735_GREEN(0x80)
 #define ST7735_COLOR_SPRING   ST7735_GREEN(0xFF) | ST7735_BLUE(0x80)
 
-typedef enum {
-    ST7735_ScreenOrientation_Portrait,
-    ST7735_ScreenOrientation_Landscape,
-    ST7735_ScreenOrientation_Portrait_Inverted,
-    ST7735_ScreenOrientation_Landscape_Inverted
-} ST7735_ScreenOrientation;
+typedef struct {
+    int  Offset_X;
+    int  Offset_Y;
+    bool InvertScreen;
+} ST7735_CalibrationData_t;
+
+extern ST7735_CalibrationData_t ST7735_CalibrationData;
 
 typedef uint16_t st7735_color_t;
 typedef const __flash uint8_t st7735_xbm_t;
@@ -49,8 +50,6 @@ typedef st7735_color_t (*ST7735_Renderer)(int x, int y, int w, int h, void* data
 void ST7735_Init();
 void ST7735_ClearScreen();
 void ST7735_SetBackgroundColor(st7735_color_t c);
-
-Std_ReturnType ST7735_SetScreenOrientation(ST7735_ScreenOrientation orientation);
 
 // Pixel drawing
 void ST7735_DrawPixel(int x, int y, st7735_color_t c);

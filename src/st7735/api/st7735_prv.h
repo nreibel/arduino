@@ -30,13 +30,13 @@
 
 extern GPIO ST7735_Pin_DC; // Data/command pin
 
-void ST7735_Data(uint8_t data);
-void ST7735_Color(st7735_color_t color);
-void ST7735_Command(uint8_t command);
-void ST7735_SetDrawWindow(int x1, int y1, int x2, int y2);
+static void ST7735_Data(uint8_t data);
+static void ST7735_Color(st7735_color_t color);
+static void ST7735_Command(uint8_t command);
+static void ST7735_SetDrawWindow(int x1, int y1, int x2, int y2);
 
 // Renderers
-st7735_color_t ST7735_RenderXbm(int x, int y, int w, int h, void *data);
+static st7735_color_t ST7735_RenderXbm(int x, int y, int w, int h, void *data);
 
 typedef struct {
     // Bits making up the image

@@ -9,7 +9,9 @@
 #include "charset.h"
 #include "stdio.h"
 
-st7735_color_t background_color = ST7735_COLOR_BLACK;
+ST7735_CalibrationData_t ST7735_CalibrationData = {0};
+
+static st7735_color_t background_color = ST7735_COLOR_BLACK;
 
 void ST7735_Init()
 {
@@ -28,33 +30,23 @@ void ST7735_Init()
     ST7735_Command(ST7735_COLMOD);
     ST7735_Data(ST7735_COLMOD_16_BPP);
 
+    // Screen orientation
+    byte madctl = 0;
+
+#ifndef ST7735_SCREEN_ORIENTATION
+#error ST7735_SCREEN_ORIENTATION is not defined
+#elif ST7735_SCREEN_ORIENTATION == ST7735_SCREEN_ORIENTATION_PORTRAIT
+    madctl = ST7735_CalibrationData.InvertScreen ? (ST7735_MADCTL_MY | ST7735_MADCTL_MX) : 0;
+#elif ST7735_SCREEN_ORIENTATION == ST7735_SCREEN_ORIENTATION_LANDSCAPE
+    madctl = ST7735_MADCTL_MV | (ST7735_CalibrationData.InvertScreen ? ST7735_MADCTL_MX : ST7735_MADCTL_MY);
+#else
+#error ST7735_SCREEN_ORIENTATION is not valid
+#endif
+
+    ST7735_Command(ST7735_MADCTL);
+    ST7735_Data(madctl);
+
     ST7735_Command(ST7735_DISPON);
-}
-
-Std_ReturnType ST7735_SetScreenOrientation(ST7735_ScreenOrientation orientation)
-{
-    switch(orientation)
-    {
-        case ST7735_ScreenOrientation_Portrait:
-            ST7735_Command(ST7735_MADCTL);
-            ST7735_Data(0);
-            break;
-        case ST7735_ScreenOrientation_Landscape:
-            ST7735_Command(ST7735_MADCTL);
-            ST7735_Data(ST7735_MADCTL_MV | ST7735_MADCTL_MY);
-            break;
-        case ST7735_ScreenOrientation_Portrait_Inverted:
-            ST7735_Command(ST7735_MADCTL);
-            ST7735_Data(ST7735_MADCTL_MY | ST7735_MADCTL_MX);
-            break;
-        case ST7735_ScreenOrientation_Landscape_Inverted:
-            ST7735_Command(ST7735_MADCTL);
-            ST7735_Data(ST7735_MADCTL_MV | ST7735_MADCTL_MX);
-            break;
-        default: return Status_Not_OK;
-    }
-
-    return Status_OK;
 }
 
 void ST7735_SetBackgroundColor(st7735_color_t c)
@@ -129,7 +121,7 @@ Std_ReturnType ST7735_DrawXPM(st7735_xpm_t *xpm, int xPos, int yPos, int scale)
     return Status_OK;
 }
 
-st7735_color_t ST7735_RenderXbm(int x, int y, int w, int h, void *data)
+static st7735_color_t ST7735_RenderXbm(int x, int y, int w, int h, void *data)
 {
     UNUSED(h);
     UNUSED(w);
@@ -326,39 +318,39 @@ void ST7735_FillRectangle(int x, int y, int w, int h, st7735_color_t c)
     }
 }
 
-void ST7735_SetDrawWindow(int x1, int y1, int x2, int y2)
+static void ST7735_SetDrawWindow(int x1, int y1, int x2, int y2)
 {
     // Set the column to write to
     ST7735_Command(ST7735_CASET);
     ST7735_Data(0);
-    ST7735_Data(x1 + ST7735_OFFXET_X);
+    ST7735_Data(x1 + ST7735_CalibrationData.Offset_X);
     ST7735_Data(0);
-    ST7735_Data(x2 + ST7735_OFFXET_X);
+    ST7735_Data(x2 + ST7735_CalibrationData.Offset_X);
 
     // Set the row range to write to
     ST7735_Command(ST7735_RASET);
     ST7735_Data(0);
-    ST7735_Data(y1 + ST7735_OFFXET_Y);
+    ST7735_Data(y1 + ST7735_CalibrationData.Offset_Y);
     ST7735_Data(0);
-    ST7735_Data(y2 + ST7735_OFFXET_Y);
+    ST7735_Data(y2 + ST7735_CalibrationData.Offset_Y);
 
     // Write to RAM
     ST7735_Command(ST7735_RAMWR);
 }
 
-void ST7735_Command(uint8_t command)
+static void ST7735_Command(uint8_t command)
 {
     GPIO_SetState(ST7735_Pin_DC, GPIO_Low);
     Spi_WriteByte(command, NULL_PTR);
     GPIO_SetState(ST7735_Pin_DC, GPIO_High);
 }
 
-void ST7735_Data(uint8_t data)
+static void ST7735_Data(uint8_t data)
 {
     Spi_WriteByte(data, NULL_PTR);
 }
 
-void ST7735_Color(st7735_color_t color)
+static void ST7735_Color(st7735_color_t color)
 {
     Spi_WriteByte(HIGH_BYTE(color), NULL_PTR);
     Spi_WriteByte(LOW_BYTE(color), NULL_PTR);

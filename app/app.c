@@ -17,6 +17,8 @@
 typedef struct {
     byte deviceId[DEVICE_ID_LENGTH];
     byte screenInverted;
+    byte screenOffsetX;
+    byte screenOffsetY;
 } DeviceConfig_t;
 
 bool eepromUpdated = FALSE;
@@ -39,8 +41,14 @@ byte I2C_Slave_TransmitCallback(int offset)
     if (offset < DEVICE_ID_LENGTH)
         return devCfg.deviceId[offset];
 
-    if (offset == DEVICE_ID_LENGTH)
+    if (offset == 0x10)
         return devCfg.screenInverted;
+
+    if (offset == 0x11)
+        return devCfg.screenOffsetX;
+
+    if (offset == 0x12)
+        return devCfg.screenOffsetY;
 
     return 0xFF;
 }
@@ -50,8 +58,14 @@ void I2C_Slave_ReceiveCallback(int offset, byte data)
     if (offset < DEVICE_ID_LENGTH)
         devCfg.deviceId[offset] = data;
 
-    if (offset == DEVICE_ID_LENGTH)
+    if (offset == 0x10)
         devCfg.screenInverted = data;
+
+    if (offset == 0x11)
+        devCfg.screenOffsetX = data;
+
+    if (offset == 0x12)
+        devCfg.screenOffsetY = data;
 
     eepromUpdated = TRUE;
 }
@@ -64,18 +78,32 @@ void App_Init()
     Serial_Init();
     Spi_Init();
 
-    // Debug dump EEPROM data
+    // Debug dump EEPROM data over Serial
     EEPROM_DumpEEPROM(0, 0x20, 16);
 
     // Read app config from EEPROM
     EEPROM_SyncRead(0, &devCfg, sizeof(DeviceConfig_t));
 
+    // Read calibration data
+    if (devCfg.screenOffsetX != 0xFF)
+    {
+        ST7735_CalibrationData.Offset_X = devCfg.screenOffsetX;
+    }
+
+    if (devCfg.screenOffsetY != 0xFF)
+    {
+        ST7735_CalibrationData.Offset_Y = devCfg.screenOffsetY;
+    }
+
+    if (devCfg.screenInverted != 0xFF)
+    {
+        ST7735_CalibrationData.InvertScreen = devCfg.screenInverted;
+    }
+
     // Init TFT
     Spi_Configure(SPI_CLOCK_DIV_2, SPI_MODE_0);
     Spi_EnableSlave(SPI_Slave_TFT);
     ST7735_Init();
-    if (!devCfg.screenInverted) ST7735_SetScreenOrientation(ST7735_ScreenOrientation_Landscape);
-    else ST7735_SetScreenOrientation(ST7735_ScreenOrientation_Landscape_Inverted);
     ST7735_SetBackgroundColor(ST7735_COLOR_PINK);
     ST7735_ClearScreen();
     ST7735_DrawXPM(nyan_cat, 0, 20, 4);
