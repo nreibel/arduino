@@ -8,12 +8,17 @@
 #include "hc595.h"
 #include "pwm.h"
 #include "eeprom.h"
-#include "i2c_slave.h"
+#include "i2c_master.h"
+#include "mma8452q.h"
 #include "string.h"
+#include "stdio.h"
 
 #include "nyan_cat.xpm"
 
 #define DEVICE_ID_LENGTH 16
+
+// TODO : cleanup
+#define RANGE(x, in_min, in_max, out_min, out_max) (x-in_min)*(out_max-out_min)/(in_max-in_min)+out_min
 
 typedef struct {
     byte deviceId[DEVICE_ID_LENGTH];
@@ -84,9 +89,12 @@ void I2C_Slave_ReceiveCallback(unsigned int offset, byte data)
 void App_Init()
 {
     // Init communication
-    I2C_Slave_Init(0x10);
+    I2C_Master_Init();
     Serial_Init();
     Spi_Init();
+
+    // Init accelerometer
+    MMA8452Q_Init();
 
     // Debug dump EEPROM data over Serial
     EEPROM_DumpEEPROM(0, 0x20, 16);
@@ -99,10 +107,18 @@ void App_Init()
     {
         ST7735_CalibrationData.Offset_X = devCfg.screenOffsetX;
     }
+    else
+    {
+        ST7735_CalibrationData.Offset_X = 2;
+    }
 
     if (devCfg.screenOffsetY != 0xFF)
     {
         ST7735_CalibrationData.Offset_Y = devCfg.screenOffsetY;
+    }
+    else
+    {
+        ST7735_CalibrationData.Offset_Y = 1;
     }
 
     if (devCfg.screenInverted != 0xFF)
@@ -114,9 +130,9 @@ void App_Init()
     Spi_Configure(SPI_CLOCK_DIV_2, SPI_MODE_0);
     Spi_EnableSlave(SPI_Slave_TFT);
     ST7735_Init();
-    ST7735_SetBackgroundColor(ST7735_COLOR_PINK);
+    ST7735_SetBackgroundColor(ST7735_COLOR_BLACK);
     ST7735_ClearScreen();
-    ST7735_DrawXPM(nyan_cat, 0, 20, 4);
+    ST7735_DrawXPM(nyan_cat, 0, 0, 1);
     ST7735_DrawChars(2, 2, &devCfg.deviceId, DEVICE_ID_LENGTH, ST7735_COLOR_BLACK);
     Spi_DisableSlave(SPI_Slave_TFT);
 
@@ -129,6 +145,55 @@ void App_Init()
 
     // Set up tasks
     Os_SetupTask(Timer_MainTask, 1000, &Task_MainCyclic, NULL_PTR);
+    Os_SetupTask(Timer_Accelerometer, 20, &Task_Accelerometer, NULL_PTR);
+}
+
+// Accelerometer
+Std_ReturnType Task_Accelerometer(void* data)
+{
+    UNUSED(data);
+
+    // static char str[32];
+    static int posx = 64;
+    static int posy = 80;
+
+    MMA8452Q_Data_t acc_data = {0};
+    MMA8452Q_Read(&acc_data);
+
+    // Offset for flat sensor position
+    acc_data.acc_x -= 128;
+    acc_data.acc_y -= 128;
+
+    // sprintf(str, "Status = %02x", acc_data.status );
+    // Serial_PrintLine(str);
+
+    // sprintf(str, "Acc X = %3d", acc_data.acc_x);
+    // Serial_PrintLine(str);
+
+    // sprintf(str, "Acc Y = %3d", acc_data.acc_y);
+    // Serial_PrintLine(str);
+
+    // sprintf(str, "Acc Z = %3d", acc_data.acc_z);
+    // Serial_PrintLine(str);
+
+    Spi_EnableSlave(SPI_Slave_TFT);
+
+    // Erase previous dot
+    ST7735_FillRectangle(posx, posy, 5, 5, ST7735_COLOR_WHITE);
+
+    // Get new dot position
+    int new_posx = RANGE(acc_data.acc_x, 192, 64, 0, 128);
+    int new_posy = RANGE(acc_data.acc_y, 64, 192, 0, 160);
+
+    // Smooth data
+    posx = (new_posx + 7*posx)/8;
+    posy = (new_posy + 7*posy)/8;
+
+    // Draw new dot
+    ST7735_FillRectangle(posx, posy, 5, 5, ST7735_COLOR_FUSCHIA);
+    Spi_DisableSlave(SPI_Slave_TFT);
+
+    return Status_OK;
 }
 
 // Main task
