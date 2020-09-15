@@ -1,6 +1,14 @@
-#ifndef SRC_MMA8452Q_API_ADC_H_
-#define SRC_MMA8452Q_API_ADC_H_
+#ifndef __MMA8452Q_API_H__
+#define __MMA8452Q_API_H__
+
+typedef struct {
+    uint8_t status;
+    uint8_t acc_x;
+    uint8_t acc_y;
+    uint8_t acc_z;
+} MMA8452Q_Data_t;
 
 void MMA8452Q_Init();
+void MMA8452Q_Read(MMA8452Q_Data_t* buffer);
 
-#endif /* SRC_MMA8452Q_API_ADC_H_ */
+#endif /* __MMA8452Q_API_H__ */
