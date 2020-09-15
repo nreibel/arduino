@@ -1,0 +1,4 @@
+INCLUDES+=\
+	$(SRC_DIR)/mma8452q/api
+
+mma8452q:    $(SRC_DIR)/mma8452q/src/mma8452q.o \

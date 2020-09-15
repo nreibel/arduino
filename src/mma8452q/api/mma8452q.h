@@ -1,0 +1,6 @@
+#ifndef SRC_MMA8452Q_API_ADC_H_
+#define SRC_MMA8452Q_API_ADC_H_
+
+void MMA8452Q_Init();
+
+#endif /* SRC_MMA8452Q_API_ADC_H_ */
