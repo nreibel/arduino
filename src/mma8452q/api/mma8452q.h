@@ -1,14 +1,45 @@
 #ifndef __MMA8452Q_API_H__
 #define __MMA8452Q_API_H__
 
+// TODO : move to config
+#define READ_MODE_FAST OFF
+
+#if READ_MODE_FAST == ON
+typedef uint8_t MMA8452Q_Type_t;
+#else
+typedef int16_t MMA8452Q_Type_t;
+#endif
+
 typedef struct {
-    uint8_t status;
-    uint8_t acc_x;
-    uint8_t acc_y;
-    uint8_t acc_z;
+    MMA8452Q_Type_t acc_x;
+    MMA8452Q_Type_t acc_y;
+    MMA8452Q_Type_t acc_z;
 } MMA8452Q_Data_t;
 
+// Interrupt bits
+#define MMA8452Q_INTERRUPT_DATAREADY   0
+#define MMA8452Q_INTERRUPT_FREEFALL    2
+#define MMA8452Q_INTERRUPT_PULSE       3
+#define MMA8452Q_INTERRUPT_ORIENTATION 4
+#define MMA8452Q_INTERRUPT_TRANSIENT   5
+#define MMA8452Q_INTERRUPT_AUTOSLEEP   7
+
+void MMA8452Q_Reset();
 void MMA8452Q_Init();
-void MMA8452Q_Read(MMA8452Q_Data_t* buffer);
+void MMA8452Q_SetStandby(bool standby);
+
+void MMA8452Q_GetStatus(byte* status);
+void MMA8452Q_GetData(MMA8452Q_Data_t* buffer);
+
+void MMA8452Q_SetRange(byte range, bool hpf);
+
+void MMA8452Q_SetTransientCount(byte cnt);
+void MMA8452Q_SetTransientMode(byte mask, bool latch);
+void MMA8452Q_SetTransientThreshold(float threshold);
+void MMA8452Q_GetTransientSource(byte* src);
+
+void MMA8452Q_EnableInterrupts(byte mask);
+void MMA8452Q_SetInterruptsConfig(byte config);
+void MMA8452Q_GetInterruptStatus(byte* status);
 
 #endif /* __MMA8452Q_API_H__ */
