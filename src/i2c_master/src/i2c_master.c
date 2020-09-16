@@ -20,6 +20,20 @@ Std_ReturnType I2C_Master_Init()
     return Status_OK;
 }
 
+Std_ReturnType I2C_Master_ReadRegister(uint8_t addr, uint8_t reg, uint8_t *val)
+{
+    *val = reg;
+    I2C_Master_ReadSync(addr, val, 1, 1, 0);
+    return Status_OK;
+}
+
+Std_ReturnType I2C_Master_WriteRegister(uint8_t addr, uint8_t reg, uint8_t val)
+{
+    byte buffer[2] = {reg, val};
+    I2C_Master_WriteSync(addr, buffer, 2);
+    return Status_OK;
+}
+
 Std_ReturnType I2C_Master_WriteSync(uint8_t addr, void *buffer, int len)
 {
     I2C_Master_StartCondition();
