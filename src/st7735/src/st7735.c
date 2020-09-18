@@ -1,4 +1,3 @@
-#include "avr/pgmspace.h"
 #include "st7735.h"
 #include "st7735_prv.h"
 #include "st7735_cfg.h"
@@ -258,7 +257,7 @@ void ST7735_DrawChar(int x, int y, char chr, st7735_color_t c)
     {
         for (int dx = 0 ; dx < ST7735_CHARSET_WIDTH ; dx++)
         {
-            uint8_t b = pgm_read_byte(&s_st7735_charset[chr-0x20][dx]);
+            uint8_t b = s_st7735_charset[chr-0x20][dx];
             ST7735_Color( IS_SET_BIT(b, dy) ? c : background_color );
         }
     }
