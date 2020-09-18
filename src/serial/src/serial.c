@@ -39,13 +39,13 @@ Std_ReturnType Serial_WriteBytes(void *buffer, int length)
 
 Std_ReturnType Serial_NewLine()
 {
-    static byte nl[2] = {'\r', '\n'};
+    static uint8_t nl[2] = {'\r', '\n'};
     return Serial_WriteBytes(nl, 2);
 }
 
 Std_ReturnType Serial_PrintString(const void* string, bool newLine, bool progMem)
 {
-    byte b = 0;
+    uint8_t b = 0;
 
     while (TRUE)
     {

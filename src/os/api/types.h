@@ -3,8 +3,7 @@
 
 #include <stdint.h>
 
-typedef enum
-{
+typedef enum {
     Status_Not_OK = 0,
     Status_Pending,
     Status_OK
@@ -18,14 +17,18 @@ typedef enum {
 typedef void (*Interrupt)(volatile void*);
 typedef Std_ReturnType (*Callback)(void*);
 
-typedef uint8_t  byte;
-typedef uint16_t word;
-typedef uint32_t dword;
-typedef void*    buffer_t;
+typedef union {
+    uint16_t value;
+    uint8_t  byte[2];
+} word;
 
-// Stringize preprocessor macro
-#define STRING(s) #s
-#define STRINGIZE(s) STRING(s)
+typedef union {
+    uint32_t value;
+    uint16_t word[2];
+    uint8_t  byte[4];
+} dword;
+
+typedef void* buffer_t;
 
 #define UNUSED(x) (void)(x)
 
@@ -54,6 +57,5 @@ typedef void*    buffer_t;
 #define WRITE_PU8(addr, val)       WRITE_PTR(addr, val, uint8_t)
 #define WRITE_PU16(addr, val)      WRITE_PTR(addr, val, uint16_t)
 #define WRITE_PU32(addr, val)      WRITE_PTR(addr, val, uint32_t)
-
 
 #endif /* OS_API_TYPES_H_ */

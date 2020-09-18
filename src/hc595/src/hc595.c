@@ -18,7 +18,7 @@ void HC595_Write(buffer_t data, int len)
 {
     for (int i = len ; i > 0 ; i--)
     {
-        byte val = READ_PU8(data+i-1);
+        uint8_t val = READ_PU8(data+i-1);
         for (int j = 8 ; j > 0 ; j--)
         {
             GPIO_State st = IS_SET_BIT(val, j-1) ? GPIO_High : GPIO_Low;

@@ -22,7 +22,7 @@ int HC165_Read(buffer_t buf, int len)
 
     for (int i = 0 ; i < len ; i++)
     {
-        byte *data = TYPECAST(buf++, byte*);
+        uint8_t *data = TYPECAST(buf++, uint8_t*);
         for (int j = 7 ; j >= 0 ; j--)
         {
             GPIO_GetState(HC165_Pin_Serial, &ser);

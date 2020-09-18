@@ -11,7 +11,7 @@ ISR(TWI_vect)
     static bool init = FALSE;
     static unsigned int offset = 0;
 
-    byte status = TW_STATUS;
+    uint8_t status = TW_STATUS;
     switch(status)
     {
         case TW_SR_SLA_ACK: // Received SLA+W

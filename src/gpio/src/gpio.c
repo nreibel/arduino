@@ -31,8 +31,8 @@ ISR(INT1_vect)
 
 Std_ReturnType GPIO_EnableInterrupt(GPIO pin, GPIO_Edge edge, Interrupt cbk, volatile void *data)
 {
-    byte eicra = EICRA;
-    byte eimsk = EIMSK;
+    uint8_t eicra = EICRA;
+    uint8_t eimsk = EIMSK;
 
     switch(pin)
     {

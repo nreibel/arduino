@@ -12,7 +12,7 @@ typedef enum
 } Serial_TP_State;
 
 static Serial_TP_State state = WaitData;
-static byte data[BUFFER_SIZE] = {0};
+static uint8_t data[BUFFER_SIZE] = {0};
 static int length = 0;
 static int expected = 0;
 

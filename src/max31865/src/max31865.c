@@ -11,8 +11,8 @@ Std_ReturnType MAX31865_Init(Spi_Slave slave, MAX31865_WireMode mode, MAX31865_F
     Std_ReturnType retval = Status_Not_OK;
 
     // VBIAS = On, Conversion mode = Auto
-    byte configuration = BIT(7) | BIT(6);
-    byte read = 0;
+    uint8_t configuration = BIT(7) | BIT(6);
+    uint8_t read = 0;
 
     if (mode == MAX31865_WireMode_3_Wires)  SET_BIT(configuration, 4);
     if (filter == MAX31865_FilterMode_50Hz) SET_BIT(configuration, 0);
@@ -55,8 +55,8 @@ Std_ReturnType MAX31865_ReadRTD(Spi_Slave slave, double *rtd)
 {
     Std_ReturnType retval = Status_Not_OK;
 
-    byte msb = 0;
-    byte lsb = 0;
+    uint8_t msb = 0;
+    uint8_t lsb = 0;
 
     Spi_EnableSlave(slave);
     Spi_WriteByte(MAX31865_REG_RTD_MSB | MAX31865_READ, NULL_PTR);
@@ -74,7 +74,7 @@ Std_ReturnType MAX31865_ReadRTD(Spi_Slave slave, double *rtd)
     }
     else
     {
-        word w = (msb << 8) | lsb;
+        uint16_t w = (msb << 8) | lsb;
         *rtd = (MAX31865_RES_REF * TYPECAST(w >> 1, double)) / MAX31865_ADC_RESOLUTION;
         retval = Status_OK;
     }

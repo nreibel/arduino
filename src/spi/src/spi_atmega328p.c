@@ -13,8 +13,8 @@ void Spi_HAL_Enable()
 void Spi_HAL_Configure(Spi_Clock clock, Spi_Mode mode)
 {
     // Enable SPI, Master Mode
-    byte spcr = BIT(MSTR) | BIT(SPE);
-    byte spsr = 0;
+    uint8_t spcr = BIT(MSTR) | BIT(SPE);
+    uint8_t spsr = 0;
 
     switch(clock)
     {

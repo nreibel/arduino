@@ -28,18 +28,18 @@ void MMA8452Q_Reset();
 void MMA8452Q_Init();
 void MMA8452Q_SetStandby(bool standby);
 
-void MMA8452Q_GetStatus(byte* status);
+void MMA8452Q_GetStatus(uint8_t* status);
 void MMA8452Q_GetData(MMA8452Q_Data_t* buffer);
 
-void MMA8452Q_SetRange(byte range, bool hpf);
+void MMA8452Q_SetRange(uint8_t range, bool hpf);
 
-void MMA8452Q_SetTransientCount(byte cnt);
-void MMA8452Q_SetTransientMode(byte mask, bool latch);
+void MMA8452Q_SetTransientCount(uint8_t cnt);
+void MMA8452Q_SetTransientMode(uint8_t mask, bool latch);
 void MMA8452Q_SetTransientThreshold(float threshold);
-void MMA8452Q_GetTransientSource(byte* src);
+void MMA8452Q_GetTransientSource(uint8_t* src);
 
-void MMA8452Q_EnableInterrupts(byte mask);
-void MMA8452Q_SetInterruptsConfig(byte config);
-void MMA8452Q_GetInterruptStatus(byte* status);
+void MMA8452Q_EnableInterrupts(uint8_t mask);
+void MMA8452Q_SetInterruptsConfig(uint8_t config);
+void MMA8452Q_GetInterruptStatus(uint8_t* status);
 
 #endif /* __MMA8452Q_API_H__ */

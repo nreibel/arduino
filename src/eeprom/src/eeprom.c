@@ -78,7 +78,7 @@ Std_ReturnType EEPROM_BackgroundTask()
     return retval;
 }
 
-Std_ReturnType EEPROM_AsyncWrite(word ucAddress, void *ucData, int dataLength)
+Std_ReturnType EEPROM_AsyncWrite(uint16_t ucAddress, void *ucData, int dataLength)
 {
     Std_ReturnType retval = Status_Not_OK;
 
@@ -100,7 +100,7 @@ Std_ReturnType EEPROM_AsyncWrite(word ucAddress, void *ucData, int dataLength)
     return retval;
 }
 
-Std_ReturnType EEPROM_AsyncRead(word ucAddress, void *ucData, int dataLength)
+Std_ReturnType EEPROM_AsyncRead(uint16_t ucAddress, void *ucData, int dataLength)
 {
     Std_ReturnType retval = Status_Not_OK;
 
@@ -119,7 +119,7 @@ Std_ReturnType EEPROM_AsyncRead(word ucAddress, void *ucData, int dataLength)
 }
 
 
-Std_ReturnType EEPROM_MemSet(word ucAddress, byte val, int length)
+Std_ReturnType EEPROM_MemSet(uint16_t ucAddress, uint8_t val, int length)
 {
     Std_ReturnType retval = Status_Not_OK;
 
@@ -150,7 +150,7 @@ Std_ReturnType EEPROM_MemSet(word ucAddress, byte val, int length)
     return retval;
 }
 
-Std_ReturnType EEPROM_SyncWrite(word ucAddress, void *ucData, int length)
+Std_ReturnType EEPROM_SyncWrite(uint16_t ucAddress, void *ucData, int length)
 {
     Std_ReturnType retval = Status_Not_OK;
 
@@ -181,7 +181,7 @@ Std_ReturnType EEPROM_SyncWrite(word ucAddress, void *ucData, int length)
     return retval;
 }
 
-Std_ReturnType EEPROM_SyncRead(word ucAddress, void *ucData, int length)
+Std_ReturnType EEPROM_SyncRead(uint16_t ucAddress, void *ucData, int length)
 {
     Std_ReturnType retval = Status_Not_OK;
 
@@ -207,11 +207,11 @@ Std_ReturnType EEPROM_SyncRead(word ucAddress, void *ucData, int length)
 #if EEPROM_ENABLE_SERIAL_DUMP == ON
 
 #define EEPROM_DUMP_CHUNKS_SIZE 16
-Std_ReturnType EEPROM_DumpEEPROM_Raw(word from, word to)
+Std_ReturnType EEPROM_DumpEEPROM_Raw(uint16_t from, uint16_t to)
 {
-    byte b[EEPROM_DUMP_CHUNKS_SIZE];
+    uint8_t b[EEPROM_DUMP_CHUNKS_SIZE];
 
-    for ( word addr = from ; addr < to ; addr += EEPROM_DUMP_CHUNKS_SIZE )
+    for ( uint16_t addr = from ; addr < to ; addr += EEPROM_DUMP_CHUNKS_SIZE )
     {
         EEPROM_SyncRead(addr, b, EEPROM_DUMP_CHUNKS_SIZE);
         Serial_WriteBytes(b, EEPROM_DUMP_CHUNKS_SIZE);
@@ -220,15 +220,15 @@ Std_ReturnType EEPROM_DumpEEPROM_Raw(word from, word to)
     return Status_OK;
 }
 
-Std_ReturnType EEPROM_DumpEEPROM(word from, word to, int line_length)
+Std_ReturnType EEPROM_DumpEEPROM(uint16_t from, uint16_t to, int line_length)
 {
-    byte b = 0;
+    uint8_t b = 0;
     char buffer[10];
 
     // Keep track of line length
     int cpt = 0;
 
-    for ( word addr = from ; addr < to ; addr++ )
+    for ( uint16_t addr = from ; addr < to ; addr++ )
     {
         EEPROM_SyncRead(addr, &b, 1);
         cpt++;
@@ -255,9 +255,9 @@ Std_ReturnType EEPROM_DumpEEPROM(word from, word to, int line_length)
 
 #if EEPROM_ENABLE_BLOCK_API == ON
 
-Std_ReturnType EEPROM_IterateBlocks(byte type, void *buffer, Callback cbk)
+Std_ReturnType EEPROM_IterateBlocks(uint8_t type, void *buffer, Callback cbk)
 {
-    word addr = 0;
+    uint16_t addr = 0;
     Header hdr = {0};
 
     while ( addr < EEPROM_SIZE - sizeof(Header) )
@@ -280,14 +280,14 @@ Std_ReturnType EEPROM_IterateBlocks(byte type, void *buffer, Callback cbk)
     return Status_OK;
 }
 
-Std_ReturnType EEPROM_GetLastBlock(void* blk, byte type)
+Std_ReturnType EEPROM_GetLastBlock(void* blk, uint8_t type)
 {
     Header hdr = {0};
 
-    word lastAddr = EEPROM_SIZE + 1;
-    word lastId = 0;
-    word lastSz = 0;
-    word addr = 0;
+    uint16_t lastAddr = EEPROM_SIZE + 1;
+    uint16_t lastId = 0;
+    uint16_t lastSz = 0;
+    uint16_t addr = 0;
 
     // Find block with the highest id
     while ( addr < EEPROM_SIZE - sizeof(Header) )
@@ -318,7 +318,7 @@ Std_ReturnType EEPROM_GetLastBlock(void* blk, byte type)
 
 Std_ReturnType EEPROM_WriteBlock(void* blk)
 {
-    word addr = 0;
+    uint16_t addr = 0;
     Header hdr = {0};
 
     Header *blockHeader = TYPECAST(blk, Header*);

@@ -18,10 +18,10 @@
 #define DEVICE_ID_LENGTH 16
 
 typedef struct {
-    byte deviceId[DEVICE_ID_LENGTH];
-    byte screenInverted;
-    byte screenOffsetX;
-    byte screenOffsetY;
+    uint8_t deviceId[DEVICE_ID_LENGTH];
+    uint8_t screenInverted;
+    uint8_t screenOffsetX;
+    uint8_t screenOffsetY;
 } DeviceConfig_t;
 
 bool eepromReset = FALSE;
@@ -40,12 +40,12 @@ void I2C_Slave_StopCallback()
     transmitting = FALSE;
 }
 
-byte I2C_Slave_TransmitCallback(unsigned int offset)
+uint8_t I2C_Slave_TransmitCallback(unsigned int offset)
 {
     // Read from Device Config
     if ( offset < sizeof(DeviceConfig_t) )
     {
-        byte* buf = TYPECAST(&devCfg, byte*);
+        uint8_t* buf = TYPECAST(&devCfg, uint8_t*);
         return buf[offset];
     }
 
@@ -60,12 +60,12 @@ byte I2C_Slave_TransmitCallback(unsigned int offset)
     return 0xFF;
 }
 
-void I2C_Slave_ReceiveCallback(unsigned int offset, byte data)
+void I2C_Slave_ReceiveCallback(unsigned int offset, uint8_t data)
 {
     // Write to Device Config
     if ( offset < sizeof(DeviceConfig_t) )
     {
-        byte* buf = TYPECAST(&devCfg, byte*);
+        uint8_t* buf = TYPECAST(&devCfg, uint8_t*);
         buf[offset] = data;
         eepromUpdated = TRUE;
     }
@@ -177,9 +177,9 @@ Std_ReturnType Task_Accelerometer(void* data)
 
     static char str[32];
 
-    byte status = 0;
-    byte interrupt_status = 0;
-    byte transient_status = 0;
+    uint8_t status = 0;
+    uint8_t interrupt_status = 0;
+    uint8_t transient_status = 0;
     MMA8452Q_Data_t acc_data = {0};
 
     MMA8452Q_GetStatus(&status);
@@ -216,7 +216,7 @@ Std_ReturnType Task_MainCyclic(void* data)
 {
     UNUSED(data);
 
-    static word out = 1;
+    static uint16_t out = 1;
     static bool state = TRUE;
 
     HC595_WriteWord(out++);

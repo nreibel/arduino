@@ -9,7 +9,7 @@ void PWM_Init(PWM pin, bool inverted)
     RESET_BIT(PRR, PRTIM0);
 
     // Set Fast PWM mode
-    byte tccr0a = BIT(WGM01) | BIT(WGM00);
+    uint8_t tccr0a = BIT(WGM01) | BIT(WGM00);
 
     // Set Port_GPIO as OUTPUT
     switch(pin)

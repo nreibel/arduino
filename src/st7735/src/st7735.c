@@ -31,7 +31,7 @@ void ST7735_Init()
     ST7735_Data(ST7735_COLMOD_16_BPP);
 
     // Screen orientation
-    byte madctl = 0;
+    uint8_t madctl = 0;
 
 #ifndef ST7735_SCREEN_ORIENTATION
 #error ST7735_SCREEN_ORIENTATION is not defined
@@ -127,7 +127,7 @@ static st7735_color_t ST7735_RenderXbm(int x, int y, int w, int h, void *data)
     UNUSED(w);
 
     XbmRendererData *d = TYPECAST(data, XbmRendererData*);
-    byte b = d->bits[y*d->bw + x/8];
+    uint8_t b = d->bits[y*d->bw + x/8];
     return IS_SET_BIT(b, x % 8) ? d->color : background_color;
 }
 
@@ -258,7 +258,7 @@ void ST7735_DrawChar(int x, int y, char chr, st7735_color_t c)
     {
         for (int dx = 0 ; dx < ST7735_CHARSET_WIDTH ; dx++)
         {
-            byte b = pgm_read_byte(&s_st7735_charset[chr-0x20][dx]);
+            uint8_t b = pgm_read_byte(&s_st7735_charset[chr-0x20][dx]);
             ST7735_Color( IS_SET_BIT(b, dy) ? c : background_color );
         }
     }
@@ -352,6 +352,7 @@ static void ST7735_Data(uint8_t data)
 
 static void ST7735_Color(st7735_color_t color)
 {
-    Spi_WriteByte(HIGH_BYTE(color), NULL_PTR);
-    Spi_WriteByte(LOW_BYTE(color), NULL_PTR);
+    word w = {color};
+    Spi_WriteByte(w.byte[1], NULL_PTR);
+    Spi_WriteByte(w.byte[0], NULL_PTR);
 }

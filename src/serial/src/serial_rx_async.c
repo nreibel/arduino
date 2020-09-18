@@ -6,11 +6,11 @@
 #if SERIAL_ASYNC_RX == ON
 
 // FIFO buffer
-static void push(byte b);
-static byte poll();
-static byte s_rxBuffer[SERIAL_RECEIVE_BUFFER_LENGTH];
-static byte *s_readPtr = s_rxBuffer;
-static byte *s_writePtr = s_rxBuffer;
+static void push(uint8_t b);
+static uint8_t poll();
+static uint8_t s_rxBuffer[SERIAL_RECEIVE_BUFFER_LENGTH];
+static uint8_t *s_readPtr = s_rxBuffer;
+static uint8_t *s_writePtr = s_rxBuffer;
 
 // Keep track of FIFO length
 static int s_size = 0;
@@ -19,7 +19,7 @@ static int s_size = 0;
 static int s_nbstrings = 0;
 
 
-static void push(byte b)
+static void push(uint8_t b)
 {
     *s_writePtr = b;
 
@@ -35,9 +35,9 @@ static void push(byte b)
     }
 }
 
-static byte poll()
+static uint8_t poll()
 {
-    byte b = *s_readPtr;
+    uint8_t b = *s_readPtr;
 
     s_readPtr++;
     s_size--;
@@ -86,7 +86,7 @@ int Serial_ReadString(void *buffer, int len)
     int rcvd = 0;
     while(rcvd < len && s_size > 0 && s_nbstrings > 0)
     {
-        byte b = poll();
+        uint8_t b = poll();
         UINT8_PTR(buffer)[rcvd++] = b;
         if (b == 0) break;
     }

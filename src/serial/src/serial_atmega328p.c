@@ -36,11 +36,11 @@ void Serial_HAL_Init_HW(void)
     RESET_BIT(PRR, PRUSART0);
 
     // Formula is UBRR = (Freq / (BAUD * 16) - 1)
-    uint16_t ubrr = (F_CPU/16/SERIAL_BAUD_RATE)-1U;
+    word ubrr = { (F_CPU/16/SERIAL_BAUD_RATE)-1U };
 
     // Set UBRR
-    UBRR0H = HIGH_BYTE(ubrr);
-    UBRR0L = LOW_BYTE(ubrr);
+    UBRR0H = ubrr.byte[1];
+    UBRR0L = ubrr.byte[0];
 
     // Enable transmitter
     UCSR0B = BIT(RXEN0) | BIT(TXEN0);

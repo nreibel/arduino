@@ -9,7 +9,7 @@
 
 #include "gpio.h"
 
-volatile word data = 0;
+volatile uint16_t data = 0;
 volatile bool ready = FALSE;
 
 ISR(ADC_vect)

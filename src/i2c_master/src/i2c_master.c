@@ -29,7 +29,7 @@ Std_ReturnType I2C_Master_ReadRegister(uint8_t addr, uint8_t reg, uint8_t *val)
 
 Std_ReturnType I2C_Master_WriteRegister(uint8_t addr, uint8_t reg, uint8_t val)
 {
-    byte buffer[2] = {reg, val};
+    uint8_t buffer[2] = {reg, val};
     I2C_Master_WriteSync(addr, buffer, 2);
     return Status_OK;
 }

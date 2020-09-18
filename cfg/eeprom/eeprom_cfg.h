@@ -26,14 +26,14 @@
 
     typedef struct {
         Header   header;
-        byte     device_id[DEVICE_ID_LENGTH];
+        uint8_t  device_id[DEVICE_ID_LENGTH];
         uint32_t unlock_crc32;
     } DeviceInfoBlock;
 
     typedef struct {
-        Header header;
-        byte   nb_alerts[SENSORS_COUNT];
-        byte   unlock_attempts;
+        Header  header;
+        uint8_t nb_alerts[SENSORS_COUNT];
+        uint8_t unlock_attempts;
     } DataBlock;
 
 #endif

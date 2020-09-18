@@ -63,7 +63,7 @@ void ST7735_ClearChar(int x, int y);
 void ST7735_ClearChars(int x, int y, int length);
 
 void ST7735_DrawChar(int x, int y, char chr, st7735_color_t c);
-void ST7735_DrawChars(int x, int y, buffer_t bytes, int length, st7735_color_t c);
+void ST7735_DrawChars(int x, int y, buffer_t uint8_ts, int length, st7735_color_t c);
 void ST7735_DrawString(int x, int y, char* str, st7735_color_t c);
 
 // Imaging
