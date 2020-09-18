@@ -55,9 +55,9 @@ typedef enum
 typedef enum
 {
     GPIO_Edge_Low,
-    GPIO_Edge_Both,
     GPIO_Edge_Falling,
-    GPIO_Edge_Rising
+    GPIO_Edge_Rising,
+    GPIO_Edge_Any
 } GPIO_Edge;
 
 Std_ReturnType GPIO_SetDataDirection(GPIO pin, GPIO_DataDirection direction);

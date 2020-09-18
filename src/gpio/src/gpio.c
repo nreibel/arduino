@@ -46,7 +46,7 @@ Std_ReturnType GPIO_EnableInterrupt(GPIO pin, GPIO_Edge edge, Interrupt cbk, vol
                     RESET_BIT(eicra, ISC01);
                     RESET_BIT(eicra, ISC00);
                     break;
-                case GPIO_Edge_Both:
+                case GPIO_Edge_Any:
                     RESET_BIT(eicra, ISC01);
                     SET_BIT(eicra, ISC00);
                     break;
@@ -77,7 +77,7 @@ Std_ReturnType GPIO_EnableInterrupt(GPIO pin, GPIO_Edge edge, Interrupt cbk, vol
                     RESET_BIT(eicra, ISC11);
                     RESET_BIT(eicra, ISC10);
                     break;
-                case GPIO_Edge_Both:
+                case GPIO_Edge_Any:
                     RESET_BIT(eicra, ISC11);
                     SET_BIT(eicra, ISC10);
                     break;
