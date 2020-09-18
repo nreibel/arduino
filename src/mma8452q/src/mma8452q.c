@@ -5,17 +5,22 @@
 #include "types.h"
 #include "bits.h"
 
-void MMA8452Q_Init()
+Std_ReturnType MMA8452Q_Init()
 {
-    // TODO : read WHO_AM_I to ensure communication
-
+    uint8_t whoami = 0;
     uint8_t ctrl_reg1 = 0;
+
+    // Read WHO_AM_I to ensure communication
+    I2C_Master_ReadRegister(MMA8452Q_I2C_ADDR, MMA8452Q_WHO_AM_I, &whoami);
+    if (whoami != MMA8452Q_DEVICE_ID) return Status_Not_OK;
 
 #if READ_MODE_FAST == ON
     SET_BIT(ctrl_reg1, MMA8452Q_CTRL_REG1_F_READ);
 #endif
 
     I2C_Master_WriteRegister(MMA8452Q_I2C_ADDR, MMA8452Q_CTRL_REG1, ctrl_reg1);
+
+    return Status_OK;
 }
 
 void MMA8452Q_Reset()

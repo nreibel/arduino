@@ -10,6 +10,7 @@
 #define MMA8452Q_OUT_Z_MSB       0x05
 #define MMA8452Q_OUT_Z_LSB       0x06
 #define MMA8452Q_INT_SOURCE      0x0C
+#define MMA8452Q_WHO_AM_I        0x0D
 #define MMA8452Q_XYZ_DATA_CFG    0x0E
 #define MMA8452Q_FF_MT_CFG       0x15
 #define MMA8452Q_TRANSIENT_CFG   0x1D
@@ -22,6 +23,9 @@
 #define MMA8452Q_CTRL_REG3       0x2C
 #define MMA8452Q_CTRL_REG4       0x2D
 #define MMA8452Q_CTRL_REG5       0x2E
+
+// MMA8452Q_WHO_AM_I
+#define MMA8452Q_DEVICE_ID 0x2A
 
 // CTRL_REG1 bits
 #define MMA8452Q_CTRL_REG1_ACTIVE     0

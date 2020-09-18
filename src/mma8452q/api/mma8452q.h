@@ -24,8 +24,8 @@ typedef struct {
 #define MMA8452Q_INTERRUPT_TRANSIENT   5
 #define MMA8452Q_INTERRUPT_AUTOSLEEP   7
 
+Std_ReturnType MMA8452Q_Init();
 void MMA8452Q_Reset();
-void MMA8452Q_Init();
 void MMA8452Q_SetStandby(bool standby);
 
 void MMA8452Q_GetStatus(uint8_t* status);
