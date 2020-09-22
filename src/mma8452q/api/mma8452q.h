@@ -16,6 +16,12 @@ typedef struct {
     MMA8452Q_Type_t acc_z;
 } MMA8452Q_Data_t;
 
+typedef enum {
+    MMA8452Q_Range_2G,
+    MMA8452Q_Range_4G,
+    MMA8452Q_Range_8G
+} MMA8452Q_Range_t;
+
 // Interrupt bits
 #define MMA8452Q_INTERRUPT_DATAREADY   0
 #define MMA8452Q_INTERRUPT_FREEFALL    2
@@ -31,7 +37,7 @@ void MMA8452Q_SetStandby(bool standby);
 void MMA8452Q_GetStatus(uint8_t* status);
 void MMA8452Q_GetData(MMA8452Q_Data_t* buffer);
 
-void MMA8452Q_SetRange(uint8_t range, bool hpf);
+Std_ReturnType MMA8452Q_SetRange(MMA8452Q_Range_t range, bool hpf);
 
 void MMA8452Q_SetTransientCount(uint8_t cnt);
 void MMA8452Q_SetTransientMode(uint8_t mask, bool latch);

@@ -107,9 +107,8 @@ void App_Init()
     GPIO_EnableInterrupt(GPIO_INT1, GPIO_Edge_Rising, &Callback_INT1, NULL_PTR);
 
     // Init accelerometer
-    MMA8452Q_Reset();
-    Os_Wait(100);
     MMA8452Q_Init();
+    MMA8452Q_SetRange(MMA8452Q_Range_8G, FALSE);
     MMA8452Q_SetTransientMode( BIT(1) | BIT(2) | BIT(3), TRUE );
     MMA8452Q_SetTransientThreshold(1.5);
     MMA8452Q_EnableInterrupts( BIT(5) );
