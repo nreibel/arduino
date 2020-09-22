@@ -103,10 +103,15 @@ void MMA8452Q_SetInterruptsConfig(uint8_t config)
     I2C_Master_WriteRegister(MMA8452Q_I2C_ADDR, MMA8452Q_CTRL_REG5, config);
 }
 
-void MMA8452Q_SetTransientMode(uint8_t mask, bool latch)
+void MMA8452Q_SetTransientMode(bool x, bool y, bool z, bool latch)
 {
-    uint8_t transient_cfg = MASK(mask, 0x0E);
+    uint8_t transient_cfg = 0;
+
+    if(x)     SET_BIT(transient_cfg, MMA8452Q_TRANSIENT_CFG_XTEFE);
+    if(y)     SET_BIT(transient_cfg, MMA8452Q_TRANSIENT_CFG_YTEFE);
+    if(z)     SET_BIT(transient_cfg, MMA8452Q_TRANSIENT_CFG_ZTEFE);
     if(latch) SET_BIT(transient_cfg, MMA8452Q_TRANSIENT_CFG_ELE);
+
     I2C_Master_WriteRegister(MMA8452Q_I2C_ADDR, MMA8452Q_TRANSIENT_CFG, transient_cfg);
 }
 

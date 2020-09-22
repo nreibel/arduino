@@ -109,7 +109,7 @@ void App_Init()
     // Init accelerometer
     MMA8452Q_Init();
     MMA8452Q_SetRange(MMA8452Q_Range_8G, FALSE);
-    MMA8452Q_SetTransientMode( BIT(1) | BIT(2) | BIT(3), TRUE );
+    MMA8452Q_SetTransientMode(TRUE, TRUE, TRUE, TRUE);
     MMA8452Q_SetTransientThreshold(1.5);
     MMA8452Q_EnableInterrupts( BIT(5) );
     MMA8452Q_SetStandby(FALSE);

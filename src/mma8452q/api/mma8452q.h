@@ -40,7 +40,7 @@ void MMA8452Q_GetData(MMA8452Q_Data_t* buffer);
 Std_ReturnType MMA8452Q_SetRange(MMA8452Q_Range_t range, bool hpf);
 
 void MMA8452Q_SetTransientCount(uint8_t cnt);
-void MMA8452Q_SetTransientMode(uint8_t mask, bool latch);
+void MMA8452Q_SetTransientMode(bool x, bool y, bool z, bool latch);
 void MMA8452Q_SetTransientThreshold(float threshold);
 void MMA8452Q_GetTransientSource(uint8_t* src);
 
