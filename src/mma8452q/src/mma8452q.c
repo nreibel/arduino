@@ -33,15 +33,30 @@ void MMA8452Q_GetStatus(uint8_t* status)
     I2C_Master_ReadRegister(MMA8452Q_I2C_ADDR, MMA8452Q_STATUS, status);
 }
 
-void MMA8452Q_SetRange(uint8_t range, bool hpf)
+Std_ReturnType MMA8452Q_SetRange(MMA8452Q_Range_t range, bool hpf)
 {
     uint8_t xyz_data_cfg = 0;
 
-    // TODO : set range
-    UNUSED(range);
+    switch(range)
+    {
+        case MMA8452Q_Range_2G:
+            // Nothing to do
+            break;
+        case MMA8452Q_Range_4G:
+            SET_BIT(xyz_data_cfg, MMA8452Q_XYZ_DATA_CFG_FS0);
+            break;
+        case MMA8452Q_Range_8G:
+            SET_BIT(xyz_data_cfg, MMA8452Q_XYZ_DATA_CFG_FS1);
+            break;
+        default:
+            return Status_Not_OK;
+    }
 
-    if (hpf) SET_BIT(xyz_data_cfg, 4);
+    if (hpf) SET_BIT(xyz_data_cfg, MMA8452Q_XYZ_DATA_CFG_HPF_OUT);
+
     I2C_Master_WriteRegister(MMA8452Q_I2C_ADDR, MMA8452Q_XYZ_DATA_CFG, xyz_data_cfg);
+
+    return Status_OK;
 }
 
 void MMA8452Q_SetStandby(bool standby)
@@ -88,10 +103,15 @@ void MMA8452Q_SetInterruptsConfig(uint8_t config)
     I2C_Master_WriteRegister(MMA8452Q_I2C_ADDR, MMA8452Q_CTRL_REG5, config);
 }
 
-void MMA8452Q_SetTransientMode(uint8_t mask, bool latch)
+void MMA8452Q_SetTransientMode(bool x, bool y, bool z, bool latch)
 {
-    uint8_t transient_cfg = MASK(mask, 0x0E);
+    uint8_t transient_cfg = 0;
+
+    if(x)     SET_BIT(transient_cfg, MMA8452Q_TRANSIENT_CFG_XTEFE);
+    if(y)     SET_BIT(transient_cfg, MMA8452Q_TRANSIENT_CFG_YTEFE);
+    if(z)     SET_BIT(transient_cfg, MMA8452Q_TRANSIENT_CFG_ZTEFE);
     if(latch) SET_BIT(transient_cfg, MMA8452Q_TRANSIENT_CFG_ELE);
+
     I2C_Master_WriteRegister(MMA8452Q_I2C_ADDR, MMA8452Q_TRANSIENT_CFG, transient_cfg);
 }
 
