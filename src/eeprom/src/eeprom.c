@@ -242,7 +242,7 @@ Std_ReturnType EEPROM_DumpEEPROM(uint16_t from, uint16_t to, int line_length)
         sprintf(buffer, " %02X", b);
         if ( cpt == line_length )
         {
-            Serial_PrintLine(buffer);
+            Serial_Println(buffer);
             cpt = 0;
         }
         else Serial_Print(buffer);

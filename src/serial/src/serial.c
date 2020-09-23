@@ -39,30 +39,41 @@ Std_ReturnType Serial_WriteBytes(void *buffer, int length)
 
 Std_ReturnType Serial_NewLine()
 {
-    static uint8_t nl[2] = {'\r', '\n'};
-    return Serial_WriteBytes(nl, 2);
+    return Serial_WriteBytes("\r\n", 2);
 }
 
-Std_ReturnType Serial_PrintString(const void* string, bool newLine, bool progMem)
+Std_ReturnType Serial_Println_P(const __flash void* string)
 {
-    uint8_t b = 0;
+    Std_ReturnType retval = Serial_Print_P(string);
+    if (retval != Status_OK) return retval;
+    else return Serial_NewLine();
+}
 
+Std_ReturnType Serial_Println(const void* string)
+{
+    Std_ReturnType retval = Serial_Print(string);
+    if (retval != Status_OK) return retval;
+    else return Serial_NewLine();
+}
+
+Std_ReturnType Serial_Print_P(const __flash void* string)
+{
     while (TRUE)
     {
-        b = progMem ? pgm_read_byte(string) : READ_PU8(string);
+        uint8_t b = pgm_read_byte(string++);
         if (b != 0) Serial_WriteByte(b);
-        else break;
-        string++;
+        else return Status_OK;
     }
+}
 
-    if ( newLine )
+Std_ReturnType Serial_Print(const void* string)
+{
+    while (TRUE)
     {
-        Serial_NewLine();
+        uint8_t b = READ_PU8(string++);
+        if (b != 0) Serial_WriteByte(b);
+        else return Status_OK;
     }
-
-    Serial_WriteByte(0);
-
-    return Status_OK;
 }
 
 #if SERIAL_ASYNC_RX == OFF

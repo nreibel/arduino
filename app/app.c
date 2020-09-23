@@ -85,13 +85,13 @@ void I2C_Slave_ReceiveCallback(unsigned int offset, uint8_t data)
 void Callback_INT0(volatile void *data)
 {
     UNUSED(data);
-    Serial_PrintLine("INT0 !!!");
+    Serial_Println("INT0 !!!");
 }
 
 void Callback_INT1(volatile void *data)
 {
     UNUSED(data);
-    Serial_PrintLine("INT1 !!!");
+    Serial_Println("INT1 !!!");
 }
 
 // App entry point
@@ -188,25 +188,25 @@ Std_ReturnType Task_Accelerometer(void* data)
     MMA8452Q_GetData(&acc_data);
 
     // Print raw data
-    Serial_PrintLine("--");
+    Serial_Println("--");
 
     sprintf(str, "Status = %02x", status );
-    Serial_PrintLine(str);
+    Serial_Println(str);
 
     sprintf(str, "Interrupts = %02x", interrupt_status );
-    Serial_PrintLine(str);
+    Serial_Println(str);
 
     sprintf(str, "Transient = %02x", transient_status );
-    Serial_PrintLine(str);
+    Serial_Println(str);
 
     sprintf(str, "Acc X = %4d", acc_data.acc_x);
-    Serial_PrintLine(str);
+    Serial_Println(str);
 
     sprintf(str, "Acc Y = %4d", acc_data.acc_y);
-    Serial_PrintLine(str);
+    Serial_Println(str);
 
     sprintf(str, "Acc Z = %4d", acc_data.acc_z);
-    Serial_PrintLine(str);
+    Serial_Println(str);
 
     return Status_OK;
 }
@@ -221,8 +221,8 @@ Std_ReturnType Task_MainCyclic(void* data)
 
     HC595_WriteWord(out++);
 
-    if (state) Serial_PrintLine("Tick");
-    else Serial_PrintLine("Tock");
+    if (state) Serial_Println("Tick");
+    else Serial_Println("Tock");
     state = !state;
 
     if (eepromUpdated && !transmitting)
