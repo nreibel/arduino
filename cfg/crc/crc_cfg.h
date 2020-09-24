@@ -1,0 +1,12 @@
+#ifndef SRC_CRC_CFG_CRC_CFG_H_
+#define SRC_CRC_CFG_CRC_CFG_H_
+
+#define CRC32_ALGO_CRC32Q 0
+#define CRC32_ALGO_BZIP2  1
+#define CRC32_ALGO_MPEG2  2
+#define CRC32_ALGO_POSIX  3
+#define CRC32_ALGO_XFER   4
+
+#define CRC32_ALGO CRC32_ALGO_BZIP2
+
+#endif // SRC_CRC_CFG_CRC_CFG_H_

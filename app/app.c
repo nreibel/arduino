@@ -10,6 +10,7 @@
 #include "eeprom.h"
 #include "i2c_master.h"
 #include "mma8452q.h"
+#include "crc.h"
 #include "string.h"
 #include "stdio.h"
 
@@ -101,6 +102,19 @@ void App_Init()
     I2C_Master_Init();
     Serial_Init();
     Spi_Init();
+
+    // Compute CRC
+    uint32_t crc = 0;
+    CRC32_Init(&crc);
+    CRC32_Update('t', &crc);
+    CRC32_Update('e', &crc);
+    CRC32_Update('s', &crc);
+    CRC32_Update('t', &crc);
+    CRC32_Final(&crc);
+
+    char buffer[32];
+    sprintf(buffer, "CRC is 0x%08lx", crc);
+    Serial_Println(buffer);
 
     // Enable external interrupts
     GPIO_EnableInterrupt(GPIO_INT0, GPIO_Edge_Rising, &Callback_INT0, NULL_PTR);

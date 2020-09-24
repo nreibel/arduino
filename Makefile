@@ -1,5 +1,5 @@
 # Serial
-SERIAL_TTY := /dev/ttyAVR
+SERIAL_TTY := /dev/ttyUSB0
 SERIAL_BAUDRATE := 19200
 
 ARDUINO_LIBS := ./
@@ -16,7 +16,7 @@ INCLUDES := ./app ./res
 # LDFLAGS = -u,vfprintf
 # LIBS = printf_flt m
 
-MODULES := os gpio serial spi st7735 pwm hc595 eeprom i2c_master mma8452q
+MODULES := os gpio serial spi crc st7735 pwm hc595 eeprom i2c_master mma8452q
 app: app/app.o
 
 include $(ARDUINO_LIBS)/makefile.include
