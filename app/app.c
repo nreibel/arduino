@@ -122,10 +122,18 @@ void App_Init()
 
     // Init accelerometer
     MMA8452Q_Init();
-    MMA8452Q_SetRange(MMA8452Q_Range_8G, FALSE);
+    MMA8452Q_SetRange(MMA8452Q_Range_2G, FALSE);
+
+    // Detect shocks
     MMA8452Q_SetTransientMode(TRUE, TRUE, TRUE, TRUE);
     MMA8452Q_SetTransientThreshold(1.5);
-    MMA8452Q_EnableInterrupts( BIT(5) );
+    MMA8452Q_EnableInterrupts(MMA8452Q_InterruptSource_Transient);
+
+    // Detect freefall
+    MMA8452Q_SetFreefallMode(TRUE, TRUE, TRUE, TRUE);
+    MMA8452Q_SetFreefallThreshold(0.8);
+    MMA8452Q_EnableInterrupts(MMA8452Q_InterruptSource_Freefall_Motion);
+
     MMA8452Q_SetStandby(FALSE);
 
     // Debug dump EEPROM data over Serial
@@ -193,11 +201,13 @@ Std_ReturnType Task_Accelerometer(void* data)
     uint8_t status = 0;
     uint8_t interrupt_status = 0;
     uint8_t transient_status = 0;
+    uint8_t freefall_status = 0;
     MMA8452Q_Data_t acc_data = {0};
 
     MMA8452Q_GetStatus(&status);
     MMA8452Q_GetInterruptStatus(&interrupt_status);
     MMA8452Q_GetTransientSource(&transient_status);
+    MMA8452Q_GetFreefallSource(&freefall_status);
     MMA8452Q_GetData(&acc_data);
 
     // Print raw data
@@ -206,10 +216,20 @@ Std_ReturnType Task_Accelerometer(void* data)
     sprintf(str, "Status = %02x", status );
     Serial_Println(str);
 
-    sprintf(str, "Interrupts = %02x", interrupt_status );
-    Serial_Println(str);
+    if ( IS_SET_BIT(interrupt_status, MMA8452Q_InterruptSource_Freefall_Motion) )
+        Serial_Println("Freefall detected!");
+    else
+        Serial_Println("No freefall");
+
+    if ( IS_SET_BIT(interrupt_status, MMA8452Q_InterruptSource_Transient) )
+        Serial_Println("Shock detected!");
+    else
+        Serial_Println("No shock");
 
     sprintf(str, "Transient = %02x", transient_status );
+    Serial_Println(str);
+
+    sprintf(str, "Freefall = %02x", freefall_status );
     Serial_Println(str);
 
     sprintf(str, "Acc X = %4d", acc_data.acc_x);

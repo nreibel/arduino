@@ -5,6 +5,7 @@
 
 typedef enum {
     Status_Not_OK = 0,
+    Status_Invalid_Parameter,
     Status_Pending,
     Status_OK
 } Std_ReturnType;
