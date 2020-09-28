@@ -127,12 +127,14 @@ void App_Init()
     // Detect shocks
     MMA8452Q_SetTransientMode(TRUE, TRUE, TRUE, TRUE);
     MMA8452Q_SetTransientThreshold(1.5);
-    MMA8452Q_EnableInterrupts(MMA8452Q_InterruptSource_Transient);
+    MMA8452Q_SetInterruptConfig(MMA8452Q_InterruptSource_Transient, MMA8452Q_InterruptPin_INT1);
+    MMA8452Q_EnableInterrupt(MMA8452Q_InterruptSource_Transient);
 
     // Detect freefall
     MMA8452Q_SetFreefallMode(TRUE, TRUE, TRUE, TRUE);
     MMA8452Q_SetFreefallThreshold(0.8);
-    MMA8452Q_EnableInterrupts(MMA8452Q_InterruptSource_Freefall_Motion);
+    MMA8452Q_SetInterruptConfig(MMA8452Q_InterruptSource_Freefall, MMA8452Q_InterruptPin_INT2);
+    MMA8452Q_EnableInterrupt(MMA8452Q_InterruptSource_Freefall);
 
     MMA8452Q_SetStandby(FALSE);
 
@@ -216,7 +218,7 @@ Std_ReturnType Task_Accelerometer(void* data)
     sprintf(str, "Status = %02x", status );
     Serial_Println(str);
 
-    if ( IS_SET_BIT(interrupt_status, MMA8452Q_InterruptSource_Freefall_Motion) )
+    if ( IS_SET_BIT(interrupt_status, MMA8452Q_InterruptSource_Freefall) )
         Serial_Println("Freefall detected!");
     else
         Serial_Println("No freefall");
