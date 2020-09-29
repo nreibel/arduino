@@ -82,9 +82,9 @@ void MMA8452Q_GetData(MMA8452Q_Data_t* buffer)
     buffer->acc_y = (b[2] << 4) | (b[3] >> 4);
     buffer->acc_z = (b[4] << 4) | (b[5] >> 4);
 
-    if (buffer->acc_x > 2048) buffer->acc_x -= 4096;
-    if (buffer->acc_y > 2048) buffer->acc_y -= 4096;
-    if (buffer->acc_z > 2048) buffer->acc_z -= 4096;
+    if (buffer->acc_x > 0x7FF) buffer->acc_x -= 0xFFF;
+    if (buffer->acc_y > 0x7FF) buffer->acc_y -= 0xFFF;
+    if (buffer->acc_z > 0x7FF) buffer->acc_z -= 0xFFF;
 #endif
 }
 
