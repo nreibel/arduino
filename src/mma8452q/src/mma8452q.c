@@ -14,7 +14,7 @@ Std_ReturnType MMA8452Q_Init()
     I2C_Master_ReadRegister(MMA8452Q_I2C_ADDR, MMA8452Q_WHO_AM_I, &whoami);
     if (whoami != MMA8452Q_DEVICE_ID) return Status_Not_OK;
 
-#if MMA8452Q_I2C_ADDR == ON
+#if MMA8452Q_READ_MODE_FAST == ON
     SET_BIT(ctrl_reg1, MMA8452Q_CTRL_REG1_F_READ);
 #endif
 
@@ -77,7 +77,7 @@ void MMA8452Q_GetData(MMA8452Q_Data_t* buffer)
     b[0] = MMA8452Q_OUT_X_MSB;
     I2C_Master_ReadSync(MMA8452Q_I2C_ADDR, buffer, 1, sizeof(MMA8452Q_Data_t), 0);
 
-#if MMA8452Q_I2C_ADDR != ON
+#if MMA8452Q_READ_MODE_FAST != ON
     buffer->acc_x = (b[0] << 4) | (b[1] >> 4);
     buffer->acc_y = (b[2] << 4) | (b[3] >> 4);
     buffer->acc_z = (b[4] << 4) | (b[5] >> 4);
