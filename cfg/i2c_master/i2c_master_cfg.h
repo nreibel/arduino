@@ -1,6 +1,9 @@
 #ifndef __I2C_CFG_I2C_CFG_H__
 #define __I2C_CFG_I2C_CFG_H__
 
-#define I2C_MASTER_F_I2C 32000UL // In hertz
+#define I2C_MASTER_F_I2C_FAST_MODE   400000UL // 400 kHz
+#define I2C_MASTER_F_I2C_NORMAL_MODE 100000UL // 100 kHz
+
+#define I2C_MASTER_F_I2C I2C_MASTER_F_I2C_NORMAL_MODE // In hertz
 
 #endif // __I2C_CFG_I2C_CFG_H__
