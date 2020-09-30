@@ -20,24 +20,21 @@ Std_ReturnType I2C_Master_Init()
     return Status_OK;
 }
 
-Std_ReturnType I2C_Master_ReadRegister(uint8_t addr, uint8_t reg, uint8_t *val)
+Std_ReturnType I2C_Master_ReadByteSync(uint8_t addr, uint8_t reg, uint8_t *val)
 {
-    *val = reg;
-    I2C_Master_ReadSync(addr, val, 1, 1, 0);
-    return Status_OK;
+    return I2C_Master_ReadSync(addr, reg, val, 1);
 }
 
-Std_ReturnType I2C_Master_WriteRegister(uint8_t addr, uint8_t reg, uint8_t val)
+Std_ReturnType I2C_Master_WriteByteSync(uint8_t addr, uint8_t reg, uint8_t val)
 {
-    uint8_t buffer[2] = {reg, val};
-    I2C_Master_WriteSync(addr, buffer, 2);
-    return Status_OK;
+    return I2C_Master_WriteSync(addr, reg, &val, 1);
 }
 
-Std_ReturnType I2C_Master_WriteSync(uint8_t addr, void *buffer, int len)
+Std_ReturnType I2C_Master_WriteSync(uint8_t addr, uint8_t reg, buffer_t buffer, int len)
 {
     I2C_Master_StartCondition();
     I2C_Master_SlaveWrite(addr);
+    I2C_Master_Write(reg);
     for (int i = 0 ; i < len ; i++ )
     {
         I2C_Master_Write( UINT8_PTR(buffer)[i] );
@@ -47,34 +44,19 @@ Std_ReturnType I2C_Master_WriteSync(uint8_t addr, void *buffer, int len)
     return Status_OK;
 }
 
-Std_ReturnType I2C_Master_ReadSync(uint8_t addr, void *buffer, int writeLen, int readLen, int delay)
+Std_ReturnType I2C_Master_ReadSync(uint8_t addr, uint8_t reg, buffer_t buffer, int len)
 {
     I2C_Master_StartCondition();
     I2C_Master_SlaveWrite(addr);
-    for(int i = 0 ; i < writeLen ; i++)
-    {
-        I2C_Master_Write(UINT8_PTR(buffer)[i]);
-    }
-
-    if (delay > 0)
-    {
-        I2C_Master_StopCondition();
-        Os_Wait(delay);
-        I2C_Master_StartCondition();
-    }
-    else
-    {
-        I2C_Master_RestartCondition();
-    }
-
+    I2C_Master_Write(reg);
+    I2C_Master_RestartCondition();
     I2C_Master_SlaveRead(addr);
-    for(int i = 0 ; i < readLen-1 ; i++)
+    for(int i = 0 ; i < len-1 ; i++)
     {
         UINT8_PTR(buffer)[i] = I2C_Master_ReadAck();
     }
-    UINT8_PTR(buffer)[readLen-1] = I2C_Master_ReadNak();
+    UINT8_PTR(buffer)[len-1] = I2C_Master_ReadNak();
     I2C_Master_StopCondition();
-
     return Status_OK;
 }
 

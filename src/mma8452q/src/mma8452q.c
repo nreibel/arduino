@@ -11,28 +11,28 @@ Std_ReturnType MMA8452Q_Init()
     uint8_t ctrl_reg1 = 0;
 
     // Read WHO_AM_I to ensure communication
-    I2C_Master_ReadRegister(MMA8452Q_I2C_ADDR, MMA8452Q_WHO_AM_I, &whoami);
+    I2C_Master_ReadByteSync(MMA8452Q_I2C_ADDR, MMA8452Q_WHO_AM_I, &whoami);
     if (whoami != MMA8452Q_DEVICE_ID) return Status_Not_OK;
 
 #if MMA8452Q_READ_MODE_FAST == ON
     SET_BIT(ctrl_reg1, MMA8452Q_CTRL_REG1_F_READ);
 #endif
 
-    // Device must be in standby
-    I2C_Master_WriteRegister(MMA8452Q_I2C_ADDR, MMA8452Q_CTRL_REG1, 0);
-    I2C_Master_WriteRegister(MMA8452Q_I2C_ADDR, MMA8452Q_CTRL_REG1, ctrl_reg1);
+    // Device must be in standby before writing config
+    I2C_Master_WriteByteSync(MMA8452Q_I2C_ADDR, MMA8452Q_CTRL_REG1, 0);
+    I2C_Master_WriteByteSync(MMA8452Q_I2C_ADDR, MMA8452Q_CTRL_REG1, ctrl_reg1);
 
     return Status_OK;
 }
 
 void MMA8452Q_Reset()
 {
-    I2C_Master_WriteRegister(MMA8452Q_I2C_ADDR, MMA8452Q_CTRL_REG2, BIT(6) );
+    I2C_Master_WriteByteSync(MMA8452Q_I2C_ADDR, MMA8452Q_CTRL_REG2, BIT(6) );
 }
 
 void MMA8452Q_GetStatus(uint8_t* status)
 {
-    I2C_Master_ReadRegister(MMA8452Q_I2C_ADDR, MMA8452Q_STATUS, status);
+    I2C_Master_ReadByteSync(MMA8452Q_I2C_ADDR, MMA8452Q_STATUS, status);
 }
 
 Std_ReturnType MMA8452Q_SetRange(MMA8452Q_Range_t range, bool hpf)
@@ -56,7 +56,7 @@ Std_ReturnType MMA8452Q_SetRange(MMA8452Q_Range_t range, bool hpf)
 
     if (hpf) SET_BIT(xyz_data_cfg, MMA8452Q_XYZ_DATA_CFG_HPF_OUT);
 
-    I2C_Master_WriteRegister(MMA8452Q_I2C_ADDR, MMA8452Q_XYZ_DATA_CFG, xyz_data_cfg);
+    I2C_Master_WriteByteSync(MMA8452Q_I2C_ADDR, MMA8452Q_XYZ_DATA_CFG, xyz_data_cfg);
 
     return Status_OK;
 }
@@ -64,22 +64,21 @@ Std_ReturnType MMA8452Q_SetRange(MMA8452Q_Range_t range, bool hpf)
 void MMA8452Q_SetStandby(bool standby)
 {
     uint8_t ctrl_reg1 = 0;
-    I2C_Master_ReadRegister(MMA8452Q_I2C_ADDR, MMA8452Q_CTRL_REG1, &ctrl_reg1);
+    I2C_Master_ReadByteSync(MMA8452Q_I2C_ADDR, MMA8452Q_CTRL_REG1, &ctrl_reg1);
 
     if (standby) RESET_BIT(ctrl_reg1, MMA8452Q_CTRL_REG1_ACTIVE);
     else SET_BIT(ctrl_reg1, MMA8452Q_CTRL_REG1_ACTIVE);
 
-    I2C_Master_WriteRegister(MMA8452Q_I2C_ADDR, MMA8452Q_CTRL_REG1, ctrl_reg1);
+    I2C_Master_WriteByteSync(MMA8452Q_I2C_ADDR, MMA8452Q_CTRL_REG1, ctrl_reg1);
 }
 
 void MMA8452Q_GetData(MMA8452Q_Data_t* buffer)
 {
-    uint8_t *b = UINT8_PTR(buffer);
-
-    b[0] = MMA8452Q_OUT_X_MSB;
-    I2C_Master_ReadSync(MMA8452Q_I2C_ADDR, buffer, 1, sizeof(MMA8452Q_Data_t), 0);
+    I2C_Master_ReadSync(MMA8452Q_I2C_ADDR, MMA8452Q_OUT_X_MSB, buffer, sizeof(MMA8452Q_Data_t));
 
 #if MMA8452Q_READ_MODE_FAST != ON
+    uint8_t *b = UINT8_PTR(buffer);
+
     buffer->acc_x = (b[0] << 4) | (b[1] >> 4);
     buffer->acc_y = (b[2] << 4) | (b[3] >> 4);
     buffer->acc_z = (b[4] << 4) | (b[5] >> 4);
@@ -95,7 +94,7 @@ void MMA8452Q_GetInterruptStatus(uint8_t* mask)
     uint8_t bit = 0;
     uint8_t int_source = 0;
 
-    I2C_Master_ReadRegister(MMA8452Q_I2C_ADDR, MMA8452Q_INT_SOURCE, &int_source);
+    I2C_Master_ReadByteSync(MMA8452Q_I2C_ADDR, MMA8452Q_INT_SOURCE, &int_source);
 
     while(int_source != 0)
     {
@@ -133,7 +132,7 @@ void MMA8452Q_GetInterruptStatus(uint8_t* mask)
 Std_ReturnType MMA8452Q_EnableInterrupt(MMA8452Q_InterruptSource_t interrupt)
 {
     uint8_t ctrl_reg4 = 0;
-    I2C_Master_ReadRegister(MMA8452Q_I2C_ADDR, MMA8452Q_CTRL_REG4, &ctrl_reg4);
+    I2C_Master_ReadByteSync(MMA8452Q_I2C_ADDR, MMA8452Q_CTRL_REG4, &ctrl_reg4);
 
     switch(interrupt)
     {
@@ -159,7 +158,7 @@ Std_ReturnType MMA8452Q_EnableInterrupt(MMA8452Q_InterruptSource_t interrupt)
             return Status_Invalid_Parameter;
     }
 
-    I2C_Master_WriteRegister(MMA8452Q_I2C_ADDR, MMA8452Q_CTRL_REG4, ctrl_reg4);
+    I2C_Master_WriteByteSync(MMA8452Q_I2C_ADDR, MMA8452Q_CTRL_REG4, ctrl_reg4);
     return Status_OK;
 }
 
@@ -167,7 +166,7 @@ Std_ReturnType MMA8452Q_SetInterruptConfig(MMA8452Q_InterruptSource_t src, MMA84
 {
     uint8_t bit = 0;
     uint8_t ctrl_reg5 = 0;
-    I2C_Master_ReadRegister(MMA8452Q_I2C_ADDR, MMA8452Q_CTRL_REG5, &ctrl_reg5);
+    I2C_Master_ReadByteSync(MMA8452Q_I2C_ADDR, MMA8452Q_CTRL_REG5, &ctrl_reg5);
 
     switch(src)
     {
@@ -205,7 +204,7 @@ Std_ReturnType MMA8452Q_SetInterruptConfig(MMA8452Q_InterruptSource_t src, MMA84
             return Status_Invalid_Parameter;
     }
 
-    I2C_Master_WriteRegister(MMA8452Q_I2C_ADDR, MMA8452Q_CTRL_REG5, ctrl_reg5);
+    I2C_Master_WriteByteSync(MMA8452Q_I2C_ADDR, MMA8452Q_CTRL_REG5, ctrl_reg5);
 
     return Status_OK;
 }
@@ -219,23 +218,23 @@ void MMA8452Q_SetFreefallMode(bool evt_x, bool evt_y, bool evt_z, bool latch)
     if(evt_z) SET_BIT(ff_mt_cfg, MMA8452Q_FF_MT_CFG_ZTEFE);
     if(latch) SET_BIT(ff_mt_cfg, MMA8452Q_FF_MT_CFG_ELE);
 
-    I2C_Master_WriteRegister(MMA8452Q_I2C_ADDR, MMA8452Q_FF_MT_CFG, ff_mt_cfg);
+    I2C_Master_WriteByteSync(MMA8452Q_I2C_ADDR, MMA8452Q_FF_MT_CFG, ff_mt_cfg);
 }
 
 void MMA8452Q_SetFreefallThreshold(float threshold)
 {
     uint8_t bVal = (uint8_t) MIN(threshold/0.063, 0x7F);
-    I2C_Master_WriteRegister(MMA8452Q_I2C_ADDR, MMA8452Q_FF_MT_THS, bVal);
+    I2C_Master_WriteByteSync(MMA8452Q_I2C_ADDR, MMA8452Q_FF_MT_THS, bVal);
 }
 
 void MMA8452Q_GetFreefallSource(uint8_t* src)
 {
-    I2C_Master_ReadRegister(MMA8452Q_I2C_ADDR, MMA8452Q_FF_MT_SRC, src);
+    I2C_Master_ReadByteSync(MMA8452Q_I2C_ADDR, MMA8452Q_FF_MT_SRC, src);
 }
 
 void MMA8452Q_SetFreefallCount(uint8_t cnt)
 {
-    I2C_Master_WriteRegister(MMA8452Q_I2C_ADDR, MMA8452Q_FF_MT_COUNT, cnt);
+    I2C_Master_WriteByteSync(MMA8452Q_I2C_ADDR, MMA8452Q_FF_MT_COUNT, cnt);
 }
 
 void MMA8452Q_SetTransientMode(bool evt_x, bool evt_y, bool evt_z, bool latch)
@@ -247,21 +246,21 @@ void MMA8452Q_SetTransientMode(bool evt_x, bool evt_y, bool evt_z, bool latch)
     if(evt_z) SET_BIT(transient_cfg, MMA8452Q_TRANSIENT_CFG_ZTEFE);
     if(latch) SET_BIT(transient_cfg, MMA8452Q_TRANSIENT_CFG_ELE);
 
-    I2C_Master_WriteRegister(MMA8452Q_I2C_ADDR, MMA8452Q_TRANSIENT_CFG, transient_cfg);
+    I2C_Master_WriteByteSync(MMA8452Q_I2C_ADDR, MMA8452Q_TRANSIENT_CFG, transient_cfg);
 }
 
 void MMA8452Q_GetTransientSource(uint8_t* src)
 {
-    I2C_Master_ReadRegister(MMA8452Q_I2C_ADDR, MMA8452Q_TRANSIENT_SRC, src);
+    I2C_Master_ReadByteSync(MMA8452Q_I2C_ADDR, MMA8452Q_TRANSIENT_SRC, src);
 }
 
 void MMA8452Q_SetTransientThreshold(float threshold)
 {
     uint8_t bVal = (uint8_t) MIN(threshold/0.063, 0x7F);
-    I2C_Master_WriteRegister(MMA8452Q_I2C_ADDR, MMA8452Q_TRANSIENT_THS, bVal);
+    I2C_Master_WriteByteSync(MMA8452Q_I2C_ADDR, MMA8452Q_TRANSIENT_THS, bVal);
 }
 
 void MMA8452Q_SetTransientCount(uint8_t cnt)
 {
-    I2C_Master_WriteRegister(MMA8452Q_I2C_ADDR, MMA8452Q_TRANSIENT_COUNT, cnt);
+    I2C_Master_WriteByteSync(MMA8452Q_I2C_ADDR, MMA8452Q_TRANSIENT_COUNT, cnt);
 }
