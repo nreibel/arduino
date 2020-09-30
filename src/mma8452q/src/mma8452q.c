@@ -18,6 +18,8 @@ Std_ReturnType MMA8452Q_Init()
     SET_BIT(ctrl_reg1, MMA8452Q_CTRL_REG1_F_READ);
 #endif
 
+    // Device must be in standby
+    I2C_Master_WriteRegister(MMA8452Q_I2C_ADDR, MMA8452Q_CTRL_REG1, 0);
     I2C_Master_WriteRegister(MMA8452Q_I2C_ADDR, MMA8452Q_CTRL_REG1, ctrl_reg1);
 
     return Status_OK;

@@ -4,7 +4,7 @@
 #include "mma8452q_cfg.h"
 
 #if MMA8452Q_READ_MODE_FAST == ON
-typedef uint8_t MMA8452Q_Type_t;
+typedef int8_t MMA8452Q_Type_t;
 #else
 typedef int16_t MMA8452Q_Type_t;
 #endif
