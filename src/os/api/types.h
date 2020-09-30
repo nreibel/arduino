@@ -31,6 +31,9 @@ typedef union {
 
 typedef void* buffer_t;
 
+// String stored in flash memory
+typedef const __flash char flstr_t[];
+
 #define UNUSED(x) (void)(x)
 
 #define NOT(b) ((b) == FALSE ? TRUE : FALSE)
