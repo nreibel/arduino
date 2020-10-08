@@ -34,14 +34,6 @@
 #define ST7735_COLOR_ORANGE   ST7735_RED(0xFF) | ST7735_GREEN(0x80)
 #define ST7735_COLOR_SPRING   ST7735_GREEN(0xFF) | ST7735_BLUE(0x80)
 
-typedef struct {
-    int  Offset_X;
-    int  Offset_Y;
-    bool InvertScreen;
-} ST7735_CalibrationData_t;
-
-extern ST7735_CalibrationData_t ST7735_CalibrationData;
-
 typedef uint16_t st7735_color_t;
 typedef const __flash uint8_t st7735_xbm_t;
 typedef char* st7735_xpm_t;

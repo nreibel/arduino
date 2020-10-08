@@ -8,8 +8,6 @@
 #include "charset.h"
 #include "stdio.h"
 
-ST7735_CalibrationData_t ST7735_CalibrationData = {0};
-
 static st7735_color_t background_color = ST7735_COLOR_BLACK;
 
 void ST7735_Init()
@@ -35,9 +33,13 @@ void ST7735_Init()
 #ifndef ST7735_SCREEN_ORIENTATION
 #error ST7735_SCREEN_ORIENTATION is not defined
 #elif ST7735_SCREEN_ORIENTATION == ST7735_SCREEN_ORIENTATION_PORTRAIT
-    madctl = ST7735_CalibrationData.InvertScreen ? (ST7735_MADCTL_MY | ST7735_MADCTL_MX) : 0;
+    madctl = 0;
 #elif ST7735_SCREEN_ORIENTATION == ST7735_SCREEN_ORIENTATION_LANDSCAPE
-    madctl = ST7735_MADCTL_MV | (ST7735_CalibrationData.InvertScreen ? ST7735_MADCTL_MX : ST7735_MADCTL_MY);
+    madctl = ST7735_MADCTL_MV | ST7735_MADCTL_MY;
+#elif ST7735_SCREEN_ORIENTATION == ST7735_SCREEN_ORIENTATION_PORTRAIT_INV
+    madctl = ST7735_MADCTL_MY | ST7735_MADCTL_MX;
+#elif ST7735_SCREEN_ORIENTATION == ST7735_SCREEN_ORIENTATION_LANDSCAPE_INV
+    madctl = ST7735_MADCTL_MV | ST7735_MADCTL_MX;
 #else
 #error ST7735_SCREEN_ORIENTATION is not valid
 #endif
@@ -322,16 +324,16 @@ static void ST7735_SetDrawWindow(int x1, int y1, int x2, int y2)
     // Set the column to write to
     ST7735_Command(ST7735_CASET);
     ST7735_Data(0);
-    ST7735_Data(x1 + ST7735_CalibrationData.Offset_X);
+    ST7735_Data(x1 + ST7735_OFFSET_X);
     ST7735_Data(0);
-    ST7735_Data(x2 + ST7735_CalibrationData.Offset_X);
+    ST7735_Data(x2 + ST7735_OFFSET_X);
 
     // Set the row range to write to
     ST7735_Command(ST7735_RASET);
     ST7735_Data(0);
-    ST7735_Data(y1 + ST7735_CalibrationData.Offset_Y);
+    ST7735_Data(y1 + ST7735_OFFSET_Y);
     ST7735_Data(0);
-    ST7735_Data(y2 + ST7735_CalibrationData.Offset_Y);
+    ST7735_Data(y2 + ST7735_OFFSET_Y);
 
     // Write to RAM
     ST7735_Command(ST7735_RAMWR);

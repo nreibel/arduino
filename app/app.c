@@ -20,16 +20,13 @@
 
 typedef struct {
     uint8_t deviceId[DEVICE_ID_LENGTH];
-    uint8_t screenInverted;
-    uint8_t screenOffsetX;
-    uint8_t screenOffsetY;
 } DeviceConfig_t;
+DeviceConfig_t deviceConfig = {0};
 
 bool eepromReset = FALSE;
 bool eepromUpdated = FALSE;
 bool transmitting = FALSE;
 
-DeviceConfig_t devCfg = {0};
 
 void I2C_Slave_StartCallback()
 {
@@ -45,10 +42,7 @@ uint8_t I2C_Slave_TransmitCallback(unsigned int offset)
 {
     // Read from Device Config
     if ( offset < sizeof(DeviceConfig_t) )
-    {
-        uint8_t* buf = TYPECAST(&devCfg, uint8_t*);
-        return buf[offset];
-    }
+        return UINT8_PTR(&deviceConfig)[offset];
 
     // EEPROM Reset address
     if (offset == 0xFE)
@@ -66,8 +60,7 @@ void I2C_Slave_ReceiveCallback(unsigned int offset, uint8_t data)
     // Write to Device Config
     if ( offset < sizeof(DeviceConfig_t) )
     {
-        uint8_t* buf = TYPECAST(&devCfg, uint8_t*);
-        buf[offset] = data;
+        UINT8_PTR(&deviceConfig)[offset] = data;
         eepromUpdated = TRUE;
     }
 
@@ -142,31 +135,7 @@ void App_Init()
     EEPROM_DumpEEPROM(0, 0x20, 16);
 
     // Read app config from EEPROM
-    EEPROM_SyncRead(0, &devCfg, sizeof(DeviceConfig_t));
-
-    // Read calibration data
-    if (devCfg.screenOffsetX != 0xFF)
-    {
-        ST7735_CalibrationData.Offset_X = devCfg.screenOffsetX;
-    }
-    else
-    {
-        ST7735_CalibrationData.Offset_X = 1;
-    }
-
-    if (devCfg.screenOffsetY != 0xFF)
-    {
-        ST7735_CalibrationData.Offset_Y = devCfg.screenOffsetY;
-    }
-    else
-    {
-        ST7735_CalibrationData.Offset_Y = 2;
-    }
-
-    if (devCfg.screenInverted != 0xFF)
-    {
-        ST7735_CalibrationData.InvertScreen = devCfg.screenInverted;
-    }
+    EEPROM_SyncRead(0, &deviceConfig, sizeof(DeviceConfig_t));
 
     // Init TFT
     Spi_Configure(SPI_CLOCK_DIV_2, SPI_MODE_0);
@@ -177,7 +146,7 @@ void App_Init()
     ST7735_ClearScreen();
 
     ST7735_DrawXPM(nyan_cat, 0, 30, 4);
-    ST7735_DrawChars(2, 2, &devCfg.deviceId, DEVICE_ID_LENGTH, ST7735_COLOR_BLACK);
+    ST7735_DrawChars(2, 2, &deviceConfig.deviceId, DEVICE_ID_LENGTH, ST7735_COLOR_BLACK);
 
     Spi_DisableSlave(SPI_Slave_TFT);
 
@@ -264,11 +233,11 @@ Std_ReturnType Task_MainCyclic(void* data)
     {
         if (eepromReset)
         {
-            memset(&devCfg, 0, sizeof(DeviceConfig_t));
+            memset(&deviceConfig, 0, sizeof(DeviceConfig_t));
             eepromReset = FALSE;
         }
 
-        EEPROM_SyncWrite(0, &devCfg, sizeof(DeviceConfig_t));
+        EEPROM_SyncWrite(0, &deviceConfig, sizeof(DeviceConfig_t));
         eepromUpdated = FALSE;
     }
 
