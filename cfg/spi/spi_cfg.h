@@ -2,7 +2,8 @@
 #define SRC_SPI_CFG_SPI_CFG_H_
 
 typedef enum {
-    SPI_Slave_TFT,
+    Spi_Slave_TFT,
+    Spi_Slave_LED,
     SPI_NUMBER_OF_SLAVES
 } Spi_Slave;
 

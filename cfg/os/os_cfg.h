@@ -19,6 +19,7 @@ typedef uint16_t time_t;
 typedef enum {
     Timer_MainTask,
     Timer_Accelerometer,
+    Timer_LedMatrix,
     NUMBER_OF_TIMERS
 } Timer;
 

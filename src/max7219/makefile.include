@@ -1,0 +1,6 @@
+INCLUDES+=\
+	$(SRC_DIR)/max7219/api \
+	$(CFG_DIR)/max7219 \
+
+max7219: \
+	$(SRC_DIR)/max7219/src/max7219.o \

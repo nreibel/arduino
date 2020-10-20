@@ -10,13 +10,18 @@
 #include "eeprom.h"
 #include "i2c_master.h"
 #include "mma8452q.h"
+#include "max7219.h"
 #include "crc.h"
 #include "string.h"
 #include "stdio.h"
 
+#if 0
 #include "nyan_cat.xpm"
+#endif
 
 #define DEVICE_ID_LENGTH 16
+
+uint8_t icon_8x8[8] = {0x00, 0x3C, 0x42, 0x5A, 0x52, 0x42, 0x3C, 0x00};
 
 typedef struct {
     uint8_t deviceId[DEVICE_ID_LENGTH];
@@ -113,6 +118,15 @@ void App_Init()
     GPIO_EnableInterrupt(GPIO_INT0, GPIO_Edge_Rising, &Callback_INT0, NULL_PTR);
     GPIO_EnableInterrupt(GPIO_INT1, GPIO_Edge_Rising, &Callback_INT1, NULL_PTR);
 
+#if 0
+    // MAX7219 LED Matrix
+    Spi_Configure(SPI_CLOCK_DIV_2, SPI_MODE_0);
+    MAX7219_Init(Spi_Slave_LED);
+
+    Os_SetupTask(Timer_LedMatrix, 150, &Task_LedMatrix, NULL_PTR);
+#endif
+
+#if 0
     // Init accelerometer
     MMA8452Q_Init();
     MMA8452Q_SetRange(MMA8452Q_Range_2G, FALSE);
@@ -131,12 +145,16 @@ void App_Init()
 
     MMA8452Q_SetStandby(FALSE);
 
+    Os_SetupTask(Timer_Accelerometer, 200, &Task_Accelerometer, NULL_PTR);
+#endif
+
     // Debug dump EEPROM data over Serial
     EEPROM_DumpEEPROM(0, 0x20, 16);
 
     // Read app config from EEPROM
     EEPROM_SyncRead(0, &deviceConfig, sizeof(DeviceConfig_t));
 
+#if 0
     // Init TFT
     Spi_Configure(SPI_CLOCK_DIV_2, SPI_MODE_0);
     Spi_EnableSlave(SPI_Slave_TFT);
@@ -156,10 +174,27 @@ void App_Init()
     // Backlight ON
     PWM_Init(PWM_6, FALSE);
     PWM_SetPWM(PWM_6, 0x80);
+#endif
 
     // Set up tasks
-//     Os_SetupTask(Timer_MainTask, 1000, &Task_MainCyclic, NULL_PTR);
-    Os_SetupTask(Timer_Accelerometer, 200, &Task_Accelerometer, NULL_PTR);
+    Os_SetupTask(Timer_MainTask, 1000, &Task_MainCyclic, NULL_PTR);
+}
+
+Std_ReturnType Task_LedMatrix(void* data)
+{
+    UNUSED(data);
+
+    static uint8_t offset = 0;
+
+    for(int digit = 0 ; digit < 8 ; digit++)
+    {
+        uint8_t col = (digit + offset) % 8;
+        MAX7219_SetDigit(Spi_Slave_LED, digit, icon_8x8[col]);
+    }
+
+    offset++;
+
+    return Status_OK;
 }
 
 // Accelerometer
