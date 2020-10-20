@@ -14,6 +14,7 @@
 #include "crc.h"
 #include "string.h"
 #include "stdio.h"
+#include "banner.xbm"
 
 #if 0
 #include "nyan_cat.xpm"
@@ -21,7 +22,6 @@
 
 #define DEVICE_ID_LENGTH 16
 
-uint8_t icon_8x8[8] = {0x00, 0x3C, 0x42, 0x5A, 0x52, 0x42, 0x3C, 0x00};
 
 typedef struct {
     uint8_t deviceId[DEVICE_ID_LENGTH];
@@ -122,8 +122,7 @@ void App_Init()
     // MAX7219 LED Matrix
     Spi_Configure(SPI_CLOCK_DIV_2, SPI_MODE_0);
     MAX7219_Init(Spi_Slave_LED);
-
-    Os_SetupTask(Timer_LedMatrix, 150, &Task_LedMatrix, NULL_PTR);
+    Os_SetupTask(Timer_LedMatrix, 100, &Task_LedMatrix, NULL_PTR);
 #endif
 
 #if 0
@@ -188,8 +187,8 @@ Std_ReturnType Task_LedMatrix(void* data)
 
     for(int digit = 0 ; digit < 8 ; digit++)
     {
-        uint8_t col = (digit + offset) % 8;
-        MAX7219_SetDigit(Spi_Slave_LED, digit, icon_8x8[col]);
+        uint8_t col = (digit + offset) % _height;
+        MAX7219_SetDigit(Spi_Slave_LED, digit, _bits[col]);
     }
 
     offset++;
