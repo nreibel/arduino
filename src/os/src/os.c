@@ -1,7 +1,6 @@
 #include "os.h"
 #include "os_prv.h"
 #include "os_cfg.h"
-#include "app.h"
 #include "bits.h"
 
 extern volatile time_t osTimer;
