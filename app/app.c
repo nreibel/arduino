@@ -1,4 +1,5 @@
 #include "os.h"
+#include "bits.h"
 #include "app.h"
 #include "serial.h"
 #include "bits.h"
@@ -13,6 +14,7 @@
 #include "max7219.h"
 #include "crc.h"
 #include "string.h"
+#include "charset.h"
 #include "stdio.h"
 #include "banner.xbm"
 
@@ -122,6 +124,11 @@ void App_Init()
     // MAX7219 LED Matrix
     Spi_Configure(SPI_CLOCK_DIV_2, SPI_MODE_0);
     MAX7219_Init(Spi_Slave_LED);
+    MAX7219_ClearDisplay(Spi_Slave_LED);
+
+    // uint8_t matrix_buffer[128];
+    // int strlen = MAX7219_InitStringBuffer(matrix_buffer, "Hello, World!", 13);
+
     Os_SetupTask(Timer_LedMatrix, 100, &Task_LedMatrix, NULL_PTR);
 #endif
 
@@ -183,15 +190,15 @@ Std_ReturnType Task_LedMatrix(void* data)
 {
     UNUSED(data);
 
-    static uint8_t offset = 0;
+    static int offset = 0;
 
     for(int digit = 0 ; digit < 8 ; digit++)
     {
-        uint8_t col = (digit + offset) % _height;
+        int col = (digit + offset) % _height;
         MAX7219_SetDigit(Spi_Slave_LED, digit, _bits[col]);
     }
 
-    offset++;
+    INCREMENT_MOD(offset, _height);
 
     return Status_OK;
 }

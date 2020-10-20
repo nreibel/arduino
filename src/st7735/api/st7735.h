@@ -5,9 +5,6 @@
 #include "st7735_cfg.h"
 #include "types.h"
 
-#define ST7735_CHARSET_WIDTH  5
-#define ST7735_CHARSET_HEIGHT 7
-
 // Valid for 16bits 565 mode
 #define ST7735_RED(x)    ((((x) >> 3) & 0x1F) << 11)
 #define ST7735_GREEN(x)  ((((x) >> 2) & 0x3F) << 5)

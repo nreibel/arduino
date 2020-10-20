@@ -2,6 +2,7 @@
 #include "max7219.h"
 #include "max7219_prv.h"
 #include "spi.h"
+#include "charset.h" // TODO : don't use ST7735's charset
 
 void MAX7219_Init(Spi_Slave slave)
 {
@@ -44,4 +45,26 @@ void MAX7219_WriteRegister(Spi_Slave slave, uint8_t reg, uint8_t data)
     Spi_WriteByte(reg, NULL_PTR);
     Spi_WriteByte(data, NULL_PTR);
     Spi_DisableSlave(slave);
+}
+
+int MAX7219_InitStringBuffer(void *buffer, char* str, int len)
+{
+    int pos = 0;
+
+    for (int idx = 0 ; idx < len ; idx++)
+    {
+        uint8_t chr = str[idx];
+        for (int col = 0 ; col < ST7735_CHARSET_WIDTH ; col++)
+        {
+            uint8_t data = s_st7735_charset[chr-0x20][col];
+            if (data != 0)
+            {
+                WRITE_PU8(buffer+pos, data << 1);
+                pos++;
+            }
+        }
+        pos++;
+    }
+
+    return pos;
 }
