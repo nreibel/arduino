@@ -1,4 +1,5 @@
 #include "types.h"
+#include "bits.h"
 #include "max7219.h"
 #include "max7219_prv.h"
 #include "spi.h"
@@ -32,11 +33,10 @@ void MAX7219_SetDigit(Spi_Slave slave, int digit, uint8_t value)
     else MAX7219_WriteRegister(slave, digit+1, value);
 }
 
-void MAX7219_SetBacklight(Spi_Slave slave, int value)
+void MAX7219_SetBacklight(Spi_Slave slave, uint8_t value)
 {
-    if (value < 0x0) MAX7219_WriteRegister(slave, MAX7219_MODE_INTENSITY, 0x0);
-    else if (value > 0xF) MAX7219_WriteRegister(slave, MAX7219_MODE_INTENSITY, 0xF);
-    else MAX7219_WriteRegister(slave, MAX7219_MODE_INTENSITY, value);
+    value = MAP(value, 0, 255, 0, 0xF);
+    MAX7219_WriteRegister(slave, MAX7219_MODE_INTENSITY, value);
 }
 
 void MAX7219_WriteRegister(Spi_Slave slave, uint8_t reg, uint8_t data)
