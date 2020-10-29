@@ -232,78 +232,73 @@ void ST7735_DrawLine(int x1, int y1, int x2, int y2, st7735_color_t c)
     ST7735_DrawPixel(x2, y2, c);
 }
 
-void ST7735_CharTest(void)
-{
-    int line = 0;
-    int chr = 0;
-
-    for (int i = 0x20 ; i <= 0x7F ; i++)
-    {
-        ST7735_DrawChar(8*chr++, 10*line, i, ST7735_COLOR_RED);
-
-        if (chr % 16 == 0)
-        {
-            line++;
-            chr = 0;
-        }
-    }
-}
-
-void ST7735_DrawChar(int x, int y, char chr, st7735_color_t c)
+void ST7735_DrawChar(int x, int y, const char chr, st7735_color_t color, int scale)
 {
     if ( ! BETWEEN(chr, 0x20, 0x7E) ) return;
 
-    ST7735_SetDrawWindow(x, y, x+ST7735_CHARSET_WIDTH-1, y+ST7735_CHARSET_HEIGHT-1);
+    int w = scale * ST7735_CHARSET_WIDTH;
+    int h = scale * ST7735_CHARSET_HEIGHT;
+
+    ST7735_SetDrawWindow(x, y, x+w-1, y+h-1);
 
     for (int dy = 0 ; dy < ST7735_CHARSET_HEIGHT ; dy++)
     {
-        for (int dx = 0 ; dx < ST7735_CHARSET_WIDTH ; dx++)
+        for (int i = 0 ; i < scale ; i++)
         {
-            uint8_t b = s_st7735_charset[chr-0x20][dx];
-            ST7735_Color( IS_SET_BIT(b, dy) ? c : background_color );
+            for (int dx = 0 ; dx < ST7735_CHARSET_WIDTH ; dx++)
+            {
+                uint8_t b = s_st7735_charset[chr-0x20][dx];
+
+                for (int j = 0 ; j < scale ; j++)
+                {
+                    st7735_color_t px = IS_SET_BIT(b, dy) ? color : background_color;
+                    ST7735_Color(px);
+                }
+            }
         }
     }
 }
 
-void ST7735_DrawChars(int x, int y, buffer_t chars, int length, st7735_color_t c)
+void ST7735_DrawChars(int x, int y, const char* chars, int length, st7735_color_t color, int scale)
 {
     for (int i = 0 ; i < length ; i++)
     {
-        ST7735_DrawChar(x, y, TYPECAST(chars, char*)[i], c);
-        x += ST7735_CHARSET_WIDTH + ST7735_CHAR_SPACING;
+        ST7735_DrawChar(x, y, chars[i], color, scale);
+        x += scale * (ST7735_CHARSET_WIDTH + ST7735_CHAR_SPACING);
     }
 }
 
-void ST7735_ClearChar(int x, int y)
+void ST7735_ClearChar(int x, int y, int scale)
 {
-    ST7735_SetDrawWindow(x, y, x+ST7735_CHARSET_WIDTH-1, y+ST7735_CHARSET_HEIGHT-1);
+    int w = scale * ST7735_CHARSET_WIDTH;
+    int h = scale * ST7735_CHARSET_HEIGHT;
 
-    // 7 pixels height
-    for (int dy = 0 ; dy < ST7735_CHARSET_HEIGHT ; dy++)
+    ST7735_SetDrawWindow(x, y, x+w-1, y+h-1);
+
+    for (int dy = 0 ; dy < h ; dy++)
     {
-        // 5 pixels width
-        for (int dx = 0 ; dx < ST7735_CHARSET_WIDTH ; dx++)
+        for (int dx = 0 ; dx < w ; dx++)
         {
             ST7735_Color(background_color);
         }
     }
 }
 
-void ST7735_ClearChars(int x, int y, int length)
+void ST7735_ClearChars(int x, int y, int length, int scale)
 {
     for (int i = 0 ; i < length ; i++)
     {
-        ST7735_ClearChar(x, y);
-        x += ST7735_CHARSET_WIDTH + ST7735_CHAR_SPACING;
+        ST7735_ClearChar(x, y, scale);
+        x += scale * (ST7735_CHARSET_WIDTH + ST7735_CHAR_SPACING);
     }
 }
 
-void ST7735_DrawString(int x, int y, char* str, st7735_color_t c)
+void ST7735_DrawString(int x, int y, const char* str, st7735_color_t color, int scale)
 {
-    while(*str != 0)
+    for(int i = 0 ; str[i] != 0 ; i++)
     {
-        ST7735_DrawChar(x, y, READ_PU8(str++), c);
-        x += ST7735_CHARSET_WIDTH + ST7735_CHAR_SPACING;
+        ST7735_DrawChar(x, y, str[i], color, scale);
+        x += scale * (ST7735_CHARSET_WIDTH + ST7735_CHAR_SPACING);
     }
 }
 
