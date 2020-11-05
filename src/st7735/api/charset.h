@@ -1,6 +1,8 @@
 #ifndef SRC_ST7735_API_CHARSET_H_
 #define SRC_ST7735_API_CHARSET_H_
 
+#include "types.h"
+
 #define ST7735_CHARSET_WIDTH  5
 #define ST7735_CHARSET_HEIGHT 7
 
