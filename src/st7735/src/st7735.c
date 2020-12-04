@@ -317,18 +317,14 @@ void ST7735_FillRectangle(int x, int y, int w, int h, st7735_color_t c)
 static void ST7735_SetDrawWindow(int x1, int y1, int x2, int y2)
 {
     // Set the column to write to
+    uint8_t col[4] = {0, x1+ST7735_OFFSET_X, 0, x2+ST7735_OFFSET_X};
     ST7735_Command(ST7735_CASET);
-    ST7735_Data(0);
-    ST7735_Data(x1 + ST7735_OFFSET_X);
-    ST7735_Data(0);
-    ST7735_Data(x2 + ST7735_OFFSET_X);
+    Spi_WriteBytes(col, 4);
 
     // Set the row range to write to
+    uint8_t row[4] = {0, y1+ST7735_OFFSET_Y, 0, y2+ST7735_OFFSET_Y};
     ST7735_Command(ST7735_RASET);
-    ST7735_Data(0);
-    ST7735_Data(y1 + ST7735_OFFSET_Y);
-    ST7735_Data(0);
-    ST7735_Data(y2 + ST7735_OFFSET_Y);
+    Spi_WriteBytes(row, 4);
 
     // Write to RAM
     ST7735_Command(ST7735_RAMWR);
@@ -348,7 +344,7 @@ static void ST7735_Data(uint8_t data)
 
 static void ST7735_Color(st7735_color_t color)
 {
-    word w = {color};
-    Spi_WriteByte(w.byte[1], NULL_PTR);
-    Spi_WriteByte(w.byte[0], NULL_PTR);
+    // Swap bytes
+    word w = { (color << 8) | (color >> 8) };
+    Spi_WriteBytes(w.bytes, 2);
 }

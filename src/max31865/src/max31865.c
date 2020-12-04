@@ -60,8 +60,8 @@ Std_ReturnType MAX31865_ReadRTD(Spi_Slave slave, double *rtd)
 
     Spi_EnableSlave(slave);
     Spi_WriteByte(MAX31865_REG_RTD_MSB | MAX31865_READ, NULL_PTR);
-    Spi_WriteByte(0, &msb);
-    Spi_WriteByte(0, &lsb);
+    Spi_ReadByte(&msb);
+    Spi_ReadByte(&lsb);
     Spi_DisableSlave(slave);
 
     if ( lsb == 0 && msb == 0 )

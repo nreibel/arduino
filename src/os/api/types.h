@@ -20,13 +20,13 @@ typedef Std_ReturnType (*Callback)(void*);
 
 typedef union {
     uint16_t value;
-    uint8_t  byte[2];
+    uint8_t  bytes[2];
 } word;
 
 typedef union {
     uint32_t value;
-    uint16_t word[2];
-    uint8_t  byte[4];
+    uint16_t words[2];
+    uint8_t  bytes[4];
 } dword;
 
 typedef void* buffer_t;

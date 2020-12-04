@@ -39,8 +39,8 @@ void Serial_HAL_Init_HW(void)
     word ubrr = { (F_CPU/16/SERIAL_BAUD_RATE)-1U };
 
     // Set UBRR
-    UBRR0H = ubrr.byte[1];
-    UBRR0L = ubrr.byte[0];
+    UBRR0H = ubrr.bytes[1];
+    UBRR0L = ubrr.bytes[0];
 
     // Enable transmitter
     UCSR0B = BIT(RXEN0) | BIT(TXEN0);
