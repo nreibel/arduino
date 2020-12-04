@@ -45,15 +45,13 @@ void ST7735_DrawPixel(int x, int y, st7735_color_t c);
 void ST7735_FillRectangle(int x, int y, int w, int h, st7735_color_t c);
 void ST7735_DrawLine(int x1, int y1, int x2, int y2, st7735_color_t c);
 
-// String and chars drawing
-void ST7735_CharTest(void);
 
-void ST7735_ClearChar(int x, int y);
-void ST7735_ClearChars(int x, int y, int length);
+void ST7735_ClearChar(int x, int y, int scale);
+void ST7735_ClearChars(int x, int y, int length, int scale);
 
-void ST7735_DrawChar(int x, int y, char chr, st7735_color_t c);
-void ST7735_DrawChars(int x, int y, buffer_t uint8_ts, int length, st7735_color_t c);
-void ST7735_DrawString(int x, int y, char* str, st7735_color_t c);
+void ST7735_DrawChar(int x, int y, const char chr, st7735_color_t color, int scale);
+void ST7735_DrawChars(int x, int y, const char* buf, int len, st7735_color_t color, int scale);
+void ST7735_DrawString(int x, int y, const char* str, st7735_color_t color, int scale);
 
 // Imaging
 void ST7735_Render(int x, int y, int w, int h, ST7735_Renderer renderer, void* param, int scale);

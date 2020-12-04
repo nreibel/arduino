@@ -1,12 +1,10 @@
-#ifndef SRC_ST7735_API_CHARSET_H_
-#define SRC_ST7735_API_CHARSET_H_
+#ifndef SRC_MAX7219_API_CHARSET_H_
+#define SRC_MAX7219_API_CHARSET_H_
 
-#include "types.h"
+#define MAX7219_CHARSET_WIDTH  5
+#define MAX7219_CHARSET_HEIGHT 7
 
-#define ST7735_CHARSET_WIDTH  5
-#define ST7735_CHARSET_HEIGHT 7
-
-static const __flash uint8_t s_st7735_charset[][ST7735_CHARSET_WIDTH] = {
+static const __flash uint8_t s_max7219_charset[][MAX7219_CHARSET_WIDTH] = {
     {0x00, 0x00, 0x00, 0x00, 0x00}, // (space)
     {0x00, 0x00, 0x5F, 0x00, 0x00}, // !
     {0x00, 0x07, 0x00, 0x07, 0x00}, // "
@@ -104,4 +102,4 @@ static const __flash uint8_t s_st7735_charset[][ST7735_CHARSET_WIDTH] = {
     {0x08, 0x08, 0x2A, 0x1C, 0x08}  // Tilda
 };
 
-#endif // SRC_ST7735_API_CHARSET_H_
+#endif // SRC_MAX7219_API_CHARSET_H_
