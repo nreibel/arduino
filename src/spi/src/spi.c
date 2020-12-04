@@ -71,8 +71,47 @@ Std_ReturnType Spi_WriteBytes(void* data, int length)
     {
         while(length-- > 0)
         {
-            Spi_HAL_WriteByte( READ_PU8(data++) );
+            uint8_t byte = READ_PU8(data);
+            Spi_HAL_WriteByte(byte);
             while( !Spi_HAL_IsReady() ); // Wait end of transmission
+            byte = Spi_HAL_ReadByte();
+            WRITE_PU8(data++, byte);
+        }
+
+        retval = Status_OK;
+    }
+
+    return retval;
+}
+
+Std_ReturnType Spi_ReadByte(uint8_t* byte)
+{
+    Std_ReturnType retval = Status_Not_OK;
+
+    if (spiState == Spi_Ready)
+    {
+        Spi_HAL_WriteByte(0);
+        while( !Spi_HAL_IsReady() ); // Wait end of transmission
+        *byte = Spi_HAL_ReadByte();
+
+        retval = Status_OK;
+    }
+
+    return retval;
+}
+
+Std_ReturnType Spi_ReadBytes(void* buffer, int length)
+{
+    Std_ReturnType retval = Status_Not_OK;
+
+    if (spiState == Spi_Ready && buffer != NULL_PTR)
+    {
+        while(length-- > 0)
+        {
+            Spi_HAL_WriteByte(0);
+            while( !Spi_HAL_IsReady() ); // Wait end of transmission
+            uint8_t byte = Spi_HAL_ReadByte();
+            WRITE_PU8(buffer++, byte);
         }
 
         retval = Status_OK;

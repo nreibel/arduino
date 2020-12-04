@@ -30,7 +30,11 @@ void Spi_EnableSlave(Spi_Slave slave);
 void Spi_DisableSlave(Spi_Slave slave);
 
 Std_ReturnType Spi_WriteByte(uint8_t write, uint8_t *read);
+Std_ReturnType Spi_ReadByte(uint8_t* data);
+
 Std_ReturnType Spi_WriteBytes(void* data, int length);
+Std_ReturnType Spi_ReadBytes(void* data, int length);
+
 Std_ReturnType Spi_WriteAsync(void* data, int length);
 
 #endif // SRC_SPI_API_SPI_H_
