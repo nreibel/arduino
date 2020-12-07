@@ -2,8 +2,6 @@
 #include "app.h"
 #include "serial.h"
 
-char buffer[64];
-
 // App entry point
 void App_Init()
 {
@@ -20,10 +18,8 @@ Std_ReturnType Task_MainCyclic(void* data)
     UNUSED(data);
 
     static bool state = TRUE;
-
     if (state) Serial_Println("Tick");
     else Serial_Println("Tock");
-
     state = !state;
 
     return Status_OK;

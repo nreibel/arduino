@@ -12,12 +12,13 @@ TARGET := $(ARDUINO_LIBS)/targets/uno.mk
 CFG_DIR := ./cfg
 INCLUDES := ./app ./res
 
-# Compilation flags
+# Enable support for doubles and floats in printf
+# Adds ~2.5kB to ROM data!!!
 # LDFLAGS = -u,vfprintf
 # LIBS = printf_flt m
 
 # TODO : handle modules dependencies
-MODULES += os serial
+MODULES := os serial
 app: app/app.o
 
 include $(ARDUINO_LIBS)/makefile.include
