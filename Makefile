@@ -16,7 +16,8 @@ INCLUDES := ./app ./res
 # LDFLAGS = -u,vfprintf
 # LIBS = printf_flt m
 
-MODULES := os gpio serial spi crc st7735 pwm hc595 eeprom i2c_master mma8452q max7219
+# TODO : handle modules dependencies
+MODULES += os serial
 app: app/app.o
 
 include $(ARDUINO_LIBS)/makefile.include
