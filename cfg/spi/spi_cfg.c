@@ -7,6 +7,5 @@ GPIO Spi_MOSI = GPIO_MOSI;
 
 GPIO SlaveSelect_Pins[SPI_NUMBER_OF_SLAVES] =
 {
-    [Spi_Slave_TFT] = GPIO_D10, // Spi_Slave_TFT
-    [Spi_Slave_LED] = GPIO_D9, // Spi_Slave_LED
+    [Spi_Slave_TFT] = GPIO_D8
 };

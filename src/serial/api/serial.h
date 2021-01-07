@@ -18,12 +18,7 @@ Std_ReturnType Serial_Println(const void* string);
 #if SERIAL_ASYNC_RX != ON
 int Serial_Read(void *buffer, int buffer_len);
 #else
-bool Serial_HasByte();
-bool Serial_HasString();
-void Serial_ClearBuffer();
-int Serial_Received();
-int Serial_Read(void *buffer, int len);
-int Serial_ReadString(void *buffer, int len);
+void Serial_RxCallback(const char *buffer, int length);
 #endif
 
 #if SERIAL_ASYNC_TX == ON

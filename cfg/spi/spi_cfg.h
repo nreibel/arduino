@@ -3,7 +3,6 @@
 
 typedef enum {
     Spi_Slave_TFT,
-    Spi_Slave_LED,
     SPI_NUMBER_OF_SLAVES
 } Spi_Slave;
 

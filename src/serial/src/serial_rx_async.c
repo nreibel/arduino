@@ -1,106 +1,39 @@
 #include "types.h"
 #include "bits.h"
+#include "serial.h"
 #include "serial_prv.h"
 #include "serial_cfg.h"
 
 #if SERIAL_ASYNC_RX == ON
 
 // FIFO buffer
-static void push(uint8_t b);
-static uint8_t poll();
-static uint8_t s_rxBuffer[SERIAL_RECEIVE_BUFFER_LENGTH];
-static uint8_t *s_readPtr = s_rxBuffer;
-static uint8_t *s_writePtr = s_rxBuffer;
-
-// Keep track of FIFO length
-static int s_size = 0;
-
-// Keep track of the number of strings in the buffer
-static int s_nbstrings = 0;
-
-
-static void push(uint8_t b)
-{
-    *s_writePtr = b;
-
-    s_writePtr++;
-    s_size++;
-
-    if (b == 0) s_nbstrings++;
-
-    // At the end of buffer
-    if (s_writePtr >= s_rxBuffer + SERIAL_RECEIVE_BUFFER_LENGTH)
-    {
-        s_writePtr = s_rxBuffer;
-    }
-}
-
-static uint8_t poll()
-{
-    uint8_t b = *s_readPtr;
-
-    s_readPtr++;
-    s_size--;
-
-    if (b == 0) s_nbstrings--;
-
-    // At the end of buffer
-    if (s_readPtr >= s_rxBuffer + SERIAL_RECEIVE_BUFFER_LENGTH)
-    {
-        s_readPtr = s_rxBuffer;
-    }
-
-    return b;
-}
+static char buffer[SERIAL_RECEIVE_BUFFER_LENGTH];
+static char *writePtr = buffer;
+static int size = 0;
 
 void Serial_HAL_ISR_Rx()
 {
-    push( Serial_HAL_ReadByte() );
-}
+    char b = Serial_HAL_ReadByte();
 
-bool Serial_HasByte()
-{
-    return s_size > 0;
-}
-
-bool Serial_HasString()
-{
-    return s_size > 0 && s_nbstrings > 0;
-}
-
-void Serial_ClearBuffer()
-{
-    s_readPtr = s_rxBuffer;
-    s_writePtr = s_rxBuffer;
-    s_size = 0;
-    s_nbstrings = 0;
-}
-
-int Serial_Received()
-{
-    return s_size;
-}
-
-int Serial_ReadString(void *buffer, int len)
-{
-    int rcvd = 0;
-    while(rcvd < len && s_size > 0 && s_nbstrings > 0)
+    if (b == SERIAL_LINE_TERMINATOR)
     {
-        uint8_t b = poll();
-        UINT8_PTR(buffer)[rcvd++] = b;
-        if (b == 0) break;
+        // Terminate string
+        *writePtr = 0;
+        Serial_RxCallback(buffer, size+1);
+        
+        // Reset buffer
+        writePtr = buffer;
+        size = 0;
     }
-    return rcvd;
-}
-
-int Serial_Read(void *buffer, int len)
-{
-    int rcvd = 0;
-    while(rcvd < len && s_size > 0)
+    else
     {
-        UINT8_PTR(buffer)[rcvd++] = poll();
+        // Advance pointer
+        // TODO : handle buffer full
+        *writePtr = b;
+        writePtr++;
+        size++;
     }
-    return rcvd;
 }
 
 #endif // SERIAL_ASYNC_RX
+
