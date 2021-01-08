@@ -3,4 +3,4 @@ INCLUDES+=\
 	$(CFG_DIR)/serial_tp \
 
 serial_tp: \
-	$(SRC_DIR)/serial_tp/src/serial_tp.o \
+	$(SRC_DIR)/serial_tp/src/serial_tp.o

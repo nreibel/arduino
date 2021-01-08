@@ -18,7 +18,7 @@ INCLUDES := ./app ./res
 # LIBS = printf_flt m
 
 # TODO : handle modules dependencies
-MODULES := os serial gpio spi st7735 pwm i2c_master
+MODULES := os serial serial_tp gpio spi st7735 pwm i2c_master
 app: app/app.o
 
 include $(ARDUINO_LIBS)/makefile.include
