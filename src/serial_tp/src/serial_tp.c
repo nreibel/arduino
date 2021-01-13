@@ -36,4 +36,6 @@ void Serial_RxCallback(const char *rx_buffer, int length)
     {
         Serial_WriteBytes(rsp.data, rsp.data_len);
     }
+
+    // TODO : send line terminator
 }

@@ -39,6 +39,7 @@ def send_command(ser, fn, addr = 0, data = None):
     ser.write(SERIAL_TP_LINE_TERMINATOR)
 
     # Handle response
+    # TODO : read until line terminator, or timeout
     rsp = ser.read(2)
     (status, datalen) = struct.unpack('BB', rsp)
     if status == RETCODE_OK:
