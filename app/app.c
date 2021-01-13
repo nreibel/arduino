@@ -6,6 +6,8 @@
 #include "charset.h"
 #include "pwm.h"
 #include "i2c_master.h"
+#include "max31790.h"
+#include "stdio.h"
 
 #define FUNCTION_WRITE_DATA   0x10
 #define FUNCTION_READ_DATA    0x11
@@ -18,6 +20,7 @@
 #define DATA_BGCOLOR   0x03
 #define DATA_FGCOLOR   0x04
 
+char buffer[32] = {0};
 
 void Serial_TP_Callback(Serial_TP_Request *req, Serial_TP_Response *rsp)
 {
@@ -197,6 +200,9 @@ void App_Init()
     // Init I2C Master Mode
     I2C_Master_Init();
 
+    // Init fan controller
+    MAX31790_Init(MAX31790_Watchdog_30_Seconds);
+
     // Init Serial TP
     Serial_Init();
     Serial_TP_Init();
@@ -229,6 +235,11 @@ Std_ReturnType Task_MainCyclic(void* data)
     else Serial_Println("Tock");
     state = !state;
 */
+
+    uint16_t tach = 0;
+    MAX31790_GetTachCount(MAX31790_Fan1, &tach);
+    sprintf(buffer, "fan speed is %x", tach);
+    Serial_Println(buffer);
     
     return Status_OK;
 }
