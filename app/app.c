@@ -201,7 +201,8 @@ void App_Init()
     I2C_Master_Init();
 
     // Init fan controller
-    MAX31790_Init(MAX31790_Watchdog_30_Seconds);
+    MAX31790_Init(MAX31790_Watchdog_5_Seconds);
+    MAX31790_SetFaultMask(0);
 
     // Init Serial TP
     Serial_Init();
@@ -236,10 +237,38 @@ Std_ReturnType Task_MainCyclic(void* data)
     state = !state;
 */
 
-    uint16_t tach = 0;
-    MAX31790_GetTachCount(MAX31790_Fan1, &tach);
-    sprintf(buffer, "fan speed is %x", tach);
-    Serial_Println(buffer);
+    uint16_t rpm = 0;
+    uint8_t status = 0;
+    bool wd = FALSE;
+
+    MAX31790_GetFaultStatus(&status);
+    MAX31790_GetRPM(MAX31790_Fan1, &rpm);
+    MAX31790_GetWatchdogStatus(&wd);
+
+    Spi_EnableSlave(Spi_Slave_TFT);
+
+    sprintf(buffer, "fan 1 rpm is %d", rpm);
+    ST7735_DrawString(2, 2, buffer, ST7735_COLOR_BLACK, 1);
+
+    if (status)
+    {
+        ST7735_DrawString(2, 12, "fan fault detected!", ST7735_COLOR_BLACK, 1);
+    }
+    else
+    {
+        ST7735_DrawString(2, 12, "no fan fault       ", ST7735_COLOR_BLACK, 1);
+    }
+
+    if (wd)
+    {
+        ST7735_DrawString(2, 22, "watchdog expired!", ST7735_COLOR_BLACK, 1);
+    }
+    else
+    {
+        ST7735_DrawString(2, 22, "watchdog ok      ", ST7735_COLOR_BLACK, 1);
+    }
+
+    Spi_DisableSlave(Spi_Slave_TFT);
     
     return Status_OK;
 }

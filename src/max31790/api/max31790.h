@@ -43,9 +43,14 @@ typedef enum {
 Std_ReturnType MAX31790_Init(MAX31790_Watchdog wd);
 Std_ReturnType MAX31790_SetStandby(bool stdby);
 Std_ReturnType MAX31790_ClearWatchdog();
+Std_ReturnType MAX31790_GetWatchdogStatus(bool *status);
+Std_ReturnType MAX31790_SetFaultMask(uint8_t mask);
+Std_ReturnType MAX31790_GetFaultStatus(uint8_t *status);
 Std_ReturnType MAX31790_SetFrequency(MAX31790_Frequency freq);
 Std_ReturnType MAX31790_SetFanMode(MAX31790_Fan fan, MAX31790_FanMode mode);
+Std_ReturnType MAX31790_SetTargetRPM(MAX31790_Fan fan, uint16_t rpm);
 Std_ReturnType MAX31790_SetTargetPWM(MAX31790_Fan fan, uint16_t pwm);
 Std_ReturnType MAX31790_GetTachCount(MAX31790_Fan fan, uint16_t *tach);
+Std_ReturnType MAX31790_GetRPM(MAX31790_Fan fan, uint16_t *rpm);
 
 #endif // SRC_MAX31790_API_MAX31790_H_
