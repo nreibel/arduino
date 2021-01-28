@@ -119,8 +119,22 @@ Std_ReturnType GPIO_SetDataDirection(GPIO pin, GPIO_DataDirection direction)
         case GPIO_D5:
         case GPIO_D6:
         case GPIO_D7:
-            if (direction == GPIO_Output) SET_BIT(DDRD, pin - GPIO_D0);
-            else RESET_BIT(DDRD, pin - GPIO_D0);
+            switch(direction)
+            {
+                case GPIO_Output:
+                    SET_BIT(DDRD, pin - GPIO_D0);
+                    break;
+                case GPIO_Input:
+                    RESET_BIT(DDRD, pin - GPIO_D0);
+                    RESET_BIT(PORTD, pin - GPIO_D0);
+                    break;
+                case GPIO_Input_Pullup:
+                    RESET_BIT(DDRD, pin - GPIO_D0);
+                    SET_BIT(PORTD, pin - GPIO_D0);
+                    break;
+                default:
+                    return Status_Not_OK;
+            }
             break;
 
         case GPIO_D8:
@@ -129,8 +143,22 @@ Std_ReturnType GPIO_SetDataDirection(GPIO pin, GPIO_DataDirection direction)
         case GPIO_D11:
         case GPIO_D12:
         case GPIO_D13:
-            if (direction == GPIO_Output) SET_BIT(DDRB, pin - GPIO_D8);
-            else RESET_BIT(DDRB, pin - GPIO_D8);
+            switch(direction)
+            {
+                case GPIO_Output:
+                    SET_BIT(DDRB, pin - GPIO_D8);
+                    break;
+                case GPIO_Input:
+                    RESET_BIT(DDRB, pin - GPIO_D8);
+                    RESET_BIT(PORTB, pin - GPIO_D8);
+                    break;
+                case GPIO_Input_Pullup:
+                    RESET_BIT(DDRB, pin - GPIO_D8);
+                    SET_BIT(PORTB, pin - GPIO_D8);
+                    break;
+                default:
+                    return Status_Not_OK;
+            }
             break;
 
         case GPIO_A0:
@@ -139,8 +167,22 @@ Std_ReturnType GPIO_SetDataDirection(GPIO pin, GPIO_DataDirection direction)
         case GPIO_A3:
         case GPIO_A4:
         case GPIO_A5:
-            if (direction == GPIO_Output) SET_BIT(DDRC, pin - GPIO_A0);
-            else RESET_BIT(DDRC, pin - GPIO_A0);
+            switch(direction)
+            {
+                case GPIO_Output:
+                    SET_BIT(DDRC, pin - GPIO_A0);
+                    break;
+                case GPIO_Input:
+                    RESET_BIT(DDRC, pin - GPIO_A0);
+                    RESET_BIT(PORTC, pin - GPIO_A0);
+                    break;
+                case GPIO_Input_Pullup:
+                    RESET_BIT(DDRC, pin - GPIO_A0);
+                    SET_BIT(PORTC, pin - GPIO_A0);
+                    break;
+                default:
+                    return Status_Not_OK;
+            }
             break;
 
         default:

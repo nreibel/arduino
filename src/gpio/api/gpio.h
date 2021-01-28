@@ -42,7 +42,8 @@ typedef enum {
 
 typedef enum
 {
-    GPIO_Input,
+    GPIO_Input,        // High-Z
+    GPIO_Input_Pullup, // Internal pullup
     GPIO_Output
 } GPIO_DataDirection;
 
