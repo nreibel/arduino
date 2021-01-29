@@ -32,31 +32,61 @@ Std_ReturnType I2C_Master_WriteByteSync(uint8_t addr, uint8_t reg, uint8_t val)
 
 Std_ReturnType I2C_Master_WriteSync(uint8_t addr, uint8_t reg, buffer_t buffer, int len)
 {
-    I2C_Master_StartCondition();
-    I2C_Master_SlaveWrite(addr);
-    I2C_Master_Write(reg);
+    Std_ReturnType retval = Status_Not_OK;
+
+    retval = I2C_Master_StartCondition();
+    if (retval != Status_OK) return retval;
+
+    retval = I2C_Master_SlaveWrite(addr);
+    if (retval != Status_OK) return retval;
+
+    retval = I2C_Master_Write(reg, NULL_PTR);
+    if (retval != Status_OK) return retval;
+
     for (int i = 0 ; i < len ; i++ )
     {
-        I2C_Master_Write( UINT8_PTR(buffer)[i] );
+        retval = I2C_Master_Write( UINT8_PTR(buffer)[i], NULL_PTR );
+        if (retval != Status_OK) return retval;
     }
-    I2C_Master_StopCondition();
+
+    retval = I2C_Master_StopCondition();
+    if (retval != Status_OK) return retval;
 
     return Status_OK;
 }
 
 Std_ReturnType I2C_Master_ReadSync(uint8_t addr, uint8_t reg, buffer_t buffer, int len)
 {
-    I2C_Master_StartCondition();
-    I2C_Master_SlaveWrite(addr);
-    I2C_Master_Write(reg);
-    I2C_Master_RestartCondition();
-    I2C_Master_SlaveRead(addr);
+    Std_ReturnType retval = Status_Not_OK;
+    uint8_t *ptr = UINT8_PTR(buffer);
+
+    retval = I2C_Master_StartCondition();
+    if (retval != Status_OK) return retval;
+
+    retval = I2C_Master_SlaveWrite(addr);
+    if (retval != Status_OK) return retval;
+
+    retval = I2C_Master_Write(reg, NULL_PTR);
+    if (retval != Status_OK) return retval;
+
+    retval = I2C_Master_RestartCondition();
+    if (retval != Status_OK) return retval;
+
+    retval = I2C_Master_SlaveRead(addr);
+    if (retval != Status_OK) return retval;
+
     for(int i = 0 ; i < len-1 ; i++)
     {
-        UINT8_PTR(buffer)[i] = I2C_Master_ReadAck();
+        retval = I2C_Master_ReadAck( &ptr[i] );
+        if (retval != Status_OK) return retval;
     }
-    UINT8_PTR(buffer)[len-1] = I2C_Master_ReadNak();
-    I2C_Master_StopCondition();
+
+    retval = I2C_Master_ReadNak( &ptr[len-1] );
+    if (retval != Status_OK) return retval;
+
+    retval = I2C_Master_StopCondition();
+    if (retval != Status_OK) return retval;
+
     return Status_OK;
 }
 
@@ -65,7 +95,7 @@ bool I2C_Master_TransmitReady()
     return IS_SET_BIT(TWCR, TWINT);
 }
 
-void I2C_Master_StartCondition()
+Std_ReturnType I2C_Master_StartCondition()
 {
     TWCR = BIT(TWINT) | BIT(TWSTA) | BIT(TWEN);
     while (!I2C_Master_TransmitReady());
@@ -73,18 +103,17 @@ void I2C_Master_StartCondition()
     switch(TW_STATUS)
     {
         case TW_START:
-            // OK
-            break;
+            return Status_OK;
+
         case TW_REP_START:
-            HALT;
-            break;
+            return Status_Not_OK;
+
         default:
-            HALT;
-            break;
+            return Status_Not_OK;
     }
 }
 
-void I2C_Master_RestartCondition()
+Std_ReturnType I2C_Master_RestartCondition()
 {
     TWCR = BIT(TWINT) | BIT(TWSTA) | BIT(TWEN);
     while (!I2C_Master_TransmitReady());
@@ -92,66 +121,75 @@ void I2C_Master_RestartCondition()
     switch(TW_STATUS)
     {
         case TW_START:
-            HALT;
-            break;
+            return Status_OK;
+
         case TW_REP_START:
-            // OK
-            break;
+            return Status_Not_OK;
+
         default:
-            HALT;
-            break;
+            return Status_Not_OK;
     }
 }
 
-void I2C_Master_SlaveWrite(uint8_t slaveAddr)
+Std_ReturnType I2C_Master_SlaveWrite(uint8_t slaveAddr)
 {
-    uint8_t status = I2C_Master_Write( I2C_ADDR(slaveAddr, TW_WRITE) );
+    Std_ReturnType retval = Status_Not_OK;
+    uint8_t status = 0;
+
+    retval = I2C_Master_Write( I2C_ADDR(slaveAddr, TW_WRITE), &status );
+    if (retval != Status_OK) return retval;
+
     switch(status)
     {
         case TW_MT_SLA_ACK:
-            // OK
-            break;
+            return Status_OK;
+
         case TW_MT_SLA_NACK:
-            HALT;
-            break;
+            return Status_Not_OK;
+
         default:
-            HALT;
-            break;
+            return Status_Not_OK;
     }
 }
 
-void I2C_Master_SlaveRead(uint8_t slaveAddr)
+Std_ReturnType I2C_Master_SlaveRead(uint8_t slaveAddr)
 {
-    uint8_t status = I2C_Master_Write( I2C_ADDR(slaveAddr, TW_READ) );
+    Std_ReturnType retval = Status_Not_OK;
+    uint8_t status = 0;
+
+    retval = I2C_Master_Write( I2C_ADDR(slaveAddr, TW_READ), &status );
+    if (retval != Status_OK) return retval;
+
     switch(status)
     {
         case TW_MR_SLA_ACK:
-            // OK
-            break;
+            return Status_OK;
+
         case TW_MR_SLA_NACK:
-            HALT;
-            break;
+            return Status_Not_OK;
+
         default:
-            HALT;
-            break;
+            return Status_Not_OK;
     }
 }
 
-void I2C_Master_StopCondition()
+Std_ReturnType I2C_Master_StopCondition()
 {
     TWCR = BIT(TWINT) | BIT(TWEN) | BIT(TWSTO);
     while(IS_SET_BIT(TWCR, TWSTO));
+    return Status_OK;
 }
 
-uint8_t I2C_Master_Write(uint8_t data)
+Std_ReturnType I2C_Master_Write(uint8_t data, uint8_t *status)
 {
     TWDR = data;
     TWCR = BIT(TWINT) | BIT(TWEN);
     while (!I2C_Master_TransmitReady());
-    return TW_STATUS;
+    if (status != NULL_PTR) *status = TW_STATUS;
+    return Status_OK;
 }
 
-uint8_t I2C_Master_ReadAck(void)
+Std_ReturnType I2C_Master_ReadAck(uint8_t *data)
 {
     TWCR = BIT(TWINT) | BIT(TWEN) | BIT(TWEA);
     while(!I2C_Master_TransmitReady());
@@ -159,20 +197,18 @@ uint8_t I2C_Master_ReadAck(void)
     switch(TW_STATUS)
     {
         case TW_MR_DATA_ACK:
-            // OK
-            break;
-        case TW_MR_DATA_NACK:
-            HALT;
-            break;
-        default:
-            HALT;
-            break;
-    }
+            if (data != NULL_PTR) *data = TWDR;
+            return Status_OK;
 
-    return TWDR;
+        case TW_MR_DATA_NACK:
+            return Status_Not_OK;
+
+        default:
+            return Status_Not_OK;
+    }
 }
 
-uint8_t I2C_Master_ReadNak(void)
+Std_ReturnType I2C_Master_ReadNak(uint8_t *data)
 {
     TWCR = BIT(TWINT) | BIT(TWEN);
     while(!I2C_Master_TransmitReady());
@@ -180,15 +216,13 @@ uint8_t I2C_Master_ReadNak(void)
     switch(TW_STATUS)
     {
         case TW_MR_DATA_ACK:
-            HALT;
-            break;
-        case TW_MR_DATA_NACK:
-            // OK
-            break;
-        default:
-            HALT;
-            break;
-    }
+            if (data != NULL_PTR) *data = TWDR;
+            return Status_OK;
 
-    return TWDR;
+        case TW_MR_DATA_NACK:
+            return Status_Not_OK;
+
+        default:
+            return Status_Not_OK;
+    }
 }
