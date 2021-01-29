@@ -2,7 +2,6 @@
 #include "max31790_prv.h"
 #include "types.h"
 #include "bits.h"
-#include "spi.h"
 #include "i2c_master.h"
 
 Std_ReturnType MAX31790_Init(MAX31790_Watchdog wd)
