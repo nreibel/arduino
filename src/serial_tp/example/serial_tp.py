@@ -8,7 +8,7 @@ import struct
 SERIAL_TTY = '/dev/ttyUSB0'
 SERIAL_BAUDRATE = 19200
 
-SERIAL_TP_LINE_TERMINATOR = b'\x0D'
+SERIAL_TP_FRAME_TERMINATOR = b'\x0D'
 SERIAL_TP_REQUEST_HEADER = b'\xA0'
 
 RETCODE_OK = 0x00
@@ -27,9 +27,11 @@ DATA_Y  = 0x02
 
 def send_command(ser, fn, addr = 0, data = None):
 
+    # Send request header
     cmd = struct.pack('BBB', 0xA0, fn, addr)
     ser.write(cmd)
 
+    # Send request data
     if data is None:
         ser.write(b'\x00')
     else:
@@ -37,20 +39,32 @@ def send_command(ser, fn, addr = 0, data = None):
         ser.write(data_len)
         ser.write(data)
 
-    ser.write(SERIAL_TP_LINE_TERMINATOR)
+    # Send frame terminator
+    ser.write(SERIAL_TP_FRAME_TERMINATOR)
 
-    # Handle response
-    # TODO : read until line terminator, or timeout
+    # Processing on client side...
+
+    # Read response header
+    # TODO : read until timeout
     rsp = ser.read(2)
-    (status, datalen) = struct.unpack('BB', rsp)
-    if status == RETCODE_OK:
-        data = None;
-        if datalen > 0:
-            data = ser.read(datalen)
+    (status, data_len) = struct.unpack('BB', rsp)
+
+    # Read response data
+    data = None;
+    if data_len > 0:
+        data = ser.read(data_len)
+
+    # Read frame terminator
+    term = ser.read(1)
+
+    if term != SERIAL_TP_FRAME_TERMINATOR:
+        return (False, None)
+
+    elif status == RETCODE_OK:
         return (True, data)
+
     else:
         return (False, status)
-
 
 # # # # # # # # # # # # # #
 # APPLICATION STARTS HERE #

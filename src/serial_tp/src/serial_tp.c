@@ -33,12 +33,6 @@ void Serial_RxCallback(const char *rx_buffer, int length)
 
     // Send response
     Serial_WriteBytes(&rsp, 2);
-
-    // Send additional data
-    if (rsp.data_len > 0 && rsp.data != NULL_PTR)
-    {
-        Serial_WriteBytes(rsp.data, rsp.data_len);
-    }
-
-    // TODO : send line terminator
+    Serial_WriteBytes(rsp.data, rsp.data_len);
+    Serial_WriteByte(SERIAL_TP_FRAME_TERMINATOR);
 }
