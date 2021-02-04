@@ -2,7 +2,6 @@
 #include "max31790_prv.h"
 #include "types.h"
 #include "bits.h"
-#include "spi.h"
 #include "i2c_master.h"
 
 Std_ReturnType MAX31790_Init(MAX31790_Watchdog wd)
@@ -34,9 +33,7 @@ Std_ReturnType MAX31790_Init(MAX31790_Watchdog wd)
     }
 
     // Write new config
-    I2C_Master_WriteByteSync(0x20, MAX31790_REG_GLOBAL_CONFIGURATION, reg);
-
-    return Status_OK;
+    return I2C_Master_WriteByteSync(0x20, MAX31790_REG_GLOBAL_CONFIGURATION, reg);
 }
 
 Std_ReturnType MAX31790_SetStandby(bool stdby)
