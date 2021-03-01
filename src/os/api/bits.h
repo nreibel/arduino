@@ -30,7 +30,7 @@
 #define RESET_MASK(r, m)     (r &= ~(m))
 
 // Test bit of value r at index x
-#define IS_SET_BIT(r, x)     MASK((r), BIT(x))
+#define IS_SET_BIT(r, x)     (MASK((r), BIT(x)))
 
 #define ADD_BOUNDED(var, inc, min, max) (var = (min) + ((var+(min)+(inc)) % (max-min+1)))
 #define SUB_BOUNDED(var, inc, min, max) ADD_BOUNDED(var, -(inc), min, max)

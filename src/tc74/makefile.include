@@ -1,0 +1,4 @@
+INCLUDES+=\
+	$(SRC_DIR)/tc74/api \
+
+tc74:    $(SRC_DIR)/tc74/src/tc74.o \
