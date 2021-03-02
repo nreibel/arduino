@@ -1,0 +1,3 @@
+INCLUDES += $(SRC_DIR)/max31855_new/api $(CFG_DIR)/max31855_new
+
+max31855_new: $(SRC_DIR)/max31855_new/src/max31855.o \

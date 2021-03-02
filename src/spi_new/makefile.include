@@ -1,0 +1,5 @@
+INCLUDES+=\
+	$(SRC_DIR)/spi_new/api \
+
+spi_new: $(SRC_DIR)/spi_new/src/spi.o \
+	 $(SRC_DIR)/spi_new/src/spi_$(ARCH).o \

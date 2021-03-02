@@ -14,11 +14,11 @@ INCLUDES := ./app ./res
 
 # Enable support for doubles and floats in printf
 # Adds ~2.5kB to ROM data!!!
-# LDFLAGS = -u,vfprintf
-# LIBS = printf_flt m
+LDFLAGS = -u,vfprintf
+LIBS = printf_flt m
 
 # TODO : handle modules dependencies
-MODULES := os serial
+MODULES := os serial gpio spi_new max31855_new
 app: app/app.o
 
 include $(ARDUINO_LIBS)/makefile.include
