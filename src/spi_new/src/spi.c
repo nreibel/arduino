@@ -4,22 +4,27 @@
 
 void spi_init()
 {
+    gpio_t sck, mosi;
+
     // Enable MOSI, SCK
-    GPIO_SetDataDirection(GPIO_MOSI, GPIO_Output);
-    GPIO_SetDataDirection(GPIO_SCK, GPIO_Output);
+    gpio_init(&sck, GPIO_SCK);
+    gpio_init(&mosi, GPIO_MOSI);
+
+    gpio_set_data_direction(&sck, GPIO_Output);
+    gpio_set_data_direction(&mosi, GPIO_Output);
 
     spi_hal_enable();
 }
 
-void spi_device_init(spi_device_t *self, GPIO cs, spi_clock_e clk, spi_mode_e mode)
+void spi_device_init(spi_device_t *self, gpio_t *cs, spi_clock_e clk, spi_mode_e mode)
 {
     self->cs = cs;
     self->clk = clk;
     self->mode = mode;
     self->transaction_mode = FALSE;
 
-    GPIO_SetDataDirection(cs, GPIO_Output);
-    GPIO_SetState(cs, GPIO_High);
+    gpio_set_data_direction(cs, GPIO_Output);
+    gpio_set_state(cs, TRUE);
 }
 
 void spi_set_transaction_mode_enabled(spi_device_t *self, bool enabled)
@@ -30,12 +35,12 @@ void spi_set_transaction_mode_enabled(spi_device_t *self, bool enabled)
 void spi_enable_slave(spi_device_t *self)
 {
     spi_hal_configure(self->clk, self->mode);
-    GPIO_SetState(self->cs, GPIO_Low);
+    gpio_set_state(self->cs, FALSE);
 }
 
 void spi_disable_slave(spi_device_t *self)
 {
-    GPIO_SetState(self->cs, GPIO_High);
+    gpio_set_state(self->cs, TRUE);
 }
 
 void spi_read_bytes(spi_device_t *self, uint8_t *buffer, int len)

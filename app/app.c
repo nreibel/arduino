@@ -10,6 +10,7 @@
 
 char buffer[64];
 
+gpio_t gpio_backlight, gpio_st7735_cs, gpio_st7735_dc, gpio_max31855_cs;
 max31855_t max31855;
 st7735_t st7735;
 
@@ -37,9 +38,14 @@ void App_Init()
 {
     spi_init();
 
-    max31855_device_init(&max31855, GPIO_D9);
+    gpio_init(&gpio_st7735_dc, GPIO_D7);
+    gpio_init(&gpio_max31855_cs, GPIO_D9);
+    gpio_init(&gpio_st7735_cs, GPIO_D10);
+    gpio_init(&gpio_backlight, GPIO_D5);
 
-    st7735_init_device(&st7735, 128, 160, GPIO_D10, GPIO_D7);
+    max31855_device_init(&max31855, &gpio_max31855_cs);
+
+    st7735_init_device(&st7735, &gpio_st7735_cs, &gpio_st7735_dc, 128, 160);
     st7735_set_offset(&st7735, 2, 1);
     st7735_set_background_color(&st7735, ST7735_COLOR_BLACK);
     st7735_set_orientation(&st7735, ST7735_ORIENTATION_PORTRAIT_INV);
@@ -62,9 +68,8 @@ void App_Init()
     Serial_Init();
     Serial_Println("READY");
 
-    // Backlight
-    GPIO_SetDataDirection(GPIO_D5, GPIO_Output);
-    GPIO_SetState(GPIO_D5, GPIO_High);
+    gpio_set_data_direction(&gpio_backlight, GPIO_Output);
+    gpio_set_state(&gpio_backlight, TRUE);
 
     Os_SetupTask(Timer_MainTask, 500, Task_MainCyclic, NULL_PTR);
 }

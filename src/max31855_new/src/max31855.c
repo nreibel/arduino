@@ -3,7 +3,7 @@
 #include "types.h"
 #include "bits.h"
 
-void max31855_device_init(max31855_t *self, GPIO cs)
+void max31855_device_init(max31855_t *self, gpio_t *cs)
 {
     spi_device_init(&self->spi_device, cs, SPI_CLOCK_DIV_2, SPI_MODE_0);
 }

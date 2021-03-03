@@ -18,7 +18,7 @@ LDFLAGS = -u,vfprintf
 LIBS = printf_flt m
 
 # TODO : handle modules dependencies
-MODULES := os serial gpio spi_new max31855_new st7735_new
+MODULES := os serial gpio_new spi_new max31855_new st7735_new
 app: app/app.o
 
 include $(ARDUINO_LIBS)/makefile.include

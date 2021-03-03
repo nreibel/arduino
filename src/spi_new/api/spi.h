@@ -22,14 +22,14 @@ typedef enum {
 } spi_mode_e;
 
 typedef struct {
-    GPIO cs;
+    gpio_t *cs;
     spi_clock_e clk;
     spi_mode_e mode;
     bool transaction_mode;
 } spi_device_t;
 
 void spi_init();
-void spi_device_init(spi_device_t *self, GPIO cs, spi_clock_e clk, spi_mode_e mode);
+void spi_device_init(spi_device_t *self, gpio_t *cs, spi_clock_e clk, spi_mode_e mode);
 void spi_set_transaction_mode_enabled(spi_device_t *self, bool enabled);
 void spi_disable_slave(spi_device_t *self);
 void spi_enable_slave(spi_device_t *self);

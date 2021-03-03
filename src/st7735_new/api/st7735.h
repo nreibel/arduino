@@ -1,8 +1,9 @@
 #ifndef SRC_ST7735_API_ST7735_H_
 #define SRC_ST7735_API_ST7735_H_
 
-#include "spi.h"
 #include "types.h"
+#include "spi.h"
+#include "gpio.h"
 
 typedef uint16_t st7735_color_t;
 typedef const __flash uint8_t st7735_xbm_t;
@@ -12,11 +13,11 @@ typedef st7735_color_t (*ST7735_Renderer)(int x, int y, int w, int h, void* data
 typedef struct {
     spi_device_t spi_device;
     st7735_color_t background_color;
+    gpio_t *dc;
     int width;
     int height;
     int offset_x;
     int offset_y;
-    GPIO dc;
 } st7735_t;
 
 typedef enum {
@@ -26,7 +27,7 @@ typedef enum {
     ST7735_ORIENTATION_LANDSCAPE_INV
 } st7735_orientation_t;
 
-void st7735_init_device(st7735_t *self, int w, int h, GPIO cs, GPIO dc);
+void st7735_init_device(st7735_t *self, gpio_t *cs, gpio_t *dc, int w, int h);
 void st7735_set_background_color(st7735_t *self, st7735_color_t c);
 void st7735_set_offset(st7735_t *self, int offset_x, int offset_y);
 void st7735_set_orientation(st7735_t *self, st7735_orientation_t orientation);
