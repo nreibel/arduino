@@ -5,7 +5,7 @@
 
 void max31855_device_init(max31855_t *self, GPIO cs)
 {
-    spi_device_init(&self->spi_device, cs, SPI_CLOCK_DIV_2, SPI_MODE_1);
+    spi_device_init(&self->spi_device, cs, SPI_CLOCK_DIV_2, SPI_MODE_0);
 }
 
 bool max31855_get_temperature(max31855_t *self, double *temperature)
