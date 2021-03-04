@@ -5,20 +5,20 @@
 #include "serial_cfg.h"
 
 #if SERIAL_ASYNC_RX == ON
-void Serial_HAL_EnableRxInterrupts();
-void Serial_HAL_ISR_Rx();
+void serial_hal_enable_rx_interrupts();
+void serial_hal_isr_rx();
 #endif
 
 #if SERIAL_ASYNC_TX == ON
-void Serial_HAL_EnableTxInterrupts();
-void Serial_HAL_ISR_Tx();
+void serial_hal_enable_tx_interrupts();
+void serial_hal_isr_tx();
 #endif
 
 // Hardware abstraction
-void Serial_HAL_Init_HW(void);
-bool Serial_HAL_TxIsReady(void);
-bool Serial_HAL_RxIsReady(void);
-void Serial_HAL_WriteByte(uint8_t byte);
-uint8_t Serial_HAL_ReadByte(void);
+void serial_hal_init(int baudrate);
+bool serial_hal_tx_ready();
+bool serial_hal_rx_ready();
+void serial_hal_write_byte(uint8_t byte);
+uint8_t serial_hal_read_byte();
 
 #endif /* SRC_SERIAL_API_SERIAL_PRV_H_ */

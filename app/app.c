@@ -13,6 +13,7 @@ char buffer[64];
 gpio_t gpio_backlight, gpio_st7735_cs, gpio_st7735_dc, gpio_max31855_cs;
 max31855_t max31855;
 st7735_t st7735;
+serial_t serial;
 
 struct render_circle_data {
     st7735_color_t foreground;
@@ -31,7 +32,10 @@ st7735_color_t render_circle(int x, int y, int w, int h, void *data)
     else return param->background;
 }
 
-st7735_xbm_t *xbm = xbm_cat_1;
+void serial_rx_callback(const char *buffer, int length)
+{
+    st7735_draw_chars(&st7735, 10, 140, buffer, length, ST7735_COLOR_GREEN, 1);
+}
 
 // App entry point
 void App_Init()
@@ -63,10 +67,8 @@ void App_Init()
     struct render_circle_data data = {ST7735_COLOR_YELLOW, ST7735_COLOR_FUSCHIA};
     st7735_render(&st7735, 10, 70, 32, 32, render_circle, &data, 1);
 
-    st7735_draw_xbm(&st7735, xbm, 50, 60, XBM_CAT_WIDTH, XBM_CAT_HEIGHT, ST7735_COLOR_CYAN, 2);
-
-    Serial_Init();
-    Serial_Println("READY");
+    serial_init(&serial, 19200);
+    serial_println(&serial, "READY");
 
     gpio_set_data_direction(&gpio_backlight, GPIO_OUTPUT);
     gpio_set_state(&gpio_backlight, TRUE);
@@ -79,12 +81,14 @@ Std_ReturnType Task_MainCyclic(void* data)
 {
     UNUSED(data);
 
+    static st7735_xbm_t *xbm = xbm_cat_1;
+
     double temperature_int = 0.0;
     static double temperature_int_avg = 0;
 
     max31855_get_internal_temperature(&max31855, &temperature_int);
     sprintf(buffer, "Internal temperature is %f", temperature_int);
-    Serial_Println(buffer);
+    serial_println(&serial, buffer);
 
     temperature_int_avg = (temperature_int + 3*temperature_int_avg)/4;
     sprintf(buffer, "%6.02f'C", temperature_int_avg);
@@ -94,11 +98,11 @@ Std_ReturnType Task_MainCyclic(void* data)
     if ( max31855_get_temperature(&max31855, &temperature_ext) )
     {
         sprintf(buffer, "Temperature is %f", temperature_ext);
-        Serial_Println(buffer);
+        serial_println(&serial, buffer);
     }
     else
     {
-        Serial_Println("Temperature probe error");
+        serial_println(&serial, "Temperature probe error");
     }
 
     xbm = (xbm == xbm_cat_1) ? xbm_cat_2 : xbm_cat_1;

@@ -3,9 +3,7 @@
 
 #include "types.h"
 
-#define SERIAL_BAUD_RATE 19200U
-
-#define SERIAL_ASYNC_RX OFF
+#define SERIAL_ASYNC_RX ON
 #define SERIAL_ASYNC_TX OFF
 
 #if SERIAL_ASYNC_RX == ON

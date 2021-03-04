@@ -9,10 +9,10 @@
 #if SERIAL_ASYNC_RX == ON
 ISR(USART_RX_vect)
 {
-    Serial_HAL_ISR_Rx();
+    serial_hal_isr_rx();
 }
 
-void Serial_HAL_EnableRxInterrupts()
+void serial_hal_enable_rx_interrupts()
 {
     SET_BIT(UCSR0B, RXCIE0);
 }
@@ -21,22 +21,22 @@ void Serial_HAL_EnableRxInterrupts()
 #if SERIAL_ASYNC_TX == ON
 ISR(USART_TX_vect)
 {
-    Serial_HAL_ISR_Tx();
+    serial_hal_isr_tx();
 }
 
-void Serial_HAL_EnableTxInterrupts()
+void serial_hal_enable_tx_interrupts()
 {
     SET_BIT(UCSR0B, TXCIE0);
 }
 #endif // SERIAL_ASYNC_TX
 
-void Serial_HAL_Init_HW(void)
+void serial_hal_init(int baudrate)
 {
     // Enable peripheral
     RESET_BIT(PRR, PRUSART0);
 
     // Formula is UBRR = (Freq / (BAUD * 16) - 1)
-    word ubrr = { (F_CPU/16/SERIAL_BAUD_RATE)-1U };
+    word ubrr = { (F_CPU/16/baudrate)-1U };
 
     // Set UBRR
     UBRR0H = ubrr.bytes[1];
@@ -49,22 +49,22 @@ void Serial_HAL_Init_HW(void)
     UCSR0C = 0x06;
 }
 
-bool Serial_HAL_TxIsReady(void)
+bool serial_hal_tx_ready(void)
 {
     return IS_SET_BIT(UCSR0A, UDRE0);
 }
 
-bool Serial_HAL_RxIsReady(void)
+bool serial_hal_rx_ready(void)
 {
     return IS_SET_BIT(UCSR0A, RXC0);
 }
 
-uint8_t Serial_HAL_ReadByte()
+uint8_t serial_hal_read_byte()
 {
     return UDR0;
 }
 
-void Serial_HAL_WriteByte(uint8_t byte)
+void serial_hal_write_byte(uint8_t byte)
 {
     UDR0 = byte;
 }

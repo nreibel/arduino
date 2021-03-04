@@ -8,11 +8,12 @@
 volatile void *s_txBuffer = NULL_PTR;
 volatile int s_txLength = 0;
 
-void Serial_HAL_ISR_Tx()
+void serial_hal_isr_tx()
 {
     if (s_txLength > 0)
     {
-        Serial_HAL_WriteByte( READ_PU8(s_txBuffer++) );
+        uint8_t b = READ_PU8(s_txBuffer++);
+        serial_hal_write_byte(b);
         s_txLength--;
     }
     else
@@ -22,26 +23,23 @@ void Serial_HAL_ISR_Tx()
     }
 }
 
-Std_ReturnType Serial_TxReady(bool *ready)
+void serial_tx_ready(bool *ready)
 {
     *ready = FALSE;
     if (s_txBuffer == NULL_PTR && s_txLength == 0)
     {
         *ready = TRUE;
     }
-    return Status_OK;
 }
 
-Std_ReturnType Serial_SetTxBuffer(void *buffer, int length)
+void serial_set_tx_buffer(void *buffer, int length)
 {
     s_txBuffer = buffer;
     s_txLength = length;
 
     // Kickstart transmission
-    Serial_HAL_WriteByte( READ_PU8(s_txBuffer++) );
+    serial_hal_write_byte( READ_PU8(s_txBuffer++) );
     s_txLength--;
-
-    return Status_OK;
 }
 
 #endif // SERIAL_ASYNC_TX
