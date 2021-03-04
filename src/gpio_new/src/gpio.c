@@ -7,28 +7,28 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
-// static volatile void* Data_INT0 = NULL_PTR;
-// static volatile void* Data_INT1 = NULL_PTR;
-//
-// static Interrupt Interrupts_INT0 = NULL_PTR;
-// static Interrupt Interrupts_INT1 = NULL_PTR;
-//
-// ISR(INT0_vect)
-// {
-//     if (Interrupts_INT0 != NULL_PTR)
-//     {
-//         (*Interrupts_INT0)(Data_INT0);
-//     }
-// }
-//
-// ISR(INT1_vect)
-// {
-//     if (Interrupts_INT1 != NULL_PTR)
-//     {
-//         (*Interrupts_INT1)(Data_INT1);
-//     }
-// }
-//
+static volatile void* int0_data = NULL_PTR;
+static volatile void* int1_data = NULL_PTR;
+
+static Interrupt int0_cbk = NULL_PTR;
+static Interrupt int1_cbk = NULL_PTR;
+
+ISR(INT0_vect)
+{
+    if (int0_cbk != NULL_PTR)
+    {
+        (*int0_cbk)(int0_data);
+    }
+}
+
+ISR(INT1_vect)
+{
+    if (int1_cbk != NULL_PTR)
+    {
+        (*int1_cbk)(int1_data);
+    }
+}
+
 // Std_ReturnType GPIO_EnableInterrupt(GPIO pin, GPIO_Edge edge, Interrupt cbk, volatile void *data)
 // {
 //     uint8_t eicra = EICRA;
@@ -107,151 +107,101 @@
 //     return Status_OK;
 // }
 
-void gpio_init(gpio_t *self, GPIO pin)
+void gpio_init(gpio_t *self, gpio_port_t port, uint8_t pin)
 {
+    self->port = port;
     self->pin = pin;
 }
 
-void gpio_set_data_direction(gpio_t *self, GPIO_DataDirection direction)
+void gpio_set_data_direction(gpio_t *self, gpio_data_direction_t direction)
 {
-    switch(self->pin)
+    switch(self->port)
     {
-        case GPIO_D0:
-        case GPIO_D1:
-        case GPIO_D2:
-        case GPIO_D3:
-        case GPIO_D4:
-        case GPIO_D5:
-        case GPIO_D6:
-        case GPIO_D7:
+        case GPIO_PORT_B:
+        {
             switch(direction)
             {
-                case GPIO_Output:
-                    SET_BIT(DDRD, self->pin - GPIO_D0);
+                case GPIO_OUTPUT:
+                    SET_BIT(DDRB, self->pin);
                     break;
-                case GPIO_Input:
-                    RESET_BIT(DDRD, self->pin - GPIO_D0);
-                    RESET_BIT(PORTD, self->pin - GPIO_D0);
+                case GPIO_INPUT:
+                    RESET_BIT(DDRB, self->pin);
+                    RESET_BIT(PORTB, self->pin);
                     break;
-                case GPIO_Input_Pullup:
-                    RESET_BIT(DDRD, self->pin - GPIO_D0);
-                    SET_BIT(PORTD, self->pin - GPIO_D0);
+                case GPIO_INPUT_PULLUP:
+                    RESET_BIT(DDRB, self->pin);
+                    SET_BIT(PORTB, self->pin);
                     break;
             }
             break;
-
-        case GPIO_D8:
-        case GPIO_D9:
-        case GPIO_D10:
-        case GPIO_D11:
-        case GPIO_D12:
-        case GPIO_D13:
+        }
+        case GPIO_PORT_C:
+        {
             switch(direction)
             {
-                case GPIO_Output:
-                    SET_BIT(DDRB, self->pin - GPIO_D8);
+                case GPIO_OUTPUT:
+                    SET_BIT(DDRC, self->pin);
                     break;
-                case GPIO_Input:
-                    RESET_BIT(DDRB, self->pin - GPIO_D8);
-                    RESET_BIT(PORTB, self->pin - GPIO_D8);
+                case GPIO_INPUT:
+                    RESET_BIT(DDRC, self->pin);
+                    RESET_BIT(PORTC, self->pin);
                     break;
-                case GPIO_Input_Pullup:
-                    RESET_BIT(DDRB, self->pin - GPIO_D8);
-                    SET_BIT(PORTB, self->pin - GPIO_D8);
+                case GPIO_INPUT_PULLUP:
+                    RESET_BIT(DDRC, self->pin);
+                    SET_BIT(PORTC, self->pin);
                     break;
             }
             break;
-
-        case GPIO_A0:
-        case GPIO_A1:
-        case GPIO_A2:
-        case GPIO_A3:
-        case GPIO_A4:
-        case GPIO_A5:
+        }
+        case GPIO_PORT_D:
+        {
             switch(direction)
             {
-                case GPIO_Output:
-                    SET_BIT(DDRC, self->pin - GPIO_A0);
+                case GPIO_OUTPUT:
+                    SET_BIT(DDRD, self->pin);
                     break;
-                case GPIO_Input:
-                    RESET_BIT(DDRC, self->pin - GPIO_A0);
-                    RESET_BIT(PORTC, self->pin - GPIO_A0);
+                case GPIO_INPUT:
+                    RESET_BIT(DDRD, self->pin);
+                    RESET_BIT(PORTD, self->pin);
                     break;
-                case GPIO_Input_Pullup:
-                    RESET_BIT(DDRC, self->pin - GPIO_A0);
-                    SET_BIT(PORTC, self->pin - GPIO_A0);
+                case GPIO_INPUT_PULLUP:
+                    RESET_BIT(DDRD, self->pin);
+                    SET_BIT(PORTD, self->pin);
                     break;
             }
             break;
+        }
     }
 }
 
 void gpio_get_state(gpio_t *self, bool *state)
 {
-    switch(self->pin)
+    switch(self->port)
     {
-        case GPIO_D0:
-        case GPIO_D1:
-        case GPIO_D2:
-        case GPIO_D3:
-        case GPIO_D4:
-        case GPIO_D5:
-        case GPIO_D6:
-        case GPIO_D7:
-            *state = IS_SET_BIT(PIND, self->pin - GPIO_D0);
+        case GPIO_PORT_B:
+            *state = IS_SET_BIT(PINB, self->pin);
             break;
-
-        case GPIO_D8:
-        case GPIO_D9:
-        case GPIO_D10:
-        case GPIO_D11:
-        case GPIO_D12:
-        case GPIO_D13:
-            *state = IS_SET_BIT(PINB, self->pin - GPIO_D8);
+        case GPIO_PORT_C:
+            *state = IS_SET_BIT(PINC, self->pin);
             break;
-
-        case GPIO_A0:
-        case GPIO_A1:
-        case GPIO_A2:
-        case GPIO_A3:
-        case GPIO_A4:
-        case GPIO_A5:
-            *state = IS_SET_BIT(PINC, self->pin - GPIO_A0);
+        case GPIO_PORT_D:
+            *state = IS_SET_BIT(PIND, self->pin);
             break;
     }
 }
 
 void gpio_set_state(gpio_t *self, bool state)
 {
-    switch(self->pin)
+    switch(self->port)
     {
-        case GPIO_D0:
-        case GPIO_D1:
-        case GPIO_D2:
-        case GPIO_D3:
-        case GPIO_D4:
-        case GPIO_D5:
-        case GPIO_D6:
-        case GPIO_D7:
-            state ? SET_BIT(PORTD, self->pin - GPIO_D0) : RESET_BIT(PORTD, self->pin - GPIO_D0);
+        case GPIO_PORT_B:
+            state ? SET_BIT(PORTB, self->pin) : RESET_BIT(PORTB, self->pin);
             break;
-
-        case GPIO_D8:
-        case GPIO_D9:
-        case GPIO_D10:
-        case GPIO_D11:
-        case GPIO_D12:
-        case GPIO_D13:
-            state ? SET_BIT(PORTB, self->pin - GPIO_D8) : RESET_BIT(PORTB, self->pin - GPIO_D8);
+        case GPIO_PORT_C:
+            state ? SET_BIT(PORTC, self->pin) : RESET_BIT(PORTC, self->pin);
             break;
-
-        case GPIO_A0:
-        case GPIO_A1:
-        case GPIO_A2:
-        case GPIO_A3:
-        case GPIO_A4:
-        case GPIO_A5:
-            state ? SET_BIT(PORTC, self->pin - GPIO_A0) : RESET_BIT(PORTC, self->pin - GPIO_A0);
+        case GPIO_PORT_D:
+            state ? SET_BIT(PORTD, self->pin) : RESET_BIT(PORTD, self->pin);
             break;
     }
 }

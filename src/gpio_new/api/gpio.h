@@ -3,50 +3,6 @@
 
 #include "types.h"
 
-typedef enum {
-    // Port B
-    GPIO_D8,
-    GPIO_D9,
-    GPIO_D10,
-    GPIO_D11,
-    GPIO_D12,
-    GPIO_D13,
-
-    // Port C
-    GPIO_A0,
-    GPIO_A1,
-    GPIO_A2,
-    GPIO_A3,
-    GPIO_A4,
-    GPIO_A5,
-
-    // Port D
-    GPIO_D0,
-    GPIO_D1,
-    GPIO_D2,
-    GPIO_D3,
-    GPIO_D4,
-    GPIO_D5,
-    GPIO_D6,
-    GPIO_D7,
-
-    // Aliases
-    GPIO_RX   = GPIO_D0,
-    GPIO_TX   = GPIO_D1,
-    GPIO_INT0 = GPIO_D2,
-    GPIO_INT1 = GPIO_D3,
-    GPIO_MOSI = GPIO_D11,
-    GPIO_MISO = GPIO_D12,
-    GPIO_SCK  = GPIO_D13
-} GPIO;
-
-typedef enum
-{
-    GPIO_Input,        // High-Z
-    GPIO_Input_Pullup, // Internal pullup
-    GPIO_Output
-} GPIO_DataDirection;
-
 // typedef enum
 // {
 //     GPIO_Edge_Low,
@@ -63,12 +19,27 @@ typedef enum
  * NEW
  */
 
+typedef enum
+{
+    GPIO_INPUT,        // High-Z
+    GPIO_INPUT_PULLUP, // Internal pullup
+    GPIO_OUTPUT
+} gpio_data_direction_t;
+
+typedef enum
+{
+    GPIO_PORT_B,
+    GPIO_PORT_C,
+    GPIO_PORT_D,
+} gpio_port_t;
+
 typedef struct {
-    GPIO pin;
+    gpio_port_t port;
+    uint8_t pin;
 } gpio_t;
 
-void gpio_init(gpio_t *self, GPIO pin);
-void gpio_set_data_direction(gpio_t *self, GPIO_DataDirection direction);
+void gpio_init(gpio_t *self, gpio_port_t port, uint8_t pin);
+void gpio_set_data_direction(gpio_t *self, gpio_data_direction_t direction);
 void gpio_set_state(gpio_t *self, bool state);
 void gpio_get_state(gpio_t *self, bool *state);
 

@@ -22,7 +22,7 @@ void st7735_init_device(st7735_t *self, gpio_t *cs, gpio_t *dc, int w, int h)
     self->dc = dc;
     self->background_color = ST7735_COLOR_BLACK;
 
-    gpio_set_data_direction(dc, GPIO_Output);
+    gpio_set_data_direction(dc, GPIO_OUTPUT);
     gpio_set_state(dc, TRUE);
 
     // TFT startup routine

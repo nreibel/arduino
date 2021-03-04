@@ -38,10 +38,10 @@ void App_Init()
 {
     spi_init();
 
-    gpio_init(&gpio_st7735_dc, GPIO_D7);
-    gpio_init(&gpio_max31855_cs, GPIO_D9);
-    gpio_init(&gpio_st7735_cs, GPIO_D10);
-    gpio_init(&gpio_backlight, GPIO_D5);
+    gpio_init(&gpio_st7735_dc, GPIO_PORT_D, 7);
+    gpio_init(&gpio_max31855_cs, GPIO_PORT_B, 1);
+    gpio_init(&gpio_st7735_cs, GPIO_PORT_B, 2);
+    gpio_init(&gpio_backlight, GPIO_PORT_D, 5);
 
     max31855_device_init(&max31855, &gpio_max31855_cs);
 
@@ -68,7 +68,7 @@ void App_Init()
     Serial_Init();
     Serial_Println("READY");
 
-    gpio_set_data_direction(&gpio_backlight, GPIO_Output);
+    gpio_set_data_direction(&gpio_backlight, GPIO_OUTPUT);
     gpio_set_state(&gpio_backlight, TRUE);
 
     Os_SetupTask(Timer_MainTask, 500, Task_MainCyclic, NULL_PTR);
