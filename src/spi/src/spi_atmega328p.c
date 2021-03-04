@@ -1,16 +1,15 @@
 #include <avr/io.h>
+#include "spi.h"
 #include "types.h"
 #include "bits.h"
-#include "spi_cfg.h"
-#include "spi_prv.h"
 
-void Spi_HAL_Enable()
+void spi_hal_enable()
 {
     // Enable peripheral
     RESET_BIT(PRR, PRSPI);
 }
 
-void Spi_HAL_Configure(Spi_Clock clock, Spi_Mode mode)
+void spi_hal_configure(spi_clock_e clock, spi_mode_e mode)
 {
     // Enable SPI, Master Mode
     uint8_t spcr = BIT(MSTR) | BIT(SPE);
@@ -60,17 +59,17 @@ void Spi_HAL_Configure(Spi_Clock clock, Spi_Mode mode)
     SPSR = spsr;
 }
 
-bool Spi_HAL_IsReady(void)
+bool spi_hal_ready(void)
 {
     return IS_SET_BIT(SPSR, SPIF);
 }
 
-void Spi_HAL_WriteByte(const uint8_t write)
+void spi_hal_write_byte(const uint8_t write)
 {
     SPDR = write;
 }
 
-uint8_t Spi_HAL_ReadByte(void)
+uint8_t spi_hal_read_byte(void)
 {
     return SPDR;
 }

@@ -1,3 +1,0 @@
-INCLUDES+= $(SRC_DIR)/st7735_new/api
-
-st7735_new: $(SRC_DIR)/st7735_new/src/st7735.o \

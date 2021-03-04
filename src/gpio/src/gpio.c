@@ -7,286 +7,217 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
-static volatile void* Data_INT0 = NULL_PTR;
-static volatile void* Data_INT1 = NULL_PTR;
+static volatile void* int0_data = NULL_PTR;
+static volatile void* int1_data = NULL_PTR;
 
-static Interrupt Interrupts_INT0 = NULL_PTR;
-static Interrupt Interrupts_INT1 = NULL_PTR;
+static Interrupt int0_cbk = NULL_PTR;
+static Interrupt int1_cbk = NULL_PTR;
 
 ISR(INT0_vect)
 {
-    if (Interrupts_INT0 != NULL_PTR)
+    if (int0_cbk != NULL_PTR)
     {
-        (*Interrupts_INT0)(Data_INT0);
+        (*int0_cbk)(int0_data);
     }
 }
 
 ISR(INT1_vect)
 {
-    if (Interrupts_INT1 != NULL_PTR)
+    if (int1_cbk != NULL_PTR)
     {
-        (*Interrupts_INT1)(Data_INT1);
+        (*int1_cbk)(int1_data);
     }
 }
 
-Std_ReturnType GPIO_EnableInterrupt(GPIO pin, GPIO_Edge edge, Interrupt cbk, volatile void *data)
+// Std_ReturnType GPIO_EnableInterrupt(GPIO pin, GPIO_Edge edge, Interrupt cbk, volatile void *data)
+// {
+//     uint8_t eicra = EICRA;
+//     uint8_t eimsk = EIMSK;
+//
+//     switch(pin)
+//     {
+//         case GPIO_INT0:
+//         {
+//             SET_BIT(eimsk, INT0);
+//
+//             switch(edge)
+//             {
+//                 case GPIO_Edge_Low:
+//                     RESET_BIT(eicra, ISC01);
+//                     RESET_BIT(eicra, ISC00);
+//                     break;
+//                 case GPIO_Edge_Any:
+//                     RESET_BIT(eicra, ISC01);
+//                     SET_BIT(eicra, ISC00);
+//                     break;
+//                 case GPIO_Edge_Falling:
+//                     SET_BIT(eicra, ISC01);
+//                     RESET_BIT(eicra, ISC00);
+//                     break;
+//                 case GPIO_Edge_Rising:
+//                     SET_BIT(eicra, ISC01);
+//                     SET_BIT(eicra, ISC00);
+//                     break;
+//                 default:
+//                     return Status_Not_OK;
+//             }
+//
+//             Data_INT0 = data;
+//             Interrupts_INT0 = cbk;
+//
+//             break;
+//         }
+//         case GPIO_INT1:
+//         {
+//             SET_BIT(eimsk, INT1);
+//
+//             switch(edge)
+//             {
+//                 case GPIO_Edge_Low:
+//                     RESET_BIT(eicra, ISC11);
+//                     RESET_BIT(eicra, ISC10);
+//                     break;
+//                 case GPIO_Edge_Any:
+//                     RESET_BIT(eicra, ISC11);
+//                     SET_BIT(eicra, ISC10);
+//                     break;
+//                 case GPIO_Edge_Falling:
+//                     SET_BIT(eicra, ISC11);
+//                     RESET_BIT(eicra, ISC10);
+//                     break;
+//                 case GPIO_Edge_Rising:
+//                     SET_BIT(eicra, ISC11);
+//                     SET_BIT(eicra, ISC10);
+//                     break;
+//                 default:
+//                     return Status_Not_OK;
+//             }
+//
+//             Data_INT1 = data;
+//             Interrupts_INT1 = cbk;
+//
+//             break;
+//         }
+//         default: return Status_Not_OK;
+//     }
+//
+//     EICRA = eicra;
+//     EIMSK = eimsk;
+//
+//     return Status_OK;
+// }
+
+void gpio_init(gpio_t *self, gpio_port_t port, uint8_t pin)
 {
-    uint8_t eicra = EICRA;
-    uint8_t eimsk = EIMSK;
+    self->port = port;
+    self->pin = pin;
+}
 
-    switch(pin)
+void gpio_set_data_direction(gpio_t *self, gpio_data_direction_t direction)
+{
+    switch(self->port)
     {
-        case GPIO_INT0:
+        case GPIO_PORT_B:
         {
-            SET_BIT(eimsk, INT0);
-
-            switch(edge)
+            switch(direction)
             {
-                case GPIO_Edge_Low:
-                    RESET_BIT(eicra, ISC01);
-                    RESET_BIT(eicra, ISC00);
+                case GPIO_OUTPUT:
+                    SET_BIT(DDRB, self->pin);
                     break;
-                case GPIO_Edge_Any:
-                    RESET_BIT(eicra, ISC01);
-                    SET_BIT(eicra, ISC00);
+                case GPIO_INPUT:
+                    RESET_BIT(DDRB, self->pin);
+                    RESET_BIT(PORTB, self->pin);
                     break;
-                case GPIO_Edge_Falling:
-                    SET_BIT(eicra, ISC01);
-                    RESET_BIT(eicra, ISC00);
+                case GPIO_INPUT_PULLUP:
+                    RESET_BIT(DDRB, self->pin);
+                    SET_BIT(PORTB, self->pin);
                     break;
-                case GPIO_Edge_Rising:
-                    SET_BIT(eicra, ISC01);
-                    SET_BIT(eicra, ISC00);
-                    break;
-                default:
-                    return Status_Not_OK;
             }
-
-            Data_INT0 = data;
-            Interrupts_INT0 = cbk;
-
             break;
         }
-        case GPIO_INT1:
+        case GPIO_PORT_C:
         {
-            SET_BIT(eimsk, INT1);
-
-            switch(edge)
+            switch(direction)
             {
-                case GPIO_Edge_Low:
-                    RESET_BIT(eicra, ISC11);
-                    RESET_BIT(eicra, ISC10);
+                case GPIO_OUTPUT:
+                    SET_BIT(DDRC, self->pin);
                     break;
-                case GPIO_Edge_Any:
-                    RESET_BIT(eicra, ISC11);
-                    SET_BIT(eicra, ISC10);
+                case GPIO_INPUT:
+                    RESET_BIT(DDRC, self->pin);
+                    RESET_BIT(PORTC, self->pin);
                     break;
-                case GPIO_Edge_Falling:
-                    SET_BIT(eicra, ISC11);
-                    RESET_BIT(eicra, ISC10);
+                case GPIO_INPUT_PULLUP:
+                    RESET_BIT(DDRC, self->pin);
+                    SET_BIT(PORTC, self->pin);
                     break;
-                case GPIO_Edge_Rising:
-                    SET_BIT(eicra, ISC11);
-                    SET_BIT(eicra, ISC10);
-                    break;
-                default:
-                    return Status_Not_OK;
             }
-
-            Data_INT1 = data;
-            Interrupts_INT1 = cbk;
-
             break;
         }
-        default: return Status_Not_OK;
-    }
-
-    EICRA = eicra;
-    EIMSK = eimsk;
-
-    return Status_OK;
-}
-
-Std_ReturnType GPIO_SetDataDirection(GPIO pin, GPIO_DataDirection direction)
-{
-    switch(pin)
-    {
-        case GPIO_D0:
-        case GPIO_D1:
-        case GPIO_D2:
-        case GPIO_D3:
-        case GPIO_D4:
-        case GPIO_D5:
-        case GPIO_D6:
-        case GPIO_D7:
+        case GPIO_PORT_D:
+        {
             switch(direction)
             {
-                case GPIO_Output:
-                    SET_BIT(DDRD, pin - GPIO_D0);
+                case GPIO_OUTPUT:
+                    SET_BIT(DDRD, self->pin);
                     break;
-                case GPIO_Input:
-                    RESET_BIT(DDRD, pin - GPIO_D0);
-                    RESET_BIT(PORTD, pin - GPIO_D0);
+                case GPIO_INPUT:
+                    RESET_BIT(DDRD, self->pin);
+                    RESET_BIT(PORTD, self->pin);
                     break;
-                case GPIO_Input_Pullup:
-                    RESET_BIT(DDRD, pin - GPIO_D0);
-                    SET_BIT(PORTD, pin - GPIO_D0);
+                case GPIO_INPUT_PULLUP:
+                    RESET_BIT(DDRD, self->pin);
+                    SET_BIT(PORTD, self->pin);
                     break;
-                default:
-                    return Status_Not_OK;
             }
             break;
-
-        case GPIO_D8:
-        case GPIO_D9:
-        case GPIO_D10:
-        case GPIO_D11:
-        case GPIO_D12:
-        case GPIO_D13:
-            switch(direction)
-            {
-                case GPIO_Output:
-                    SET_BIT(DDRB, pin - GPIO_D8);
-                    break;
-                case GPIO_Input:
-                    RESET_BIT(DDRB, pin - GPIO_D8);
-                    RESET_BIT(PORTB, pin - GPIO_D8);
-                    break;
-                case GPIO_Input_Pullup:
-                    RESET_BIT(DDRB, pin - GPIO_D8);
-                    SET_BIT(PORTB, pin - GPIO_D8);
-                    break;
-                default:
-                    return Status_Not_OK;
-            }
-            break;
-
-        case GPIO_A0:
-        case GPIO_A1:
-        case GPIO_A2:
-        case GPIO_A3:
-        case GPIO_A4:
-        case GPIO_A5:
-            switch(direction)
-            {
-                case GPIO_Output:
-                    SET_BIT(DDRC, pin - GPIO_A0);
-                    break;
-                case GPIO_Input:
-                    RESET_BIT(DDRC, pin - GPIO_A0);
-                    RESET_BIT(PORTC, pin - GPIO_A0);
-                    break;
-                case GPIO_Input_Pullup:
-                    RESET_BIT(DDRC, pin - GPIO_A0);
-                    SET_BIT(PORTC, pin - GPIO_A0);
-                    break;
-                default:
-                    return Status_Not_OK;
-            }
-            break;
-
-        default:
-            return Status_Not_OK;
+        }
     }
-
-    return Status_OK;
 }
 
-Std_ReturnType GPIO_GetState(GPIO pin, GPIO_State *state)
+void gpio_get_state(gpio_t *self, bool *state)
 {
-    switch(pin)
+    switch(self->port)
     {
-        case GPIO_D0:
-        case GPIO_D1:
-        case GPIO_D2:
-        case GPIO_D3:
-        case GPIO_D4:
-        case GPIO_D5:
-        case GPIO_D6:
-        case GPIO_D7:
-            *state = IS_SET_BIT(PIND, pin - GPIO_D0) ? GPIO_High : GPIO_Low;
+        case GPIO_PORT_B:
+            *state = IS_SET_BIT(PINB, self->pin);
             break;
-
-        case GPIO_D8:
-        case GPIO_D9:
-        case GPIO_D10:
-        case GPIO_D11:
-        case GPIO_D12:
-        case GPIO_D13:
-            *state = IS_SET_BIT(PINB, pin - GPIO_D8) ? GPIO_High : GPIO_Low;
+        case GPIO_PORT_C:
+            *state = IS_SET_BIT(PINC, self->pin);
             break;
-
-        case GPIO_A0:
-        case GPIO_A1:
-        case GPIO_A2:
-        case GPIO_A3:
-        case GPIO_A4:
-        case GPIO_A5:
-            *state = IS_SET_BIT(PINC, pin - GPIO_A0) ? GPIO_High : GPIO_Low;
+        case GPIO_PORT_D:
+            *state = IS_SET_BIT(PIND, self->pin);
             break;
-
-        default:
-            return Status_Not_OK;
     }
-
-    return Status_OK;
 }
 
-Std_ReturnType GPIO_SetState(GPIO pin, GPIO_State state)
+void gpio_set_state(gpio_t *self, bool state)
 {
-    switch(pin)
+    switch(self->port)
     {
-        case GPIO_D0:
-        case GPIO_D1:
-        case GPIO_D2:
-        case GPIO_D3:
-        case GPIO_D4:
-        case GPIO_D5:
-        case GPIO_D6:
-        case GPIO_D7:
-            if (state == GPIO_High) SET_BIT(PORTD, pin - GPIO_D0);
-            else RESET_BIT(PORTD, pin - GPIO_D0);
+        case GPIO_PORT_B:
+            state ? SET_BIT(PORTB, self->pin) : RESET_BIT(PORTB, self->pin);
             break;
-
-        case GPIO_D8:
-        case GPIO_D9:
-        case GPIO_D10:
-        case GPIO_D11:
-        case GPIO_D12:
-        case GPIO_D13:
-            if (state == GPIO_High) SET_BIT(PORTB, pin - GPIO_D8);
-            else RESET_BIT(PORTB, pin - GPIO_D8);
+        case GPIO_PORT_C:
+            state ? SET_BIT(PORTC, self->pin) : RESET_BIT(PORTC, self->pin);
             break;
-
-        case GPIO_A0:
-        case GPIO_A1:
-        case GPIO_A2:
-        case GPIO_A3:
-        case GPIO_A4:
-        case GPIO_A5:
-            if (state == GPIO_High) SET_BIT(PORTC, pin - GPIO_A0);
-            else RESET_BIT(PORTC, pin - GPIO_A0);
+        case GPIO_PORT_D:
+            state ? SET_BIT(PORTD, self->pin) : RESET_BIT(PORTD, self->pin);
             break;
-
-        default:
-            return Status_Not_OK;
     }
-
-    return Status_OK;
 }
 
-Std_ReturnType GPIO_RisingEdge(GPIO pin)
-{
-    GPIO_SetState(pin, TRUE);
-    _delay_us(1);
-    GPIO_SetState(pin, FALSE);
-    return Status_OK;
-}
-
-Std_ReturnType GPIO_FallingEdge(GPIO pin)
-{
-    GPIO_SetState(pin, FALSE);
-    _delay_us(1);
-    GPIO_SetState(pin, TRUE);
-    return Status_OK;
-}
+// Std_ReturnType GPIO_RisingEdge(GPIO pin)
+// {
+//     GPIO_SetState(pin, TRUE);
+//     _delay_us(1);
+//     GPIO_SetState(pin, FALSE);
+//     return Status_OK;
+// }
+//
+// Std_ReturnType GPIO_FallingEdge(GPIO pin)
+// {
+//     GPIO_SetState(pin, FALSE);
+//     _delay_us(1);
+//     GPIO_SetState(pin, TRUE);
+//     return Status_OK;
+// }

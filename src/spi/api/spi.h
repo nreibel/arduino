@@ -2,7 +2,7 @@
 #define SRC_SPI_API_SPI_H_
 
 #include "types.h"
-#include "spi_cfg.h"
+#include "gpio.h"
 
 typedef enum {
     SPI_CLOCK_DIV_2,
@@ -12,29 +12,30 @@ typedef enum {
     SPI_CLOCK_DIV_32,
     SPI_CLOCK_DIV_64,
     SPI_CLOCK_DIV_128
-} Spi_Clock;
+} spi_clock_e;
 
 typedef enum {
     SPI_MODE_0,
     SPI_MODE_1,
     SPI_MODE_2,
     SPI_MODE_3
-} Spi_Mode;
+} spi_mode_e;
 
-Std_ReturnType Spi_BackgroundTask();
+typedef struct {
+    gpio_t *cs;
+    spi_clock_e clk;
+    spi_mode_e mode;
+    bool transaction_mode;
+} spi_device_t;
 
-bool Spi_IsReady();
-void Spi_Init();
-void Spi_Configure(Spi_Clock clock, Spi_Mode mode);
-void Spi_EnableSlave(Spi_Slave slave);
-void Spi_DisableSlave(Spi_Slave slave);
-
-Std_ReturnType Spi_WriteByte(uint8_t write, uint8_t *read);
-Std_ReturnType Spi_ReadByte(uint8_t* data);
-
-Std_ReturnType Spi_WriteBytes(void* data, int length);
-Std_ReturnType Spi_ReadBytes(void* data, int length);
-
-Std_ReturnType Spi_WriteAsync(void* data, int length);
+void spi_init();
+void spi_device_init(spi_device_t *self, gpio_t *cs, spi_clock_e clk, spi_mode_e mode);
+void spi_set_transaction_mode_enabled(spi_device_t *self, bool enabled);
+void spi_disable_slave(spi_device_t *self);
+void spi_enable_slave(spi_device_t *self);
+void spi_read_byte(spi_device_t *self, uint8_t *byte);
+void spi_read_bytes(spi_device_t *self, uint8_t *buffer, int len);
+void spi_write_byte(spi_device_t *self, uint8_t byte, uint8_t *read);
+void spi_write_bytes(spi_device_t *self, uint8_t *buffer, int len);
 
 #endif // SRC_SPI_API_SPI_H_

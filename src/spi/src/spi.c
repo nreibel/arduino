@@ -1,183 +1,99 @@
 #include "spi.h"
-#include "spi_prv.h"
-#include "spi_cfg.h"
+#include "spi_hal.h"
 #include "gpio.h"
-#include "bits.h"
 
-static Spi_TransmitState spiState = Spi_Uninitialized;
-static const void * txBuffer = NULL_PTR;
-static int txLength = 0;
-
-void Spi_Init()
+void spi_init()
 {
-    // Enable MOSI, SCK
-    GPIO_SetDataDirection(Spi_MOSI, GPIO_Output);
-    GPIO_SetDataDirection(Spi_SCK, GPIO_Output);
+    gpio_t sck, mosi, miso;
 
-    // Disable slaves (active high)
-    for (uint8_t i = 0 ; i < SPI_NUMBER_OF_SLAVES ; i++)
+    // Enable MISO, MOSI, SCK
+    gpio_init(&mosi, GPIO_PORT_B, 3);
+    gpio_init(&miso, GPIO_PORT_B, 4);
+    gpio_init(&sck, GPIO_PORT_B, 5);
+
+    gpio_set_data_direction(&sck, GPIO_OUTPUT);
+    gpio_set_data_direction(&mosi, GPIO_OUTPUT);
+    gpio_set_data_direction(&miso, GPIO_INPUT);
+
+    spi_hal_enable();
+}
+
+void spi_device_init(spi_device_t *self, gpio_t *cs, spi_clock_e clk, spi_mode_e mode)
+{
+    self->cs = cs;
+    self->clk = clk;
+    self->mode = mode;
+    self->transaction_mode = FALSE;
+
+    gpio_set_data_direction(cs, GPIO_OUTPUT);
+    gpio_set_state(cs, TRUE);
+}
+
+void spi_set_transaction_mode_enabled(spi_device_t *self, bool enabled)
+{
+    self->transaction_mode = enabled;
+}
+
+void spi_enable_slave(spi_device_t *self)
+{
+    spi_hal_configure(self->clk, self->mode);
+    gpio_set_state(self->cs, FALSE);
+}
+
+void spi_disable_slave(spi_device_t *self)
+{
+    gpio_set_state(self->cs, TRUE);
+}
+
+void spi_read_bytes(spi_device_t *self, uint8_t *buffer, int len)
+{
+    if (!self->transaction_mode) spi_enable_slave(self);
+
+    while(len-- > 0)
     {
-        GPIO_SetDataDirection(SlaveSelect_Pins[i], GPIO_Output);
-        GPIO_SetState(SlaveSelect_Pins[i], GPIO_High);
+        spi_hal_write_byte(0);
+        while( !spi_hal_ready() ); // Wait end of transmission
+        uint8_t byte = spi_hal_read_byte();
+        WRITE_PU8(buffer++, byte);
     }
 
-    Spi_HAL_Enable();
-
-    spiState = Spi_Ready;
+    if (!self->transaction_mode) spi_disable_slave(self);
 }
 
-void Spi_Configure(Spi_Clock clock, Spi_Mode mode)
+void spi_read_byte(spi_device_t *self, uint8_t *byte)
 {
-    Spi_HAL_Configure(clock, mode);
+    if (!self->transaction_mode) spi_enable_slave(self);
+
+    spi_hal_write_byte(0);
+    while( !spi_hal_ready() ); // Wait end of transmission
+    *byte = spi_hal_read_byte();
+
+    if (!self->transaction_mode) spi_disable_slave(self);
 }
 
-void Spi_EnableSlave(Spi_Slave slave)
+void spi_write_bytes(spi_device_t *self, uint8_t *buffer, int len)
 {
-    // Enable slave (active low)
-    GPIO_SetState(SlaveSelect_Pins[slave], GPIO_Low);
-}
+    if (!self->transaction_mode) spi_enable_slave(self);
 
-void Spi_DisableSlave(Spi_Slave slave)
-{
-    // Disable slave (active low)
-    GPIO_SetState(SlaveSelect_Pins[slave], GPIO_High);
-}
-
-Std_ReturnType Spi_WriteByte(uint8_t write, uint8_t *read)
-{
-    Std_ReturnType retval = Status_Not_OK;
-
-    if (spiState == Spi_Ready)
+    while(len-- > 0)
     {
-        Spi_HAL_WriteByte(write);
-        while( !Spi_HAL_IsReady() ); // Wait end of transmission
-
-        if (read != NULL_PTR)
-        {
-            *read = Spi_HAL_ReadByte();
-        }
-
-        retval = Status_OK;
+        uint8_t byte = READ_PU8(buffer);
+        spi_hal_write_byte(byte);
+        while( !spi_hal_ready() ); // Wait end of transmission
+        byte = spi_hal_read_byte();
+        WRITE_PU8(buffer++, byte);
     }
 
-    return retval;
+    if (!self->transaction_mode) spi_disable_slave(self);
 }
 
-Std_ReturnType Spi_WriteBytes(void* data, int length)
+void spi_write_byte(spi_device_t *self, uint8_t byte, uint8_t *read)
 {
-    Std_ReturnType retval = Status_Not_OK;
+    if (!self->transaction_mode) spi_enable_slave(self);
 
-    if (spiState == Spi_Ready && data != NULL_PTR)
-    {
-        while(length-- > 0)
-        {
-            uint8_t byte = READ_PU8(data);
-            Spi_HAL_WriteByte(byte);
-            while( !Spi_HAL_IsReady() ); // Wait end of transmission
-            byte = Spi_HAL_ReadByte();
-            WRITE_PU8(data++, byte);
-        }
+    spi_hal_write_byte(byte);
+    while( !spi_hal_ready() ); // Wait end of transmission
+    if (read != NULL_PTR) *read = spi_hal_read_byte();
 
-        retval = Status_OK;
-    }
-
-    return retval;
-}
-
-Std_ReturnType Spi_ReadByte(uint8_t* byte)
-{
-    Std_ReturnType retval = Status_Not_OK;
-
-    if (spiState == Spi_Ready)
-    {
-        Spi_HAL_WriteByte(0);
-        while( !Spi_HAL_IsReady() ); // Wait end of transmission
-        *byte = Spi_HAL_ReadByte();
-
-        retval = Status_OK;
-    }
-
-    return retval;
-}
-
-Std_ReturnType Spi_ReadBytes(void* buffer, int length)
-{
-    Std_ReturnType retval = Status_Not_OK;
-
-    if (spiState == Spi_Ready && buffer != NULL_PTR)
-    {
-        while(length-- > 0)
-        {
-            Spi_HAL_WriteByte(0);
-            while( !Spi_HAL_IsReady() ); // Wait end of transmission
-            uint8_t byte = Spi_HAL_ReadByte();
-            WRITE_PU8(buffer++, byte);
-        }
-
-        retval = Status_OK;
-    }
-
-    return retval;
-}
-
-Std_ReturnType Spi_WriteAsync(void* data, int length)
-{
-    Std_ReturnType ret = Status_Not_OK;
-
-    if (spiState == Spi_Ready && data != NULL_PTR && length > 0)
-    {
-        txBuffer = data;
-        txLength = length;
-        spiState = Spi_Writing;
-        ret = Status_Pending;
-    }
-
-    return ret;
-}
-
-bool Spi_IsReady()
-{
-    bool status = FALSE;
-
-    if (spiState == Spi_Ready)
-    {
-        status = TRUE;
-    }
-
-    return status;
-}
-
-Std_ReturnType Spi_BackgroundTask()
-{
-    Std_ReturnType retval = Status_Pending;
-
-    switch(spiState)
-    {
-    case Spi_Uninitialized:
-        retval = Status_Not_OK;
-        break;
-
-    case Spi_Ready:
-        retval = Status_OK;
-        break;
-
-    case Spi_Writing:
-        Spi_HAL_WriteByte( READ_PU8(txBuffer++) );
-        txLength--;
-        spiState = Spi_Waiting;
-        break;
-
-    case Spi_Waiting:
-        if (Spi_HAL_IsReady())
-        {
-            spiState = txLength > 0 ? Spi_Writing : Spi_Ready;
-        }
-        break;
-
-    default:
-        retval = Status_Not_OK;
-        break;
-    }
-
-    return retval;
+    if (!self->transaction_mode) spi_disable_slave(self);
 }

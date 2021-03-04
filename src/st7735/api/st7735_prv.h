@@ -1,10 +1,6 @@
 #ifndef SRC_ST7735_API_ST7735_PRV_H_
 #define SRC_ST7735_API_ST7735_PRV_H_
 
-#include "st7735.h"
-#include "st7735_cfg.h"
-#include "gpio.h"
-
 //Command definitions
 #define ST7735_NOP     0x00
 #define ST7735_SWRESET 0x01
@@ -28,24 +24,13 @@
 #define ST7735_COLMOD_16_BPP 5
 #define ST7735_COLMOD_18_BPP 6
 
-extern GPIO ST7735_Pin_DC; // Data/command pin
-
-static void ST7735_Data(uint8_t data);
-static void ST7735_Color(st7735_color_t color);
-static void ST7735_Command(uint8_t command);
-static void ST7735_SetDrawWindow(int x1, int y1, int x2, int y2);
-
 // Renderers
 static st7735_color_t ST7735_RenderXbm(int x, int y, int w, int h, void *data);
 
 typedef struct {
-    // Bits making up the image
     st7735_xbm_t *bits;
-
-    // Foreground color
-    st7735_color_t color;
-
-    // Speed up rendering by pre-calculating the number of bytes in a line
+    st7735_color_t fg_color;
+    st7735_color_t bg_color;
     const int bw;
 } XbmRendererData;
 

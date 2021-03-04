@@ -1,7 +1,5 @@
-INCLUDES+=\
-	$(SRC_DIR)/spi/api \
-	$(CFG_DIR)/spi \
+INCLUDES += $(SRC_DIR)/spi/api
 
-spi:    $(SRC_DIR)/spi/src/spi.o \
+spi: \
+	$(SRC_DIR)/spi/src/spi.o \
 	$(SRC_DIR)/spi/src/spi_$(ARCH).o \
-	$(CFG_DIR)/spi/spi_cfg.o \

@@ -1,3 +1,0 @@
-INCLUDES+= $(SRC_DIR)/gpio_new/api
-
-gpio_new: $(SRC_DIR)/gpio_new/src/gpio.o
