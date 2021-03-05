@@ -6,6 +6,8 @@
 #include "bits.h"
 #include "max31855.h"
 #include "st7735.h"
+#include "tc74.h"
+#include "i2c_master.h"
 #include "cat.h"
 
 char buffer[64];
@@ -13,6 +15,7 @@ char buffer[64];
 gpio_t gpio_backlight, gpio_st7735_cs, gpio_st7735_dc, gpio_max31855_cs;
 max31855_t max31855;
 st7735_t st7735;
+tc74_t tc74;
 
 struct render_circle_data {
     st7735_color_t foreground;
@@ -36,12 +39,15 @@ st7735_xbm_t *xbm = xbm_cat_1;
 // App entry point
 void App_Init()
 {
+    I2C_Master_Init();
     spi_init();
 
     gpio_init(&gpio_st7735_dc, GPIO_PORT_D, 7);
     gpio_init(&gpio_max31855_cs, GPIO_PORT_B, 1);
     gpio_init(&gpio_st7735_cs, GPIO_PORT_B, 2);
     gpio_init(&gpio_backlight, GPIO_PORT_D, 5);
+
+    tc74_init(&tc74, 0x90);
 
     max31855_device_init(&max31855, &gpio_max31855_cs);
 
@@ -79,13 +85,17 @@ Std_ReturnType Task_MainCyclic(void* data)
 {
     UNUSED(data);
 
-    double temperature_int = 0.0;
-    static double temperature_int_avg = 0;
-
-    max31855_get_internal_temperature(&max31855, &temperature_int);
-    sprintf(buffer, "Internal temperature is %f", temperature_int);
+    int temperature_tc74 = 0;
+    tc74_read_temperature(&tc74, &temperature_tc74);
+    sprintf(buffer, "TC74 Temperature is %d", temperature_tc74);
     Serial_Println(buffer);
 
+    double temperature_int = 0.0;
+    max31855_get_internal_temperature(&max31855, &temperature_int);
+    sprintf(buffer, "MAX31855 Internal Temperature is %f", temperature_int);
+    Serial_Println(buffer);
+
+    static double temperature_int_avg = 0;
     temperature_int_avg = (temperature_int + 3*temperature_int_avg)/4;
     sprintf(buffer, "%6.02f'C", temperature_int_avg);
     st7735_draw_string(&st7735, 30, 50, buffer, ST7735_COLOR_FUSCHIA, 1);
@@ -93,12 +103,12 @@ Std_ReturnType Task_MainCyclic(void* data)
     double temperature_ext = 0.0;
     if ( max31855_get_temperature(&max31855, &temperature_ext) )
     {
-        sprintf(buffer, "Temperature is %f", temperature_ext);
+        sprintf(buffer, "MAX31855 External Temperature is %f", temperature_ext);
         Serial_Println(buffer);
     }
     else
     {
-        Serial_Println("Temperature probe error");
+        Serial_Println("MAX31855 Temperature probe error");
     }
 
     xbm = (xbm == xbm_cat_1) ? xbm_cat_2 : xbm_cat_1;
