@@ -90,17 +90,17 @@ Std_ReturnType Task_MainCyclic(void* data)
     sprintf(buffer, "TC74 Temperature is %d", temperature_tc74);
     Serial_Println(buffer);
 
-    double temperature_int = 0.0;
+    float temperature_int = 0.0;
     max31855_get_internal_temperature(&max31855, &temperature_int);
     sprintf(buffer, "MAX31855 Internal Temperature is %f", temperature_int);
     Serial_Println(buffer);
 
-    static double temperature_int_avg = 0;
+    static float temperature_int_avg = 0;
     temperature_int_avg = (temperature_int + 3*temperature_int_avg)/4;
     sprintf(buffer, "%6.02f'C", temperature_int_avg);
     st7735_draw_string(&st7735, 30, 50, buffer, ST7735_COLOR_FUSCHIA, 1);
 
-    double temperature_ext = 0.0;
+    float temperature_ext = 0.0;
     if ( max31855_get_temperature(&max31855, &temperature_ext) )
     {
         sprintf(buffer, "MAX31855 External Temperature is %f", temperature_ext);
