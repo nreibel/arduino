@@ -1,5 +1,0 @@
-INCLUDES+=\
-	$(SRC_DIR)/lcd/api \
-	$(CFG_DIR)/lcd \
-
-lcd:    $(SRC_DIR)/lcd/src/lcd.o \

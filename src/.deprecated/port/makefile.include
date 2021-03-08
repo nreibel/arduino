@@ -1,5 +1,0 @@
-INCLUDES+=\
-	$(SRC_DIR)/port/api \
-	$(CFG_DIR)/port \
-
-port:   $(SRC_DIR)/port/src/port.o \
