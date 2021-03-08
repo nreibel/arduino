@@ -6,6 +6,8 @@
 #include "bits.h"
 #include "max31855.h"
 #include "st7735.h"
+#include "tc74.h"
+#include "i2c_master.h"
 #include "cat.h"
 
 char buffer[64];
@@ -40,12 +42,15 @@ void serial_rx_callback(const char *buffer, int length)
 // App entry point
 void App_Init()
 {
+    I2C_Master_Init();
     spi_init();
 
     gpio_init(&gpio_st7735_dc, GPIO_PORT_D, 7);
     gpio_init(&gpio_max31855_cs, GPIO_PORT_B, 1);
     gpio_init(&gpio_st7735_cs, GPIO_PORT_B, 2);
     gpio_init(&gpio_backlight, GPIO_PORT_D, 5);
+
+    tc74_init(&tc74, 0x90);
 
     max31855_device_init(&max31855, &gpio_max31855_cs);
 
@@ -86,15 +91,17 @@ Std_ReturnType Task_MainCyclic(void* data)
     double temperature_int = 0.0;
     static double temperature_int_avg = 0;
 
+    float temperature_int = 0.0;
     max31855_get_internal_temperature(&max31855, &temperature_int);
     sprintf(buffer, "Internal temperature is %f", temperature_int);
     serial_println(&serial, buffer);
 
+    static float temperature_int_avg = 0;
     temperature_int_avg = (temperature_int + 3*temperature_int_avg)/4;
     sprintf(buffer, "%6.02f'C", temperature_int_avg);
     st7735_draw_string(&st7735, 30, 50, buffer, ST7735_COLOR_FUSCHIA, 1);
 
-    double temperature_ext = 0.0;
+    float temperature_ext = 0.0;
     if ( max31855_get_temperature(&max31855, &temperature_ext) )
     {
         sprintf(buffer, "Temperature is %f", temperature_ext);

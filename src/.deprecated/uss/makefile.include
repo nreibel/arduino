@@ -1,6 +1,0 @@
-INCLUDES+=\
-	$(SRC_DIR)/uss/api \
-	$(CFG_DIR)/uss \
-
-uss:    $(SRC_DIR)/uss/src/uss.o \
-	$(CFG_DIR)/uss/uss_cfg.o \

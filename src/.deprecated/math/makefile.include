@@ -1,5 +1,0 @@
-INCLUDES+=\
-	$(SRC_DIR)/math/api \
-	$(CFG_DIR)/math \
-
-math:   $(SRC_DIR)/math/src/math.o \

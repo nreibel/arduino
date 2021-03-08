@@ -1,6 +1,0 @@
-INCLUDES+=\
-	$(SRC_DIR)/keys/api \
-	$(CFG_DIR)/keys \
-
-keys:   $(SRC_DIR)/keys/src/keys.o \
-	$(CFG_DIR)/keys/keys_cfg.o \

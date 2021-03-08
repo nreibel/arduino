@@ -1,6 +1,0 @@
-INCLUDES+=\
-	$(SRC_DIR)/st7735/api \
-	$(CFG_DIR)/st7735 \
-
-st7735: $(SRC_DIR)/st7735/src/st7735.o \
-	$(CFG_DIR)/st7735/st7735_cfg.o \

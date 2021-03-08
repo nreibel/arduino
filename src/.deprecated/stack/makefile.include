@@ -1,5 +1,0 @@
-INCLUDES+=\
-	$(SRC_DIR)/stack/api \
-	$(CFG_DIR)/stack \
-
-stack:  $(SRC_DIR)/stack/src/stack.o \

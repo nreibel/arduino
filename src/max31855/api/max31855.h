@@ -9,7 +9,7 @@ typedef struct {
 } max31855_t;
 
 void max31855_device_init(max31855_t *self, gpio_t *cs);
-void max31855_get_internal_temperature(max31855_t *self, double *temperature);
-bool max31855_get_temperature(max31855_t *self, double *temperature);
+void max31855_get_internal_temperature(max31855_t *self, float *temperature);
+bool max31855_get_temperature(max31855_t *self, float *temperature);
 
 #endif // SRC_MAX31855_API_MAX31855_H_

@@ -8,14 +8,14 @@ void max31855_device_init(max31855_t *self, gpio_t *cs)
     spi_device_init(&self->spi_device, cs, SPI_CLOCK_DIV_2, SPI_MODE_0);
 }
 
-bool max31855_get_temperature(max31855_t *self, double *temperature)
+bool max31855_get_temperature(max31855_t *self, float *temperature)
 {
     uint8_t bytes[2] = {0};
     spi_read_bytes(&self->spi_device, bytes, 2);
     if IS_SET_BIT(bytes[1], 0) return FALSE;
 
-    double ipart = (bytes[0] << 4) + (bytes[1] >> 4);
-    double fpart = ((bytes[1] >> 2) & 0x3) / 4.0;
+    float ipart = (bytes[0] << 4) + (bytes[1] >> 4);
+    float fpart = ((bytes[1] >> 2) & 0x3) / 4.0;
     *temperature = ipart + fpart;
 
     // Two's complement
@@ -24,13 +24,13 @@ bool max31855_get_temperature(max31855_t *self, double *temperature)
     return TRUE;
 }
 
-void max31855_get_internal_temperature(max31855_t *self, double *temperature)
+void max31855_get_internal_temperature(max31855_t *self, float *temperature)
 {
     uint8_t bytes[4] = {0};
     spi_read_bytes(&self->spi_device, bytes, 4);
 
-    double ipart = bytes[2];
-    double fpart = HIGH_NIBBLE(bytes[3]) / 16.0;
+    float ipart = bytes[2];
+    float fpart = HIGH_NIBBLE(bytes[3]) / 16.0;
     *temperature = ipart + fpart;
 
     // Two's complement

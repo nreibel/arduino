@@ -1,5 +1,0 @@
-INCLUDES+=\
-	$(SRC_DIR)/gpio/api \
-	$(CFG_DIR)/gpio \
-
-gpio:   $(SRC_DIR)/gpio/src/gpio.o \
