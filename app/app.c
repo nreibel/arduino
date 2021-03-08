@@ -15,6 +15,7 @@ char buffer[64];
 gpio_t gpio_backlight, gpio_st7735_cs, gpio_st7735_dc, gpio_max31855_cs;
 max31855_t max31855;
 st7735_t st7735;
+tc74_t tc74;
 serial_t serial;
 
 struct render_circle_data {
@@ -88,20 +89,18 @@ Std_ReturnType Task_MainCyclic(void* data)
 
     static st7735_xbm_t *xbm = xbm_cat_1;
 
-    double temperature_int = 0.0;
-    static double temperature_int_avg = 0;
-
     float temperature_int = 0.0;
+    float temperature_ext = 0.0;
+    static float temperature_int_avg = 0;
+
     max31855_get_internal_temperature(&max31855, &temperature_int);
     sprintf(buffer, "Internal temperature is %f", temperature_int);
     serial_println(&serial, buffer);
 
-    static float temperature_int_avg = 0;
     temperature_int_avg = (temperature_int + 3*temperature_int_avg)/4;
     sprintf(buffer, "%6.02f'C", temperature_int_avg);
     st7735_draw_string(&st7735, 30, 50, buffer, ST7735_COLOR_FUSCHIA, 1);
 
-    float temperature_ext = 0.0;
     if ( max31855_get_temperature(&max31855, &temperature_ext) )
     {
         sprintf(buffer, "Temperature is %f", temperature_ext);
