@@ -1,22 +1,13 @@
-#ifndef SRC_OS_API_OS_PRV_H_
-#define SRC_OS_API_OS_PRV_H_
+#ifndef __OS_PRV_H__
+#define __OS_PRV_H__
 
 #include "types.h"
-#include "os_cfg.h"
-
-/* Holds the status of each timer channel */
-typedef struct {
-    volatile time_t value;
-    time_t   interval;
-    Callback callback;
-    void*    param;
-} TimerConfig;
-
-extern BackgroundTask BackgroundTasksList[NUMBER_OF_BACKGROUND_TASKS];
-extern volatile time_t counters[NUMBER_OF_TIMERS];
 
 void Os_Init();
 void Os_Sleep();
+void Os_EnableInterrupts();
+void Os_DisableInterrupts();
+void Os_TimerCallback();
 Std_ReturnType Os_ExecuteBackgroundTasks();
 
-#endif /* SRC_OS_API_OS_PRV_H_ */
+#endif /* __OS_PRV_H__ */

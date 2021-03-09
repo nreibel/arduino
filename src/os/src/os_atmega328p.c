@@ -1,4 +1,3 @@
-#include "os.h"
 #include "os_cfg.h"
 #include "os_prv.h"
 #include "bits.h"
@@ -7,16 +6,9 @@
 #include <avr/sleep.h>
 #include <avr/wdt.h>
 
-volatile time_t osTimer = {0};
-TimerConfig timerCfg[NUMBER_OF_TIMERS] = {0};
-
 ISR(TIMER2_COMPA_vect)
 {
-    osTimer += OS_TIMER_GRANULARITY;
-    for ( int i = 0 ; i < NUMBER_OF_TIMERS ; i++ )
-    {
-        timerCfg[i].value += OS_TIMER_GRANULARITY;
-    }
+    Os_TimerCallback();
 }
 
 void Os_DisableInterrupts()
