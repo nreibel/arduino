@@ -6,17 +6,11 @@
 #include "bits.h"
 #include "max31855.h"
 #include "st7735.h"
-#include "tc74.h"
-#include "i2c_master.h"
 #include "cat.h"
 
-char buffer[64];
-
-gpio_t gpio_backlight, gpio_st7735_cs, gpio_st7735_dc, gpio_max31855_cs;
+gpio_t st7735_bl, st7735_cs, st7735_dc, max31855_cs;
 max31855_t max31855;
 st7735_t st7735;
-tc74_t tc74;
-serial_t serial;
 
 struct render_circle_data {
     st7735_color_t foreground;
@@ -35,27 +29,25 @@ st7735_color_t render_circle(int x, int y, int w, int h, void *data)
     else return param->background;
 }
 
-void serial_rx_callback(const char *buffer, int length)
+void serial_received(serial_bus_t bus, const char *buffer, int length)
 {
-    st7735_draw_chars(&st7735, 10, 140, buffer, length, ST7735_COLOR_GREEN, 1);
+    UNUSED(bus);
+    st7735_draw_chars(&st7735, 2, 140, buffer, length, ST7735_COLOR_GREEN, 1);
 }
 
 // App entry point
 void App_Init()
 {
-    I2C_Master_Init();
     spi_init();
 
-    gpio_init(&gpio_st7735_dc, GPIO_PORT_D, 7);
-    gpio_init(&gpio_max31855_cs, GPIO_PORT_B, 1);
-    gpio_init(&gpio_st7735_cs, GPIO_PORT_B, 2);
-    gpio_init(&gpio_backlight, GPIO_PORT_D, 5);
+    gpio_init(&max31855_cs, GPIO_PORT_D, 3);
+    gpio_init(&st7735_cs, GPIO_PORT_D, 4);
+    gpio_init(&st7735_dc, GPIO_PORT_D, 5);
+    gpio_init(&st7735_bl, GPIO_PORT_D, 6);
 
-    tc74_init(&tc74, 0x90);
+    max31855_device_init(&max31855, &max31855_cs);
 
-    max31855_device_init(&max31855, &gpio_max31855_cs);
-
-    st7735_init_device(&st7735, &gpio_st7735_cs, &gpio_st7735_dc, 128, 160);
+    st7735_init_device(&st7735, &st7735_cs, &st7735_dc, 128, 160);
     st7735_set_offset(&st7735, 2, 1);
     st7735_set_background_color(&st7735, ST7735_COLOR_BLACK);
     st7735_set_orientation(&st7735, ST7735_ORIENTATION_PORTRAIT_INV);
@@ -73,11 +65,12 @@ void App_Init()
     struct render_circle_data data = {ST7735_COLOR_YELLOW, ST7735_COLOR_FUSCHIA};
     st7735_render(&st7735, 10, 70, 32, 32, render_circle, &data, 1);
 
-    serial_init(&serial, 19200);
-    serial_println(&serial, "READY");
+    gpio_set_data_direction(&st7735_bl, GPIO_OUTPUT);
+    gpio_set_state(&st7735_bl, TRUE);
 
-    gpio_set_data_direction(&gpio_backlight, GPIO_OUTPUT);
-    gpio_set_state(&gpio_backlight, TRUE);
+    serial_bus_init(SERIAL_BUS_0, 19200);
+    serial_set_rx_callback(SERIAL_BUS_0, serial_received);
+    serial_println(SERIAL_BUS_0, "READY");
 
     Os_SetupTask(Timer_MainTask, 500, Task_MainCyclic, NULL_PTR);
 }
@@ -87,32 +80,30 @@ Std_ReturnType Task_MainCyclic(void* data)
 {
     UNUSED(data);
 
-    static st7735_xbm_t *xbm = xbm_cat_1;
+    static char str_buffer[16];
+    static bool first = TRUE;
+    static float temperature_avg = 0.0;
+    static st7735_xbm_t *picture = xbm_cat_1;
 
-    float temperature_int = 0.0;
-    float temperature_ext = 0.0;
-    static float temperature_int_avg = 0;
+    float temperature = 0.0;
+    max31855_get_internal_temperature(&max31855, &temperature);
 
-    max31855_get_internal_temperature(&max31855, &temperature_int);
-    sprintf(buffer, "Internal temperature is %f", temperature_int);
-    serial_println(&serial, buffer);
-
-    temperature_int_avg = (temperature_int + 3*temperature_int_avg)/4;
-    sprintf(buffer, "%6.02f'C", temperature_int_avg);
-    st7735_draw_string(&st7735, 30, 50, buffer, ST7735_COLOR_FUSCHIA, 1);
-
-    if ( max31855_get_temperature(&max31855, &temperature_ext) )
+    if (first)
     {
-        sprintf(buffer, "Temperature is %f", temperature_ext);
-        serial_println(&serial, buffer);
+        temperature_avg = temperature;
+        first = FALSE;
     }
     else
     {
-        serial_println(&serial, "Temperature probe error");
+        temperature_avg = (temperature + 3*temperature_avg) / 4;
     }
 
-    xbm = (xbm == xbm_cat_1) ? xbm_cat_2 : xbm_cat_1;
-    st7735_draw_xbm(&st7735, xbm, 50, 60, XBM_CAT_WIDTH, XBM_CAT_HEIGHT, ST7735_COLOR_CYAN, 2);
+    sprintf(str_buffer, "It is %.01f'C", temperature_avg);
+    serial_println(SERIAL_BUS_0, str_buffer);
+    st7735_draw_string(&st7735, 2, 130, str_buffer, ST7735_COLOR_WHITE, 1);
+
+    picture = (picture == xbm_cat_1) ? xbm_cat_2 : xbm_cat_1;
+    st7735_draw_xbm(&st7735, picture, 50, 60, XBM_CAT_WIDTH, XBM_CAT_HEIGHT, ST7735_COLOR_CYAN, 2);
 
     return Status_OK;
 }

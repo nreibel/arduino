@@ -1,17 +1,13 @@
-#ifndef SRC_SERIAL_CFG_SERIAL_CFG_H_
-#define SRC_SERIAL_CFG_SERIAL_CFG_H_
+#ifndef __SERIAL_CFG_H__
+#define __SERIAL_CFG_H__
 
-#include "types.h"
+#define SERIAL_ASYNX_RX ON
+#define SERIAL_ASYNX_TX OFF
 
-#define SERIAL_ASYNC_RX ON
-#define SERIAL_ASYNC_TX OFF
+// Use Enter key as line separator, good for user input
+#define SERIAL_LINE_TERMINATOR 0x0D
 
-#if SERIAL_ASYNC_RX == ON
-    // Use Enter key as line separator, good for user input
-    #define SERIAL_LINE_TERMINATOR       0x0D
+// Should be big enough to accomodate the biggest message to be received
+#define SERIAL_RECEIVE_BUFFER_LENGTH 32
 
-    // Should be big enough to accomodate the biggest message to be received
-    #define SERIAL_RECEIVE_BUFFER_LENGTH 16
-#endif
-
-#endif /* SRC_SERIAL_CFG_SERIAL_CFG_H_ */
+#endif /* __SERIAL_CFG_H__ */

@@ -1,5 +1,5 @@
 #include "serial.h"
-// #include "serial_cfg.h"
+#include "serial_cfg.h"
 #include "serial_prv.h"
 #include "os_cfg.h"
 #include "types.h"
@@ -7,87 +7,101 @@
 
 #include <avr/pgmspace.h>
 
-void serial_init(serial_t *self, int baudrate)
+void serial_bus_init(serial_bus_t bus, int baudrate)
 {
-    self->baudrate = baudrate;
-
-    serial_hal_init(baudrate);
-
-    #if SERIAL_ASYNC_RX == ON
-    serial_hal_enable_rx_interrupts();
-    #endif
-
-    #if SERIAL_ASYNC_TX == ON
-    serial_hal_enable_tx_interrupts();
-    #endif
+    serial_hal_init(bus, baudrate);
 }
 
-void serial_write_byte(serial_t *self, uint8_t chr)
+#if SERIAL_ASYNX_RX != OFF
+void serial_set_rx_callback(serial_bus_t bus, serial_rx_callback cbk)
 {
-    UNUSED(self);
+    serial_hal_set_rx_callback(bus, cbk);
+}
+#endif
 
-    serial_hal_write_byte(chr);
-    while( !serial_hal_tx_ready() );
+#if SERIAL_ASYNX_TX != OFF
+bool serial_tx_ready(serial_bus_t bus)
+{
+    return serial_hal_tx_buffer_ready(bus);
+}
+void serial_write_bytes_async(serial_bus_t bus, void *buffer, int length)
+{
+    serial_hal_set_tx_buffer(bus, buffer, length);
+}
+#endif
+
+int serial_write_byte(serial_bus_t bus, uint8_t chr)
+{
+    serial_hal_write_byte(bus, chr);
+    while( !serial_hal_tx_ready(bus) );
+    return 1;
 }
 
-void serial_write_bytes(serial_t *self, void *buffer, int length)
+int serial_write_bytes(serial_bus_t bus, void *buffer, int length)
 {
-    while ( length-- > 0 )
+    int written = 0;
+
+    for (int i = 0 ; i < length ; i++)
     {
-        uint8_t b = READ_PU8(buffer++);
-        serial_write_byte(self, b);
-    }
-}
-
-void serial_new_line(serial_t *self)
-{
-    return serial_write_bytes(self, "\r\n", 2);
-}
-
-void serial_println(serial_t *self, const void* string)
-{
-    serial_print(self, string);
-    serial_new_line(self);
-}
-
-void serial_print_P(serial_t *self, const __flash void* string)
-{
-    while (TRUE)
-    {
-        uint8_t b = pgm_read_byte(string++);
-        if (b != 0) serial_write_byte(self, b);
-        else break;
-    }
-}
-
-void serial_println_P(serial_t *self, const __flash void* string)
-{
-    serial_print_P(self, string);
-    serial_new_line(self);
-}
-
-void serial_print(serial_t *self, const void* string)
-{
-    while (TRUE)
-    {
-        uint8_t b = READ_PU8(string++);
-        if (b != 0) serial_write_byte(self, b);
-        else break;
-    }
-}
-
-#if SERIAL_ASYNC_RX == OFF
-int serial_read(void *buffer, int buffer_len)
-{
-    int rcvd_len = 0;
-
-    // Stop when buffer full
-    while ( rcvd_len < buffer_len )
-    {
-        while( !serial_hal_RxIsReady() ); // Wait for RX complete
-        UINT8_PTR(buffer)[rcvd_len++] = serial_hal_ReadByte();
+        written += serial_write_byte(bus, READ_PU8(buffer+i) );
     }
 
-    return rcvd_len;
+    return written;
 }
-#endif // SERIAL_ASYNC_RX == OFF
+
+int serial_new_line(serial_bus_t bus)
+{
+    return serial_write_bytes(bus, "\r\n", 2);
+}
+
+int serial_print(serial_bus_t bus, const void* string)
+{
+    int written = 0;
+
+    for(uint8_t *b = UINT8_PTR(string) ; *b != 0 ; b++)
+    {
+        written += serial_write_byte(bus, *b);
+    }
+
+    return written;
+}
+
+int serial_println(serial_bus_t bus, const void* string)
+{
+    return serial_print(bus, string) + serial_new_line(bus);
+}
+
+// void serial_print_P(serial_bus_t bus, const __flash void* string)
+// {
+//     while (TRUE)
+//     {
+//         uint8_t b = pgm_read_byte(string++);
+//         if (b != 0) serial_write_byte(bus, b);
+//         else break;
+//     }
+// }
+//
+// void serial_println_P(serial_bus_t bus, const __flash void* string)
+// {
+//     serial_print_P(bus, string);
+//     serial_new_line(bus);
+// }
+
+int serial_read_byte(serial_bus_t bus, uint8_t *byte)
+{
+    while( !serial_hal_rx_ready(bus) );
+    *byte = serial_hal_read_byte(bus);
+    return 1;
+}
+
+int serial_read_bytes(serial_bus_t bus, void *buffer, int length)
+{
+    int received = 0;
+
+    for(int i = 0 ; i < length; i++)
+    {
+        received += serial_read_byte(bus, UINT8_PTR(buffer+i) );
+    }
+
+    return received;
+}

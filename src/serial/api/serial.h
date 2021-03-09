@@ -4,29 +4,35 @@
 #include "types.h"
 #include "serial_cfg.h"
 
-typedef struct {
-    int baudrate;
-} serial_t;
+typedef enum {
+    SERIAL_BUS_0,
+    NUMBER_OF_SERIAL_BUSES
+} serial_bus_t;
 
-void serial_init(serial_t *self, int baudrate);
-void serial_write_byte(serial_t *self, uint8_t chr);
-void serial_write_bytes(serial_t *self, void *buffer, int length);
-void serial_print(serial_t *self, const void* string);
-void serial_println(serial_t *self, const void* string);
-void serial_new_line(serial_t *self);
-
-// Std_ReturnType Serial_Print_P(const __flash void* string);
-// Std_ReturnType Serial_Println_P(const __flash void* string);
-
-#if SERIAL_ASYNC_RX != ON
-int serial_read(void *buffer, int buffer_len);
-#else
-extern void serial_rx_callback(const char *buffer, int length);
+#if SERIAL_ASYNX_RX != OFF
+typedef void (*serial_rx_callback)(serial_bus_t bus, const char *buffer, int length);
+void serial_set_rx_callback(serial_bus_t bus, serial_rx_callback callback);
 #endif
 
-#if SERIAL_ASYNC_TX == ON
-void serial_tx_ready(bool *ready);
-void serial_set_tx_buffer(void * buffer, int length);
+#if SERIAL_ASYNX_TX != OFF
+bool serial_tx_ready(serial_bus_t bus);
+void serial_write_bytes_async(serial_bus_t bus, void *buffer, int len);
 #endif
+
+void serial_bus_init(serial_bus_t bus, int baudrate);
+
+int serial_read_byte(serial_bus_t bus, uint8_t *chr);
+int serial_read_bytes(serial_bus_t bus, void *buffer, int length);
+
+int serial_write_byte(serial_bus_t bus, uint8_t chr);
+int serial_write_bytes(serial_bus_t bus, void *buffer, int length);
+
+int serial_print(serial_bus_t bus, const void* string);
+int serial_println(serial_bus_t bus, const void* string);
+int serial_new_line(serial_bus_t bus);
+
+// TODO
+// int serial_print_P(const __flash void* string);
+// int serial_println_P(const __flash void* string);
 
 #endif /* SRC_SERIAL_API_SERIAL_H_ */
