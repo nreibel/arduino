@@ -72,18 +72,19 @@ void App_Init()
     serial_set_rx_callback(SERIAL_BUS_0, serial_received);
     serial_println(SERIAL_BUS_0, "READY");
 
-    Os_SetupTask(Timer_MainTask, 500, Task_MainCyclic, NULL_PTR);
+    Os_SetupTask(Timer_DrawCat, 1000, Task_DrawCat, NULL_PTR);
+    Os_SetupTask(Timer_ReadTemp, 200, Task_ReadTemperature, NULL_PTR);
 }
 
 // Main task
-Std_ReturnType Task_MainCyclic(void* data)
+
+Std_ReturnType Task_ReadTemperature(void* data)
 {
     UNUSED(data);
 
-    static char str_buffer[16];
     static bool first = TRUE;
+    static char str_buffer[16];
     static float temperature_avg = 0.0;
-    static st7735_xbm_t *picture = xbm_cat_1;
 
     float temperature = 0.0;
     max31855_get_internal_temperature(&max31855, &temperature);
@@ -95,13 +96,20 @@ Std_ReturnType Task_MainCyclic(void* data)
     }
     else
     {
-        temperature_avg = (temperature + 3*temperature_avg) / 4;
+        temperature_avg = (temperature + 4*temperature_avg) / 5;
     }
 
     sprintf(str_buffer, "It is %.01f'C", temperature_avg);
-    serial_println(SERIAL_BUS_0, str_buffer);
     st7735_draw_string(&st7735, 2, 130, str_buffer, ST7735_COLOR_WHITE, 1);
 
+    return Status_OK;
+}
+
+Std_ReturnType Task_DrawCat(void* data)
+{
+    UNUSED(data);
+
+    static st7735_xbm_t *picture = xbm_cat_1;
     picture = (picture == xbm_cat_1) ? xbm_cat_2 : xbm_cat_1;
     st7735_draw_xbm(&st7735, picture, 50, 60, XBM_CAT_WIDTH, XBM_CAT_HEIGHT, ST7735_COLOR_CYAN, 2);
 

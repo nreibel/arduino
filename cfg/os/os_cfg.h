@@ -1,6 +1,8 @@
 #ifndef SRC_OS_CFG_OS_CFG_H_
 #define SRC_OS_CFG_OS_CFG_H_
 
+#include "types.h"
+
 // uint8_t has a max value of ~0,25s
 // uint16_t has a max value of ~65s
 // uint32_t has a max value of ~49,7 days
@@ -17,7 +19,8 @@ typedef uint16_t time_t;
 #define NUMBER_OF_BACKGROUND_TASKS 0
 
 typedef enum {
-    Timer_MainTask,
+    Timer_DrawCat,
+    Timer_ReadTemp,
     NUMBER_OF_TIMERS
 } Timer;
 
