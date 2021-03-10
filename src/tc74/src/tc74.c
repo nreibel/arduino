@@ -9,7 +9,7 @@ void tc74_init(tc74_t *self, uint8_t addr)
     self->i2c_addr = addr;
 }
 
-void tc74_set_standby(tc74_t *self, bool stdby)
+int tc74_set_standby(tc74_t *self, bool stdby)
 {
     uint8_t regval = 0;
 
@@ -18,13 +18,17 @@ void tc74_set_standby(tc74_t *self, bool stdby)
     if (stdby) SET_BIT(regval, 7);
     else RESET_BIT(regval, 7);
 
-    I2C_Master_WriteByteSync(self->i2c_addr, TC74_REG_RWCR, regval);
+    return I2C_Master_WriteByteSync(self->i2c_addr, TC74_REG_RWCR, regval);
 }
 
-void tc74_read_temperature(tc74_t *self, int *temp)
+int tc74_read_temperature(tc74_t *self, int *temp)
 {
-    uint8_t regval = 0;
-    I2C_Master_ReadByteSync(self->i2c_addr, TC74_REG_RTR, &regval);
-    *temp = regval;
-    if (regval >= 0x80) *temp -= 256; // two's complement
+    uint8_t reg = 0;
+    int retval = I2C_Master_ReadByteSync(self->i2c_addr, TC74_REG_RTR, &reg);
+    if (retval == 1)
+    {
+        *temp = reg;
+        if (reg >= 0x80) *temp -= 256; // two's complement
+    }
+    return retval;
 }

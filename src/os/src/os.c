@@ -57,7 +57,7 @@ void Os_CyclicTasks()
         if ( timerCfg[i].interval > 0 && timerCfg[i].callback != NULL_PTR && timerCfg[i].value >= timerCfg[i].interval )
         {
             timerCfg[i].callback( timerCfg[i].param );
-            timerCfg[i].value -= timerCfg[i].interval;
+            timerCfg[i].value %= timerCfg[i].interval;
         }
     }
 }
