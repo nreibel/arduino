@@ -22,9 +22,6 @@ void st7735_init_device(st7735_t *self, gpio_t *cs, gpio_t *dc, int w, int h)
     self->dc = dc;
     self->background_color = ST7735_COLOR_BLACK;
 
-    gpio_set_data_direction(dc, GPIO_OUTPUT);
-    gpio_set_state(dc, TRUE);
-
     // TFT startup routine
     st7735_command(self, ST7735_SWRESET);
     Os_Wait(120);
@@ -50,9 +47,9 @@ static void st7735_data(st7735_t *self, uint8_t data)
 
 static void st7735_command(st7735_t *self, uint8_t command)
 {
-    gpio_set_state(self->dc, FALSE);
+    gpio_set(self->dc);
     spi_write_byte(&self->spi_device, command, NULL_PTR);
-    gpio_set_state(self->dc, TRUE);
+    gpio_reset(self->dc);
 }
 
 static void st7735_color(st7735_t *self, st7735_color_t color)

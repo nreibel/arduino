@@ -41,17 +41,15 @@ void serial_received(serial_bus_t bus, const char *buffer, int length)
 // App entry point
 void App_Init()
 {
-    // Backlight OFF
-    gpio_set_data_direction(&st7735_bl, GPIO_OUTPUT);
-    gpio_set_state(&st7735_bl, FALSE);
+    // Init backlight pin
+    gpio_init(&st7735_bl, GPIO_PORT_D, 6, GPIO_OUTPUT_ACTIVE_HIGH);
 
     I2C_Master_Init();
     spi_init();
 
-    gpio_init(&max31855_cs, GPIO_PORT_D, 3);
-    gpio_init(&st7735_cs, GPIO_PORT_D, 4);
-    gpio_init(&st7735_dc, GPIO_PORT_D, 5);
-    gpio_init(&st7735_bl, GPIO_PORT_D, 6);
+    gpio_init(&max31855_cs, GPIO_PORT_D, 3, GPIO_OUTPUT_ACTIVE_LOW);
+    gpio_init(&st7735_cs, GPIO_PORT_D, 4, GPIO_OUTPUT_ACTIVE_LOW);
+    gpio_init(&st7735_dc, GPIO_PORT_D, 5, GPIO_OUTPUT_ACTIVE_LOW);
 
     max31855_device_init(&max31855, &max31855_cs);
 
@@ -61,9 +59,8 @@ void App_Init()
     st7735_set_orientation(&st7735, ST7735_ORIENTATION_PORTRAIT_INV);
     st7735_clear_screen(&st7735);
 
-    // Backlignt ON
-    gpio_set_data_direction(&st7735_bl, GPIO_OUTPUT);
-    gpio_set_state(&st7735_bl, TRUE);
+    // Backlight ON
+    gpio_set(&st7735_bl);
 
     // Init TC74 sensors
     for (int i = 0 ; i < NUMBER_OF_SENSORS ; i++)

@@ -107,117 +107,174 @@ ISR(INT1_vect)
 //     return Status_OK;
 // }
 
-void gpio_init(gpio_t *self, gpio_port_t port, uint8_t pin)
+bool gpio_init(gpio_t *self, gpio_port_t port, uint8_t pin, gpio_data_direction_t direction)
 {
     self->port = port;
     self->pin = pin;
-}
+    self->direction = direction;
 
-void gpio_set_data_direction(gpio_t *self, gpio_data_direction_t direction)
-{
-    switch(self->port)
+    if (self->pin >= 8) return FALSE;
+
+    // Set DDR
+    switch(direction)
     {
-        case GPIO_PORT_B:
+        case GPIO_OUTPUT_ACTIVE_HIGH:
+        case GPIO_OUTPUT_ACTIVE_LOW:
         {
-            switch(direction)
+            switch(self->port)
             {
-                case GPIO_OUTPUT:
-                    SET_BIT(DDRB, self->pin);
-                    break;
-                case GPIO_INPUT:
-                    RESET_BIT(DDRB, self->pin);
-                    RESET_BIT(PORTB, self->pin);
-                    break;
-                case GPIO_INPUT_PULLUP:
-                    RESET_BIT(DDRB, self->pin);
-                    SET_BIT(PORTB, self->pin);
-                    break;
+                case GPIO_PORT_B: SET_BIT(DDRB, self->pin); break;
+                case GPIO_PORT_C: SET_BIT(DDRC, self->pin); break;
+                case GPIO_PORT_D: SET_BIT(DDRD, self->pin); break;
+                default: return FALSE;
             }
             break;
         }
-        case GPIO_PORT_C:
+
+        case GPIO_INPUT_HIGH_Z:
+        case GPIO_INPUT_PULLUP:
         {
-            switch(direction)
+            switch(self->port)
             {
-                case GPIO_OUTPUT:
-                    SET_BIT(DDRC, self->pin);
-                    break;
-                case GPIO_INPUT:
-                    RESET_BIT(DDRC, self->pin);
-                    RESET_BIT(PORTC, self->pin);
-                    break;
-                case GPIO_INPUT_PULLUP:
-                    RESET_BIT(DDRC, self->pin);
-                    SET_BIT(PORTC, self->pin);
-                    break;
+                case GPIO_PORT_B: RESET_BIT(DDRB, self->pin); break;
+                case GPIO_PORT_C: RESET_BIT(DDRC, self->pin); break;
+                case GPIO_PORT_D: RESET_BIT(DDRD, self->pin); break;
+                default: return FALSE;
             }
             break;
         }
-        case GPIO_PORT_D:
+
+        default: return FALSE;
+    }
+
+    // Set PORT
+    switch(direction)
+    {
+        case GPIO_OUTPUT_ACTIVE_LOW:
+        case GPIO_INPUT_PULLUP:
         {
-            switch(direction)
+            switch(self->port)
             {
-                case GPIO_OUTPUT:
-                    SET_BIT(DDRD, self->pin);
-                    break;
-                case GPIO_INPUT:
-                    RESET_BIT(DDRD, self->pin);
-                    RESET_BIT(PORTD, self->pin);
-                    break;
-                case GPIO_INPUT_PULLUP:
-                    RESET_BIT(DDRD, self->pin);
-                    SET_BIT(PORTD, self->pin);
-                    break;
+                case GPIO_PORT_B: SET_BIT(PORTB, self->pin); break;
+                case GPIO_PORT_C: SET_BIT(PORTC, self->pin); break;
+                case GPIO_PORT_D: SET_BIT(PORTD, self->pin); break;
+                default: return FALSE;
             }
             break;
         }
+
+        case GPIO_OUTPUT_ACTIVE_HIGH:
+        case GPIO_INPUT_HIGH_Z:
+        {
+            switch(self->port)
+            {
+                case GPIO_PORT_B: RESET_BIT(PORTB, self->pin); break;
+                case GPIO_PORT_C: RESET_BIT(PORTC, self->pin); break;
+                case GPIO_PORT_D: RESET_BIT(PORTD, self->pin); break;
+                default: return FALSE;
+            }
+            break;
+        }
+
+        default: return FALSE;
     }
+
+    return TRUE;
 }
 
-void gpio_get_state(gpio_t *self, bool *state)
+bool gpio_get(gpio_t *self, bool *state)
 {
-    switch(self->port)
+    if (self->pin >= 8) return FALSE;
+
+    switch(self->direction)
     {
-        case GPIO_PORT_B:
-            *state = IS_SET_BIT(PINB, self->pin);
+        case GPIO_INPUT_HIGH_Z:
+        case GPIO_INPUT_PULLUP:
+        {
+            switch(self->port)
+            {
+                case GPIO_PORT_B: *state = IS_SET_BIT(PINB, self->pin); break;
+                case GPIO_PORT_C: *state = IS_SET_BIT(PINC, self->pin); break;
+                case GPIO_PORT_D: *state = IS_SET_BIT(PIND, self->pin); break;
+                default: return FALSE;
+            }
             break;
-        case GPIO_PORT_C:
-            *state = IS_SET_BIT(PINC, self->pin);
-            break;
-        case GPIO_PORT_D:
-            *state = IS_SET_BIT(PIND, self->pin);
-            break;
+        }
+
+        default: return FALSE;
     }
+
+    return TRUE;
 }
 
-void gpio_set_state(gpio_t *self, bool state)
+bool gpio_set(gpio_t *self)
 {
-    switch(self->port)
+    if (self->pin >= 8) return FALSE;
+
+    switch(self->direction)
     {
-        case GPIO_PORT_B:
-            state ? SET_BIT(PORTB, self->pin) : RESET_BIT(PORTB, self->pin);
+        case GPIO_OUTPUT_ACTIVE_HIGH:
+        {
+            switch(self->port)
+            {
+                case GPIO_PORT_B: SET_BIT(PORTB, self->pin); break;
+                case GPIO_PORT_C: SET_BIT(PORTC, self->pin); break;
+                case GPIO_PORT_D: SET_BIT(PORTD, self->pin); break;
+                default: return FALSE;
+            }
             break;
-        case GPIO_PORT_C:
-            state ? SET_BIT(PORTC, self->pin) : RESET_BIT(PORTC, self->pin);
+        }
+
+        case GPIO_OUTPUT_ACTIVE_LOW:
+        {
+            switch(self->port)
+            {
+                case GPIO_PORT_B: RESET_BIT(PORTB, self->pin); break;
+                case GPIO_PORT_C: RESET_BIT(PORTC, self->pin); break;
+                case GPIO_PORT_D: RESET_BIT(PORTD, self->pin); break;
+                default: return FALSE;
+            }
             break;
-        case GPIO_PORT_D:
-            state ? SET_BIT(PORTD, self->pin) : RESET_BIT(PORTD, self->pin);
-            break;
+        }
+
+        default: return FALSE;
     }
+
+    return TRUE;
 }
 
-// Std_ReturnType GPIO_RisingEdge(GPIO pin)
-// {
-//     GPIO_SetState(pin, TRUE);
-//     _delay_us(1);
-//     GPIO_SetState(pin, FALSE);
-//     return Status_OK;
-// }
-//
-// Std_ReturnType GPIO_FallingEdge(GPIO pin)
-// {
-//     GPIO_SetState(pin, FALSE);
-//     _delay_us(1);
-//     GPIO_SetState(pin, TRUE);
-//     return Status_OK;
-// }
+bool gpio_reset(gpio_t *self)
+{
+    if (self->pin >= 8) return FALSE;
+
+    switch(self->direction)
+    {
+        case GPIO_OUTPUT_ACTIVE_HIGH:
+        {
+            switch(self->port)
+            {
+                case GPIO_PORT_B: RESET_BIT(PORTB, self->pin); break;
+                case GPIO_PORT_C: RESET_BIT(PORTC, self->pin); break;
+                case GPIO_PORT_D: RESET_BIT(PORTD, self->pin); break;
+                default: return FALSE;
+            }
+            break;
+        }
+
+        case GPIO_OUTPUT_ACTIVE_LOW:
+        {
+            switch(self->port)
+            {
+                case GPIO_PORT_B: SET_BIT(PORTB, self->pin); break;
+                case GPIO_PORT_C: SET_BIT(PORTC, self->pin); break;
+                case GPIO_PORT_D: SET_BIT(PORTD, self->pin); break;
+                default: return FALSE;
+            }
+            break;
+        }
+
+        default: return FALSE;
+    }
+
+    return TRUE;
+}
