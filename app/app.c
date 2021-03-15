@@ -3,6 +3,7 @@
 #include "app.h"
 #include "serial.h"
 #include "gpio.h"
+#include "pwm.h"
 #include "bits.h"
 #include "max31855.h"
 #include "st7735.h"
@@ -22,7 +23,7 @@ typedef enum {
     NUMBER_OF_SENSORS
 } sensors_t;
 
-gpio_t st7735_bl, st7735_cs, st7735_dc, max31855_cs;
+gpio_t st7735_cs, st7735_dc, max31855_cs;
 max31855_t max31855;
 st7735_t st7735;
 tc74_t tc74[NUMBER_OF_SENSORS];
@@ -42,7 +43,8 @@ void serial_received(serial_bus_t bus, const char *buffer, int length)
 void App_Init()
 {
     // Init backlight pin
-    gpio_init(&st7735_bl, GPIO_PORT_D, 6, GPIO_OUTPUT_ACTIVE_HIGH);
+    pwm_init();
+    pwm_start(PWM_6, 0, TRUE);
 
     I2C_Master_Init();
     spi_init();
@@ -59,9 +61,6 @@ void App_Init()
     st7735_set_orientation(&st7735, ST7735_ORIENTATION_PORTRAIT_INV);
     st7735_clear_screen(&st7735);
 
-    // Backlight ON
-    gpio_set(&st7735_bl);
-
     // Init TC74 sensors
     for (int i = 0 ; i < NUMBER_OF_SENSORS ; i++)
     {
@@ -74,6 +73,9 @@ void App_Init()
 
     Os_SetupTask(Timer_DrawCat, 1000, Task_DrawCat, NULL_PTR);
     Os_SetupTask(Timer_ReadTemp, 200, Task_ReadTemperature, NULL_PTR);
+
+    // Backlight ON
+    pwm_set_duty_cycle(PWM_6, 0x80);
 }
 
 // Main task

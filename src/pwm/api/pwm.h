@@ -6,10 +6,12 @@
 typedef enum {
     PWM_5,
     PWM_6,
-} PWM;
+    NUMBER_OF_PWM_CHANNELS
+} pwm_t;
 
-void PWM_Init   (PWM pin, bool inverted);
-void PWM_StopPWM(PWM pin);
-void PWM_SetPWM (PWM pin, uint8_t dutyCycle);
+void pwm_init();
+bool pwm_start(pwm_t self, uint8_t duty_cycle, bool inverted);
+bool pwm_set_duty_cycle(pwm_t self, uint8_t duty_cycle);
+bool pwm_stop(pwm_t self);
 
 #endif /* SRC_PWM_API_PWM_H_ */

@@ -3,63 +3,99 @@
 #include "bits.h"
 #include "avr/io.h"
 
-void PWM_Init(PWM pin, bool inverted)
+typedef struct {
+    bool inverted;
+} pwm_config_t;
+
+static pwm_config_t config[NUMBER_OF_PWM_CHANNELS] = {
+    { FALSE },
+    { FALSE }
+};
+
+void pwm_init()
 {
     // Enable peripheral
     RESET_BIT(PRR, PRTIM0);
 
     // Set Fast PWM mode
-    uint8_t tccr0a = BIT(WGM01) | BIT(WGM00);
-
-    // Set Port_GPIO as OUTPUT
-    switch(pin)
-    {
-        case PWM_5:
-            SET_BIT(DDRD, 5);
-            if (inverted) SET_BIT(tccr0a, COM0B0);
-            break;
-        case PWM_6:
-            SET_BIT(DDRD, 6);
-            if (inverted) SET_BIT(tccr0a, COM0A0);
-            break;
-        default:
-            HALT;
-    }
+    TCCR0A = BIT(WGM01) | BIT(WGM00);
 
     // No prescaling
     TCCR0B = BIT(CS00);
-
-    TCCR0A = tccr0a;
 }
 
-void PWM_StopPWM(PWM pin)
+bool pwm_start(pwm_t self, uint8_t duty_cycle, bool inverted)
 {
-    switch(pin)
+    switch(self)
     {
         case PWM_5:
-            RESET_BIT(TCCR0A, COM0B1);
-            break;
-        case PWM_6:
-            RESET_BIT(TCCR0A, COM0A1);
-            break;
-        default:
-            HALT;
-    }
-}
+        {
+            if (inverted)
+            {
+                config[self].inverted = TRUE;
+                SET_BIT(TCCR0A, COM0B0);
+                OCR0B = 0xff - duty_cycle;
+            }
+            else
+            {
+                config[self].inverted = FALSE;
+                RESET_BIT(TCCR0A, COM0B0);
+                OCR0B = duty_cycle;
+            }
 
-void PWM_SetPWM(PWM pin, uint8_t dutyCycle)
-{
-    switch(pin)
-    {
-        case PWM_5:
+            SET_BIT(DDRD, 5);
             SET_BIT(TCCR0A, COM0B1);
-            OCR0B = dutyCycle;
             break;
+        }
+
         case PWM_6:
+        {
+            if (inverted)
+            {
+                config[self].inverted = TRUE;
+                SET_BIT(TCCR0A, COM0A0);
+                OCR0A = 0xff - duty_cycle;
+            }
+            else
+            {
+                config[self].inverted = FALSE;
+                RESET_BIT(TCCR0A, COM0A0);
+                OCR0A = duty_cycle;
+            }
+
+            SET_BIT(DDRD, 6);
             SET_BIT(TCCR0A, COM0A1);
-            OCR0A = dutyCycle;
             break;
-        default:
-            HALT;
+        }
+
+        default: return FALSE;
     }
+
+    return TRUE;
+}
+
+bool pwm_set_duty_cycle(pwm_t self, uint8_t duty_cycle)
+{
+    uint8_t regval = config[self].inverted ? 0xff - duty_cycle : duty_cycle;
+
+    switch(self)
+    {
+        case PWM_5: OCR0B = regval; break;
+        case PWM_6: OCR0A = regval; break;
+        default: return FALSE;
+    }
+
+    return TRUE;
+}
+
+bool pwm_stop(pwm_t self)
+{
+    switch(self)
+    {
+        case PWM_5: RESET_BIT(TCCR0A, COM0B1); break;
+        case PWM_6: RESET_BIT(TCCR0A, COM0A1); break;
+        default: return FALSE;
+    }
+
+    return TRUE;
 }
