@@ -18,7 +18,7 @@ LDFLAGS = -u,vfprintf
 LIBS = printf_flt m
 
 # TODO : handle modules dependencies
-MODULES := os serial gpio pwm spi max31855 st7735 tc74 i2c_master
+MODULES := os serial gpio pwm spi max31855 st7735 tc74 i2c_master pca954x
 app: app/app.o
 
 include $(ARDUINO_LIBS)/makefile.include
