@@ -12,14 +12,14 @@ void serial_bus_init(serial_bus_t bus, int baudrate)
     serial_hal_init(bus, baudrate);
 }
 
-#if SERIAL_ASYNX_RX != OFF
+#if SERIAL_ASYNC_RX != OFF
 void serial_set_rx_callback(serial_bus_t bus, serial_rx_callback cbk)
 {
     serial_hal_set_rx_callback(bus, cbk);
 }
 #endif
 
-#if SERIAL_ASYNX_TX != OFF
+#if SERIAL_ASYNC_TX != OFF
 bool serial_tx_ready(serial_bus_t bus)
 {
     return serial_hal_tx_buffer_ready(bus);

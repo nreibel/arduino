@@ -9,12 +9,12 @@ typedef enum {
     NUMBER_OF_SERIAL_BUSES
 } serial_bus_t;
 
-#if SERIAL_ASYNX_RX != OFF
+#if SERIAL_ASYNC_RX != OFF
 typedef void (*serial_rx_callback)(serial_bus_t bus, const char *buffer, int length);
 void serial_set_rx_callback(serial_bus_t bus, serial_rx_callback callback);
 #endif
 
-#if SERIAL_ASYNX_TX != OFF
+#if SERIAL_ASYNC_TX != OFF
 bool serial_tx_ready(serial_bus_t bus);
 void serial_write_bytes_async(serial_bus_t bus, void *buffer, int len);
 #endif

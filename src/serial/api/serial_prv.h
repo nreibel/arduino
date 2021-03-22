@@ -5,11 +5,11 @@
 #include "serial.h"
 #include "serial_cfg.h"
 
-#if SERIAL_ASYNX_RX != OFF
+#if SERIAL_ASYNC_RX != OFF
 void serial_hal_set_rx_callback(serial_bus_t bus, serial_rx_callback cbk);
 #endif
 
-#if SERIAL_ASYNX_TX != OFF
+#if SERIAL_ASYNC_TX != OFF
 bool serial_hal_tx_buffer_ready(serial_bus_t bus);
 void serial_hal_set_tx_buffer(serial_bus_t bus, void *buffer, int length);
 #endif

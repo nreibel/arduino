@@ -9,14 +9,14 @@
 typedef struct {
     serial_bus_t handle;
 
-#if SERIAL_ASYNX_RX != OFF
+#if SERIAL_ASYNC_RX != OFF
     serial_rx_callback rx_cbk;
     char rx_buf[SERIAL_RECEIVE_BUFFER_LENGTH];
     char *rx_ptr;
     int rx_sz;
 #endif
 
-#if SERIAL_ASYNX_TX != OFF
+#if SERIAL_ASYNC_TX != OFF
     volatile void *tx_buf;
     volatile int tx_sz;
 #endif
@@ -25,7 +25,7 @@ typedef struct {
 
 static serial_t buses[NUMBER_OF_SERIAL_BUSES];
 
-#if SERIAL_ASYNX_RX != OFF
+#if SERIAL_ASYNC_RX != OFF
 ISR(USART_RX_vect)
 {
     char b = serial_hal_read_byte(SERIAL_BUS_0);
@@ -55,7 +55,7 @@ ISR(USART_RX_vect)
 }
 #endif
 
-#if SERIAL_ASYNX_TX != OFF
+#if SERIAL_ASYNC_TX != OFF
 ISR(USART_TX_vect)
 {
     if (buses[SERIAL_BUS_0].tx_sz > 0)
@@ -77,13 +77,13 @@ void serial_hal_init(serial_bus_t bus, int baudrate)
 {
     buses[bus].handle = bus;
 
-#if SERIAL_ASYNX_RX != OFF
+#if SERIAL_ASYNC_RX != OFF
     buses[bus].rx_cbk = NULL_PTR;
     buses[bus].rx_ptr = buses[bus].rx_buf;
     buses[bus].rx_sz = 0;
 #endif
 
-#if SERIAL_ASYNX_TX != OFF
+#if SERIAL_ASYNC_TX != OFF
     buses[bus].tx_buf = NULL_PTR;
     buses[bus].tx_sz = 0;
 #endif
@@ -108,11 +108,11 @@ void serial_hal_init(serial_bus_t bus, int baudrate)
     switch(bus)
     {
         case SERIAL_BUS_0:
-            #if SERIAL_ASYNX_RX != OFF
+            #if SERIAL_ASYNC_RX != OFF
             SET_BIT(ucsr, RXCIE0);
             #endif
 
-            #if SERIAL_ASYNX_TX != OFF
+            #if SERIAL_ASYNC_TX != OFF
             SET_BIT(ucsr, TXCIE0);
             #endif
 
@@ -174,14 +174,14 @@ void serial_hal_write_byte(serial_bus_t bus, uint8_t byte)
     }
 }
 
-#if SERIAL_ASYNX_RX != OFF
+#if SERIAL_ASYNC_RX != OFF
 void serial_hal_set_rx_callback(serial_bus_t bus, serial_rx_callback cbk)
 {
     buses[bus].rx_cbk = cbk;
 }
 #endif
 
-#if SERIAL_ASYNX_TX != OFF
+#if SERIAL_ASYNC_TX != OFF
 bool serial_hal_tx_buffer_ready(serial_bus_t bus)
 {
     return buses[bus].tx_buf == NULL_PTR && buses[bus].tx_sz == 0;
