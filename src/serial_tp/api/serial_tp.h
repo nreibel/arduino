@@ -1,12 +1,8 @@
-#ifndef SRC_SERIAL_TP_API_SERIAL_H_
-#define SRC_SERIAL_TP_API_SERIAL_H_
+#ifndef __SERIAL_TP_API_H__
+#define __SERIAL_TP_API_H__
 
 #include "types.h"
 #include "serial.h"
-
-#if !defined(SRC_SERIAL_API_SERIAL_H_)
-#error "Serial TP needs module Serial"
-#endif
 
 #if SERIAL_ASYNC_RX != ON
 #error "Serial TP needs SERIAL_ASYNC_RX enabled!"
@@ -33,15 +29,16 @@ typedef struct {
     uint8_t address;
     uint8_t data_len;
     uint8_t data[];
-} Serial_TP_Request;
+} serial_tp_request;
 
 typedef struct {
     uint8_t status;
     uint8_t data_len;
-    void    *data;
-} Serial_TP_Response;
+    void   *data;
+} serial_tp_response;
 
-void Serial_TP_Init();
-void Serial_TP_Callback(Serial_TP_Request *req, Serial_TP_Response *rsp);
+typedef void (*serial_tp_callback)(serial_tp_request *req, serial_tp_response *rsp);
 
-#endif /* SRC_SERIAL_TP_API_SERIAL_H_ */
+void serial_tp_init(serial_bus_t bus, serial_tp_callback cbk);
+
+#endif /* __SERIAL_TP_API_H__ */

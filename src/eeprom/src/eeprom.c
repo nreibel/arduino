@@ -214,7 +214,7 @@ Std_ReturnType EEPROM_DumpEEPROM_Raw(uint16_t from, uint16_t to)
     for ( uint16_t addr = from ; addr < to ; addr += EEPROM_DUMP_CHUNKS_SIZE )
     {
         EEPROM_SyncRead(addr, b, EEPROM_DUMP_CHUNKS_SIZE);
-        Serial_WriteBytes(b, EEPROM_DUMP_CHUNKS_SIZE);
+        serial_write_bytes(SERIAL_BUS_0, b, EEPROM_DUMP_CHUNKS_SIZE);
     }
 
     return Status_OK;
@@ -236,16 +236,16 @@ Std_ReturnType EEPROM_DumpEEPROM(uint16_t from, uint16_t to, int line_length)
         if ( cpt == 1 )
         {
             sprintf(buffer, "0x%04X |", addr);
-            Serial_Print(buffer);
+            serial_print(SERIAL_BUS_0, buffer);
         }
 
         sprintf(buffer, " %02X", b);
         if ( cpt == line_length )
         {
-            Serial_Println(buffer);
+            serial_println(SERIAL_BUS_0, buffer);
             cpt = 0;
         }
-        else Serial_Print(buffer);
+        else serial_print(SERIAL_BUS_0, buffer);
     }
 
     return Status_OK;

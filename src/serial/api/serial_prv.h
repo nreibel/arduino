@@ -1,5 +1,5 @@
-#ifndef SRC_SERIAL_API_SERIAL_PRV_H_
-#define SRC_SERIAL_API_SERIAL_PRV_H_
+#ifndef __SERIAL_PRV_H__
+#define __SERIAL_PRV_H__
 
 #include "types.h"
 #include "serial.h"
@@ -20,4 +20,4 @@ bool serial_hal_rx_ready(serial_bus_t bus);
 void serial_hal_write_byte(serial_bus_t bus, uint8_t byte);
 uint8_t serial_hal_read_byte(serial_bus_t bus);
 
-#endif /* SRC_SERIAL_API_SERIAL_PRV_H_ */
+#endif /* __SERIAL_PRV_H__ */

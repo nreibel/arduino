@@ -1,5 +1,5 @@
-#ifndef SRC_SERIAL_API_SERIAL_H_
-#define SRC_SERIAL_API_SERIAL_H_
+#ifndef __SERIAL_API_H__
+#define __SERIAL_API_H__
 
 #include "types.h"
 #include "serial_cfg.h"
@@ -35,4 +35,4 @@ int serial_new_line(serial_bus_t bus);
 // int serial_print_P(const __flash void* string);
 // int serial_println_P(const __flash void* string);
 
-#endif /* SRC_SERIAL_API_SERIAL_H_ */
+#endif /* __SERIAL_API_H__ */

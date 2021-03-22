@@ -27,7 +27,7 @@ int tc74_read_temperature(tc74_t *self, int *temp)
     int retval = I2C_Master_ReadByteSync(self->i2c_addr, TC74_REG_RTR, &reg);
     if (retval == 1)
     {
-        *temp = reg;
+        *temp = (int) reg;
         if (reg >= 0x80) *temp -= 256; // two's complement
     }
     return retval;
