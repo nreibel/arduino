@@ -1,3 +1,5 @@
 INCLUDES += $(SRC_DIR)/i2c/api
 
-i2c: $(SRC_DIR)/i2c/src/i2c.o
+i2c: \
+	$(SRC_DIR)/i2c/src/i2c.o \
+	$(SRC_DIR)/i2c/src/i2c_ll.o \

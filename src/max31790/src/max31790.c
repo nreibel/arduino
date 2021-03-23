@@ -2,10 +2,14 @@
 #include "max31790_prv.h"
 #include "types.h"
 #include "bits.h"
-#include "i2c_master.h"
+#include "i2c.h"
+
+static i2c_device_t dev;
 
 Std_ReturnType MAX31790_Init(MAX31790_Watchdog wd)
 {
+    i2c_device_init(&dev, I2C_BUS_0, 0x20);
+
     uint8_t reg = 0;
 
     SET_BIT(reg, 5); // Bus timeout disabled
@@ -33,23 +37,23 @@ Std_ReturnType MAX31790_Init(MAX31790_Watchdog wd)
     }
 
     // Write new config
-    return I2C_Master_WriteByteSync(0x20, MAX31790_REG_GLOBAL_CONFIGURATION, reg);
+    return i2c_device_write_byte(&dev, MAX31790_REG_GLOBAL_CONFIGURATION, reg);
 }
 
 Std_ReturnType MAX31790_SetStandby(bool stdby)
 {
     uint8_t reg = 0;
-    I2C_Master_ReadByteSync(0x20, MAX31790_REG_GLOBAL_CONFIGURATION, &reg);
+    i2c_device_read_byte(&dev, MAX31790_REG_GLOBAL_CONFIGURATION, &reg);
     if (stdby) SET_BIT(reg, 7);
     else RESET_BIT(reg, 7);
-    I2C_Master_WriteByteSync(0x20, MAX31790_REG_GLOBAL_CONFIGURATION, reg);
+    i2c_device_write_byte(&dev, MAX31790_REG_GLOBAL_CONFIGURATION, reg);
     return Status_OK;
 }
 
 Std_ReturnType MAX31790_GetWatchdogStatus(bool *status)
 {
     uint8_t reg = 0;
-    I2C_Master_ReadByteSync(0x20, MAX31790_REG_GLOBAL_CONFIGURATION, &reg);
+    i2c_device_read_byte(&dev, MAX31790_REG_GLOBAL_CONFIGURATION, &reg);
     *status = IS_SET_BIT(reg, 0);
     return Status_OK;
 }
@@ -57,9 +61,9 @@ Std_ReturnType MAX31790_GetWatchdogStatus(bool *status)
 Std_ReturnType MAX31790_ClearWatchdog()
 {
     uint8_t reg = 0;
-    I2C_Master_ReadByteSync(0x20, MAX31790_REG_GLOBAL_CONFIGURATION, &reg);
+    i2c_device_read_byte(&dev, MAX31790_REG_GLOBAL_CONFIGURATION, &reg);
     RESET_BIT(reg, 0);
-    I2C_Master_WriteByteSync(0x20, MAX31790_REG_GLOBAL_CONFIGURATION, reg);
+    i2c_device_write_byte(&dev, MAX31790_REG_GLOBAL_CONFIGURATION, reg);
     return Status_OK;
 }
 
@@ -121,7 +125,7 @@ Std_ReturnType MAX31790_SetFrequency(MAX31790_Frequency freq)
             return Status_Not_OK;
     }
 
-    I2C_Master_WriteByteSync(0x20, MAX31790_REG_PWM_FREQUENCY, regval);
+    i2c_device_write_byte(&dev, MAX31790_REG_PWM_FREQUENCY, regval);
 
     return Status_OK;
 }
@@ -161,7 +165,7 @@ Std_ReturnType MAX31790_SetFanMode(MAX31790_Fan fan, MAX31790_FanMode mode)
             return Status_Not_OK;
     }
 
-    I2C_Master_ReadByteSync(0x20, reg, &val);
+    i2c_device_read_byte(&dev, reg, &val);
 
     switch(mode)
     {
@@ -177,7 +181,7 @@ Std_ReturnType MAX31790_SetFanMode(MAX31790_Fan fan, MAX31790_FanMode mode)
             return Status_Not_OK;
     }
 
-    I2C_Master_WriteByteSync(0x20, reg, val);
+    i2c_device_write_byte(&dev, reg, val);
 
     return Status_OK;
 }
@@ -185,13 +189,13 @@ Std_ReturnType MAX31790_SetFanMode(MAX31790_Fan fan, MAX31790_FanMode mode)
 Std_ReturnType MAX31790_SetFaultMask(uint8_t mask)
 {
     mask = MASK(mask, 0x3F);
-    I2C_Master_WriteByteSync(0x20, MAX31790_REG_FAN_FAULT_MASK_1, mask);
+    i2c_device_write_byte(&dev, MAX31790_REG_FAN_FAULT_MASK_1, mask);
     return Status_OK;
 }
 
 Std_ReturnType MAX31790_GetFaultStatus(uint8_t *status)
 {
-    I2C_Master_ReadByteSync(0x20, MAX31790_REG_FAN_FAULT_STATUS_1, status);
+    i2c_device_read_byte(&dev, MAX31790_REG_FAN_FAULT_STATUS_1, status);
     return Status_OK;
 }
 
@@ -232,7 +236,7 @@ Std_ReturnType MAX31790_SetTargetRPM(MAX31790_Fan fan, uint16_t rpm)
     }
 
     // TODO : check byte order
-    I2C_Master_WriteSync(0x20, reg, &rpm, 2);
+    i2c_device_write_bytes(&dev, reg, (uint8_t*) &rpm, 2);
 
     return Status_OK;
 }
@@ -274,7 +278,7 @@ Std_ReturnType MAX31790_SetTargetPWM(MAX31790_Fan fan, uint16_t pwm)
     }
 
     // TODO : check byte order
-    I2C_Master_WriteSync(0x20, reg, &pwm, 2);
+    i2c_device_write_bytes(&dev, reg, &pwm, 2);
 
     return Status_OK;
 }
@@ -330,7 +334,7 @@ Std_ReturnType MAX31790_GetTachCount(MAX31790_Fan fan, uint16_t *tach)
     }
 
     word read = {0};
-    I2C_Master_ReadSync(0x20, reg, &read, 2);
+    i2c_device_read_bytes(&dev, reg, &read, 2);
 
     if ( MASK(read.bytes[1], 0x1F) != 0 )
     {

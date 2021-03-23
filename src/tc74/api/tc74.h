@@ -2,6 +2,7 @@
 #define __TC74_API_H__
 
 #include "types.h"
+#include "i2c.h"
 
 typedef enum {
     TC74A0 = 0x48,
@@ -15,10 +16,10 @@ typedef enum {
 } tc74_addr_t;
 
 typedef struct {
-    uint8_t i2c_addr;
+    i2c_device_t dev;
 } tc74_t;
 
-void tc74_init(tc74_t *self, uint8_t addr);
+void tc74_init(tc74_t *self, i2c_bus_t bus, uint8_t addr);
 int tc74_set_standby(tc74_t *self, bool stdby);
 int tc74_read_temperature(tc74_t *self, int *temp);
 

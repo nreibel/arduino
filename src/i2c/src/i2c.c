@@ -1,11 +1,16 @@
 #include "i2c.h"
-#include "i2c_prv.h"
 #include "bits.h"
 #include "types.h"
+#include "os_cfg.h"
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/twi.h>
+
+typedef struct {
+    tx_callback tx_cbk;
+    rx_callback rx_cbk;
+} i2c_t;
 
 static i2c_t buses[NUMBER_OF_I2C_BUSES];
 
@@ -67,7 +72,7 @@ ISR(TWI_vect)
     TWCR = BIT(TWIE) | BIT(TWINT) | BIT(TWEA) | BIT(TWEN);
 }
 
-void i2c_bus_init_slave(i2c_bus_t bus, uint8_t addr)
+int i2c_bus_init_slave(i2c_bus_t bus, uint8_t addr)
 {
     buses[bus].tx_cbk = NULL_PTR;
     buses[bus].rx_cbk = NULL_PTR;
@@ -76,6 +81,117 @@ void i2c_bus_init_slave(i2c_bus_t bus, uint8_t addr)
 
     TWAR = addr << 1;
     TWCR = BIT(TWIE) | BIT(TWEA) | BIT(TWINT) | BIT(TWEN);
+
+    return 0;
+}
+
+int i2c_bus_init_master(i2c_bus_t bus, bool fast_mode)
+{
+    switch(bus)
+    {
+        case I2C_BUS_0:
+        {
+            RESET_BIT(PRR, PRTWI);
+
+            TWSR = 0; // Prescaler = 1
+            TWCR = 0;
+
+            // Formula is ((F_CPU/F_I2C)-16)/2;
+            #if F_CPU == 16000000
+            TWBR = fast_mode ? 12 : 72;
+            #else
+            #error "F_CPU not supported"
+            #endif
+
+            return 0;
+        }
+
+        default:
+            return -1;
+    }
+
+    return -1;
+}
+
+int i2c_device_init(i2c_device_t *dev, i2c_bus_t bus, uint8_t addr)
+{
+    dev->bus = bus;
+    dev->addr = addr;
+    return 0;
+}
+
+int i2c_device_write_byte(i2c_device_t *self, uint8_t reg, uint8_t byte)
+{
+    return i2c_device_write_bytes(self, reg, &byte, 1);
+}
+
+int i2c_device_read_byte(i2c_device_t *self, uint8_t reg, uint8_t *data)
+{
+    return i2c_device_read_bytes(self, reg, data, 1);
+}
+
+int i2c_device_write_bytes(i2c_device_t *self, uint8_t reg, void *data, unsigned int length)
+{
+    int written = 0, retval = 0;
+    uint8_t *bytes = TYPECAST(data, uint8_t*);
+
+    if ( i2c_ll_start_condition() < 0 )
+        return -1;
+
+    if ( i2c_ll_slave_write(self->addr) < 0 )
+        return -2;
+
+    if ( i2c_ll_write(reg, NULL_PTR) < 0 )
+        return -3;
+
+    for (unsigned int i = 0 ; i < length ; i++ )
+    {
+        retval = i2c_ll_write( bytes[i], NULL_PTR );
+        if (retval < 0) return -4;
+        else written += retval;
+    }
+
+    if ( i2c_ll_stop_condition() < 0 )
+        return -5;
+
+    return written;
+}
+
+int i2c_device_read_bytes(i2c_device_t *self, uint8_t reg, void *data, unsigned int length)
+{
+    int retval = 0, read = 0;
+    uint8_t *bytes = TYPECAST(data, uint8_t*);
+
+    if ( i2c_ll_start_condition() < 0)
+        return -1;
+
+    if ( i2c_ll_slave_write(self->addr) < 0 )
+        return -2;
+
+    if ( i2c_ll_write(reg, NULL_PTR) < 0 )
+        return -3;
+
+    if ( i2c_ll_restart_condition() < 0 )
+        return -4;
+
+    if ( i2c_ll_slave_read(self->addr) < 0 )
+        return -5;
+
+    for(unsigned int i = 0 ; i < length-1 ; i++)
+    {
+        retval = i2c_ll_read_ack( &bytes[i] );
+        if (retval < 0) return -6;
+        else read += retval;
+    }
+
+    retval = i2c_ll_read_nack( &bytes[length-1] );
+    if (retval < 0) return -7;
+    else read += retval;
+
+    if ( i2c_ll_stop_condition() < 0 )
+        return -8;
+
+    return read;
 }
 
 void i2c_set_tx_callback(i2c_bus_t bus, tx_callback cbk)
