@@ -1,5 +1,5 @@
-#ifndef SRC_TC74_API_TC74_H_
-#define SRC_TC74_API_TC74_H_
+#ifndef __TC74_API_H__
+#define __TC74_API_H__
 
 #include "types.h"
 
@@ -22,4 +22,4 @@ void tc74_init(tc74_t *self, uint8_t addr);
 int tc74_set_standby(tc74_t *self, bool stdby);
 int tc74_read_temperature(tc74_t *self, int *temp);
 
-#endif /* SRC_TC74_API_TC74_H_ */
+#endif /* __TC74_API_H__ */
