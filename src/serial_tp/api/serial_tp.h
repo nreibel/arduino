@@ -31,13 +31,7 @@ typedef struct {
     uint8_t data[];
 } serial_tp_request;
 
-typedef struct {
-    uint8_t status;
-    uint8_t data_len;
-    void   *data;
-} serial_tp_response;
-
-typedef void (*serial_tp_callback)(serial_tp_request *req, serial_tp_response *rsp);
+typedef uint8_t (*serial_tp_callback)(serial_tp_request *req, void *rsp_data, int *rsp_length);
 
 void serial_tp_init(serial_bus_t bus, serial_tp_callback cbk);
 
