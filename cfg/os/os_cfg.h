@@ -19,8 +19,7 @@ typedef uint16_t time_t;
 #define NUMBER_OF_BACKGROUND_TASKS 0
 
 typedef enum {
-    Timer_DrawCat,
-    Timer_ReadTemp,
+    Timer_MainTask,
     NUMBER_OF_TIMERS
 } Timer;
 
