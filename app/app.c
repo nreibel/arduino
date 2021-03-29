@@ -34,6 +34,7 @@ void App_Init()
         eeprom_addr += 16;
     }
 
+    Os_EnableWatchdog(OS_WATCHDOG_1S);
 
     // Init tasks
     Os_SetupTask(Timer_MainTask, 500, Task_Main, NULL_PTR);
@@ -46,6 +47,8 @@ void App_Init()
 Std_ReturnType Task_Main(void* data)
 {
     UNUSED(data);
+
+    Os_ResetWatchdog();
 
     return Status_OK;
 }

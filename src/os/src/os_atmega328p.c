@@ -1,3 +1,4 @@
+#include "os.h"
 #include "os_cfg.h"
 #include "os_prv.h"
 #include "bits.h"
@@ -27,6 +28,60 @@ void Os_HardReset()
   wdt_enable(WDTO_15MS); // enable watchdog
   HALT; // wait for watchdog to reset processor
 }
+
+void Os_ResetWatchdog()
+{
+    wdt_reset();
+}
+
+int Os_EnableWatchdog(Os_Watchdog wd)
+{
+    switch(wd)
+    {
+        case OS_WATCHDOG_15MS:
+            wdt_enable(WDTO_15MS);
+            return 0;
+
+        case OS_WATCHDOG_30MS:
+            wdt_enable(WDTO_30MS);
+            return 0;
+
+        case OS_WATCHDOG_60MS:
+            wdt_enable(WDTO_60MS);
+            return 0;
+
+        case OS_WATCHDOG_120MS:
+            wdt_enable(WDTO_120MS);
+            return 0;
+
+        case OS_WATCHDOG_250MS:
+            wdt_enable(WDTO_250MS);
+            return 0;
+
+        case OS_WATCHDOG_500MS:
+            wdt_enable(WDTO_500MS);
+            return 0;
+
+        case OS_WATCHDOG_1S:
+            wdt_enable(WDTO_1S);
+            return 0;
+
+        case OS_WATCHDOG_2S:
+            wdt_enable(WDTO_2S);
+            return 0;
+
+        case OS_WATCHDOG_4S:
+            wdt_enable(WDTO_4S);
+            return 0;
+
+        case OS_WATCHDOG_8S:
+            wdt_enable(WDTO_8S);
+            return 0;
+    }
+
+    return -1;
+}
+
 
 void Os_Sleep()
 {
