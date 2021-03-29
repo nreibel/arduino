@@ -3,90 +3,97 @@
 #include "os_cfg.h"
 #include "bits.h"
 
+#if NUMBER_OF_BACKGROUND_TASKS > 0
+static int execute_background_tasks();
+#endif
+
 /* Holds the status of each timer channel */
 typedef struct {
     time_t interval;
     volatile time_t value;
-    Callback callback;
+    callback_t callback;
     void* param;
-} TimerConfig;
+} timer_config_t;
 
-static volatile time_t osTimer = {0};
-static TimerConfig timerCfg[NUMBER_OF_TIMERS] = {0};
+static volatile time_t os_timer = {0};
+static timer_config_t timer_cfg[NUMBER_OF_TIMERS] = {0};
 
-void Os_Wait(time_t ms)
+void os_wait(time_t ms)
 {
-    osTimer = 0;
-    while (osTimer < ms)
+    os_timer = 0;
+    while (os_timer < ms)
     {
-        Os_Sleep();
+        os_sleep();
     }
 }
 
-void Os_TimerCallback()
+void os_timer_callback()
 {
-    osTimer += OS_TIMER_GRANULARITY;
+    os_timer += OS_TIMER_GRANULARITY;
     for ( int i = 0 ; i < NUMBER_OF_TIMERS ; i++ )
     {
-        timerCfg[i].value += OS_TIMER_GRANULARITY;
+        timer_cfg[i].value += OS_TIMER_GRANULARITY;
     }
 }
 
-void Os_ResetTimer(Timer timer)
+void os_timer_reset(timer_t timer)
 {
-    timerCfg[timer].value = 0;
+    timer_cfg[timer].value = 0;
 }
 
-time_t Os_GetTimerValue(Timer timer)
+time_t os_timer_get_value(timer_t timer)
 {
-    return timerCfg[timer].value;
+    return timer_cfg[timer].value;
 }
 
-void Os_SetupTask(Timer timer, time_t interval, Callback callback, void* param)
+void os_task_setup(timer_t timer, time_t interval, callback_t callback, void* param)
 {
-    timerCfg[timer].interval = interval;
-    timerCfg[timer].callback = callback;
-    timerCfg[timer].param = param;
-    timerCfg[timer].value = interval;
+    timer_cfg[timer].interval = interval;
+    timer_cfg[timer].callback = callback;
+    timer_cfg[timer].param = param;
+    timer_cfg[timer].value = interval;
 }
 
 void Os_CyclicTasks()
 {
     for (int i = 0 ; i < NUMBER_OF_TIMERS ; i++ )
     {
-        if ( timerCfg[i].interval > 0 && timerCfg[i].callback != NULL_PTR && timerCfg[i].value >= timerCfg[i].interval )
+        if ( timer_cfg[i].interval > 0 && timer_cfg[i].callback != NULL_PTR && timer_cfg[i].value >= timer_cfg[i].interval )
         {
-            timerCfg[i].callback( timerCfg[i].param );
-            timerCfg[i].value %= timerCfg[i].interval;
+            timer_cfg[i].callback( timer_cfg[i].param );
+            timer_cfg[i].value %= timer_cfg[i].interval;
         }
     }
 }
 
-Std_ReturnType Os_ExecuteBackgroundTasks()
+#if NUMBER_OF_BACKGROUND_TASKS > 0
+static int execute_background_tasks()
 {
-    Std_ReturnType retval = Status_OK;
+    int retval = 0;
 
     for ( int i = 0 ; i < NUMBER_OF_BACKGROUND_TASKS ; i++ )
     {
-        if (BackgroundTasksList[i]() == Status_Pending)
+        if (background_tasks_list[i]() > 0)
         {
-            retval = Status_Pending;
+            retval = 1;
         }
+        // TODO : handle task failed
     }
 
     return retval;
 }
+#endif
 
 int main(void)
 {
     /* Perform project-specific initialization */
-    Os_Init();
+    os_init();
 
     // Enable interrupts
-    Os_EnableInterrupts();
+    os_interrupts_enable();
 
     /* Initialization of the application */
-    App_Init();
+    app_init();
 
     /* Run main loop */
     while(1)
@@ -96,10 +103,10 @@ int main(void)
 
 #if NUMBER_OF_BACKGROUND_TASKS > 0
         // Execute background tasks in the spare time, or sleep until next tick
-        if (Os_ExecuteBackgroundTasks() != Status_Pending)
+        if (execute_background_tasks() == 0)
 #endif
         {
-            Os_Sleep();
+            os_sleep();
         }
     }
 

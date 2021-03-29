@@ -9,32 +9,32 @@
 
 ISR(TIMER2_COMPA_vect)
 {
-    Os_TimerCallback();
+    os_timer_callback();
 }
 
-void Os_DisableInterrupts()
+void os_interrupts_disable()
 {
     cli();
 }
 
-void Os_EnableInterrupts()
+void os_interrupts_enable()
 {
     sei();
 }
 
-void Os_HardReset()
+void os_reset()
 {
   cli(); // disable interrupts
   wdt_enable(WDTO_15MS); // enable watchdog
   HALT; // wait for watchdog to reset processor
 }
 
-void Os_ResetWatchdog()
+void os_watchdog_reset()
 {
     wdt_reset();
 }
 
-int Os_EnableWatchdog(Os_Watchdog wd)
+int os_watchdog_enable(os_watchdog_t wd)
 {
     switch(wd)
     {
@@ -83,7 +83,7 @@ int Os_EnableWatchdog(Os_Watchdog wd)
 }
 
 
-void Os_Sleep()
+void os_sleep()
 {
     set_sleep_mode(OS_SLEEP_MODE);
     sleep_enable();
@@ -96,7 +96,7 @@ void Os_Sleep()
     sleep_disable();
 }
 
-void Os_Init()
+void os_init()
 {
     // Disable all peripherals
     PRR = 0xFF;
@@ -109,7 +109,7 @@ void Os_Init()
     PORTC = 0xFF;
     PORTD = 0xFF;
 
-    // Init Timer2 as CTC counter with interrupts
+    // Init timer_t2 as CTC counter with interrupts
     RESET_BIT(PRR, PRTIM2);  // Enable peripheral
     SET_BIT(TIMSK2, OCIE2A); // Enable interrupt on Compare Match A
     TCNT2  = 0;              // Reset timer value

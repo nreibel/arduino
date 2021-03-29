@@ -3,11 +3,10 @@
 
 #include "types.h"
 
-void Os_Init();
-void Os_Sleep();
-void Os_EnableInterrupts();
-void Os_DisableInterrupts();
-void Os_TimerCallback();
-Std_ReturnType Os_ExecuteBackgroundTasks();
+void os_init();
+void os_sleep();
+void os_interrupts_enable();
+void os_interrupts_disable();
+void os_timer_callback();
 
 #endif /* __OS_PRV_H__ */

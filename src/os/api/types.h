@@ -16,7 +16,7 @@ typedef enum {
 } bool;
 
 typedef void (*Interrupt)(volatile void*);
-typedef Std_ReturnType (*Callback)(void*);
+typedef Std_ReturnType (*callback_t)(void*);
 
 typedef union {
     uint16_t value;

@@ -19,8 +19,8 @@ typedef uint16_t time_t;
 #define NUMBER_OF_BACKGROUND_TASKS 0
 
 typedef enum {
-    Timer_MainTask,
+    TIMER_MAIN,
     NUMBER_OF_TIMERS
-} Timer;
+} timer_t;
 
 #endif /* SRC_OS_CFG_OS_CFG_H_ */

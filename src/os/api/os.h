@@ -15,21 +15,22 @@ typedef enum {
     OS_WATCHDOG_2S,
     OS_WATCHDOG_4S,
     OS_WATCHDOG_8S,
-} Os_Watchdog;
+} os_watchdog_t;
 
 // Background Tasks
-typedef Std_ReturnType (*BackgroundTask)(void);
-extern BackgroundTask BackgroundTasksList[NUMBER_OF_BACKGROUND_TASKS];
+typedef int (*background_task)(void);
+extern background_task background_tasks_list[NUMBER_OF_BACKGROUND_TASKS];
 
 // App entry point
-extern void App_Init(void);
+extern void app_init(void);
 
-void Os_ResetTimer(Timer timer);
-time_t Os_GetTimerValue(Timer timer);
-void Os_SetupTask(Timer timer, time_t interval, Callback callback, void* param);
-void Os_Wait(time_t ms);
-void Os_HardReset();
-void Os_ResetWatchdog();
-int Os_EnableWatchdog(Os_Watchdog wd);
+// OS functions
+void os_timer_reset(timer_t timer);
+time_t os_timer_get_value(timer_t timer);
+void os_task_setup(timer_t timer, time_t interval, callback_t callback, void* param);
+void os_wait(time_t ms);
+void os_reset();
+void os_watchdog_reset();
+int os_watchdog_enable(os_watchdog_t wd);
 
 #endif /* __OS_API_H__ */
