@@ -1,21 +1,15 @@
-#ifndef SRC_GPIO_API_PORT_H_
-#define SRC_GPIO_API_PORT_H_
+#ifndef __GPIO_H__
+#define __GPIO_H__
 
 #include "types.h"
 
-// typedef enum
-// {
-//     GPIO_Edge_Low,
-//     GPIO_Edge_Falling,
-//     GPIO_Edge_Rising,
-//     GPIO_Edge_Any
-// } GPIO_Edge;
-//
-// Std_ReturnType GPIO_EnableInterrupt(GPIO pin, GPIO_Edge edge, Interrupt cbk, volatile void *data);
-
-/*
- * NEW
- */
+typedef enum
+{
+    GPIO_EDGE_LOW,
+    GPIO_EDGE_FALLING,
+    GPIO_EDGE_RISING,
+    GPIO_EDGE_ANY
+} gpio_edge_t;
 
 typedef enum
 {
@@ -38,9 +32,12 @@ typedef struct {
     gpio_data_direction_t direction;
 } gpio_t;
 
-bool gpio_init(gpio_t *self, gpio_port_t port, uint8_t pin, gpio_data_direction_t direction);
-bool gpio_set(gpio_t *self);
-bool gpio_reset(gpio_t *self);
-bool gpio_get(gpio_t *self, bool *state);
+typedef void (*gpio_interrupt_callback_t)(volatile void*);
 
-#endif /* SRC_GPIO_API_PORT_H_ */
+int gpio_init(gpio_t *self, gpio_port_t port, uint8_t pin, gpio_data_direction_t direction);
+int gpio_set(gpio_t *self);
+int gpio_reset(gpio_t *self);
+int gpio_get(gpio_t *self, bool *state);
+int gpio_enable_interrupt(gpio_t *self, gpio_edge_t edge, gpio_interrupt_callback_t cbk, volatile void *data);
+
+#endif /* __GPIO_H__ */
