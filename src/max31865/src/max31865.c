@@ -6,41 +6,87 @@
 #include "types.h"
 #include <math.h>
 
-Std_ReturnType MAX31865_Init(Spi_Slave slave, MAX31865_WireMode mode, MAX31865_FilterMode filter)
+int max31865_init(max31865_t *self, gpio_t *cs, max31865_mode_t mode, max31865_filter_t filter)
 {
-    Std_ReturnType retval = Status_Not_OK;
+    spi_device_init(&self->dev, cs, SPI_CLOCK_DIV_16 , SPI_MODE_3);
+    spi_set_transaction_mode_enabled(&self->dev, TRUE);
 
     // VBIAS = On, Conversion mode = Auto
     uint8_t configuration = BIT(7) | BIT(6);
     uint8_t read = 0;
 
-    if (mode == MAX31865_WireMode_3_Wires)  SET_BIT(configuration, 4);
-    if (filter == MAX31865_FilterMode_50Hz) SET_BIT(configuration, 0);
-
-    // Write config
-    Spi_EnableSlave(slave);
-    Spi_WriteByte(MAX31865_REG_CONFIG | MAX31865_WRITE, NULL_PTR);
-    Spi_WriteByte(configuration, NULL_PTR);
-    Spi_DisableSlave(slave);
-
-    // Read back config
-    Spi_EnableSlave(slave);
-    Spi_WriteByte(MAX31865_REG_CONFIG | MAX31865_READ, NULL_PTR);
-    Spi_WriteByte(configuration, &read);
-    Spi_DisableSlave(slave);
-
-    // Same config should be read back if communication is set up properly
-    if (read == configuration)
+    switch(mode)
     {
-        retval = Status_OK;
+        case MAX31865_MODE_2_WIRES:
+            // Nothing to do
+            break;
+
+        case MAX31865_MODE_3_WIRES:
+            SET_BIT(configuration, 4);
+            break;
+
+        case MAX31865_MODE_4_WIRES:
+            // Nothing to do
+            break;
     }
 
-    return retval;
+    switch(filter)
+    {
+        case MAX31865_FILTER_50HZ:
+            SET_BIT(configuration, 0);
+            break;
+
+        case MAX31865_FILTER_60HZ:
+            // Nothing to do
+            break;
+    }
+
+    // Write config
+    spi_enable_slave(&self->dev);
+    spi_write_byte(&self->dev, MAX31865_REG_CONFIG | MAX31865_WRITE, NULL_PTR);
+    spi_write_byte(&self->dev, configuration, NULL_PTR);
+    spi_disable_slave(&self->dev);
+
+    // Read back config
+    spi_enable_slave(&self->dev);
+    spi_write_byte(&self->dev, MAX31865_REG_CONFIG | MAX31865_READ, NULL_PTR);
+    spi_write_byte(&self->dev, configuration, &read);
+    spi_disable_slave(&self->dev);
+
+    // Same config should be read back if communication is set up properly
+    if (read != configuration) return -1;
+
+    return 0;
+}
+
+int max31865_read_rtd(max31865_t *self, double *rtd, bool *fault)
+{
+    uint8_t msb = 0;
+    uint8_t lsb = 0;
+
+    spi_enable_slave(&self->dev);
+    spi_write_byte(&self->dev, MAX31865_REG_RTD_MSB | MAX31865_READ, NULL_PTR);
+    spi_read_byte(&self->dev, &msb);
+    spi_read_byte(&self->dev, &lsb);
+    spi_disable_slave(&self->dev);
+
+    if ( lsb == 0 && msb == 0 )
+    {
+        // Device disconnected, probably...
+        return -1;
+    }
+
+    *fault = IS_SET_BIT(lsb, 0) ? TRUE : FALSE;
+
+    uint16_t w = (msb << 8) | lsb;
+    *rtd = (MAX31865_RES_REF * TYPECAST(w >> 1, double)) / MAX31865_ADC_RESOLUTION;
+
+    return 0;
 }
 
 // Implementation of Callendar-Van Dusen equation
 // Only for temperatures > 0°C
-double MAX31865_RTD_To_Temperature(double rtd)
+double max31865_rtd_to_temperature(double rtd)
 {
     double acc = 0;
     acc = rtd/MAX31865_RTD_RES_0;
@@ -51,35 +97,12 @@ double MAX31865_RTD_To_Temperature(double rtd)
     return acc / (2 * MAX31865_RTD_B);
 }
 
-Std_ReturnType MAX31865_ReadRTD(Spi_Slave slave, double *rtd)
+int max31865_read_fault_status(max31865_t *self, uint8_t *status)
 {
-    Std_ReturnType retval = Status_Not_OK;
+    spi_enable_slave(&self->dev);
+    spi_write_byte(&self->dev, MAX31865_REG_FAULT_STATUS | MAX31865_READ, NULL_PTR);
+    spi_write_byte(&self->dev, 0, status);
+    spi_disable_slave(&self->dev);
 
-    uint8_t msb = 0;
-    uint8_t lsb = 0;
-
-    Spi_EnableSlave(slave);
-    Spi_WriteByte(MAX31865_REG_RTD_MSB | MAX31865_READ, NULL_PTR);
-    Spi_ReadByte(&msb);
-    Spi_ReadByte(&lsb);
-    Spi_DisableSlave(slave);
-
-    if ( lsb == 0 && msb == 0 )
-    {
-        // TODO : device disconnected
-    }
-    else if ( IS_SET_BIT(lsb, 0) )
-    {
-        // TODO : handle fault bit
-    }
-    else
-    {
-        uint16_t w = (msb << 8) | lsb;
-        *rtd = (MAX31865_RES_REF * TYPECAST(w >> 1, double)) / MAX31865_ADC_RESOLUTION;
-        retval = Status_OK;
-    }
-
-    return retval;
+    return 0;
 }
-
-// double MAX31865_

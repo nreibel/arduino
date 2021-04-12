@@ -1,8 +1,5 @@
-#ifndef SRC_MAX31865_API_MAX31865_PRV_H_
-#define SRC_MAX31865_API_MAX31865_PRV_H_
-
-#include "max31865.h"
-#include "max31865_cfg.h"
+#ifndef __MAX31865_PRV_H__
+#define __MAX31865_PRV_H__
 
 #define MAX31865_REG_CONFIG       0x00
 #define MAX31865_REG_RTD_MSB      0x01
@@ -18,4 +15,4 @@
 
 #define MAX31865_ADC_RESOLUTION (1ULL << 15)
 
-#endif // SRC_MAX31865_API_MAX31865_PRV_H_
+#endif // __MAX31865_PRV_H__
