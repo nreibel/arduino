@@ -30,6 +30,47 @@ Std_ReturnType I2C_Master_WriteByteSync(uint8_t addr, uint8_t reg, uint8_t val)
     return I2C_Master_WriteSync(addr, reg, &val, 1);
 }
 
+Std_ReturnType I2C_Master_TransmitSync(uint8_t addr, buffer_t buffer, int write_len, int read_len)
+{
+    Std_ReturnType retval = Status_Not_OK;
+    uint8_t *ptr = UINT8_PTR(buffer);
+
+    retval = I2C_Master_StartCondition();
+    if (retval != Status_OK) return retval;
+
+    retval = I2C_Master_SlaveWrite(addr);
+    if (retval != Status_OK) return retval;
+
+    for(int i = 0 ; i < write_len ; i++)
+    {
+        retval = I2C_Master_Write(ptr[i], NULL_PTR);
+        if (retval != Status_OK) return retval;
+    }
+
+    if (read_len > 0)
+    {
+        retval = I2C_Master_RestartCondition();
+        if (retval != Status_OK) return retval;
+
+        retval = I2C_Master_SlaveRead(addr);
+        if (retval != Status_OK) return retval;
+
+        for(int i = 0 ; i < read_len - 1 ; i++)
+        {
+            retval = I2C_Master_ReadAck( &ptr[i] );
+            if (retval != Status_OK) return retval;
+        }
+
+        retval = I2C_Master_ReadNak( &ptr[read_len-1] );
+        if (retval != Status_OK) return retval;
+    }
+
+    retval = I2C_Master_StopCondition();
+    if (retval != Status_OK) return retval;
+
+    return Status_OK;
+}
+
 Std_ReturnType I2C_Master_WriteSync(uint8_t addr, uint8_t reg, buffer_t buffer, int len)
 {
     Std_ReturnType retval = Status_Not_OK;
