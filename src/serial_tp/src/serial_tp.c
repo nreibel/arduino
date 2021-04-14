@@ -13,26 +13,28 @@ void Serial_TP_Init()
 void Serial_RxCallback(const char *rx_buffer, int length)
 {
     Serial_TP_Request *req = TYPECAST(rx_buffer, Serial_TP_Request*);
-    Serial_TP_Response rsp = {SERIAL_TP_RETCODE_ERROR, 0, buffer};
+    Serial_TP_Response rsp = {0, buffer};
+    uint8_t status = SERIAL_TP_RETCODE_ERROR;
 
     if ( req->header != SERIAL_TP_REQUEST_HEADER )
     {
         // Check request header
-        rsp.status = SERIAL_TP_RETCODE_INVALID_HEADER;
+        status = SERIAL_TP_RETCODE_INVALID_HEADER;
     }
     else if ( req->data_len != length - sizeof(Serial_TP_Request) - 1 )
     {
         // Check data length
-        rsp.status = SERIAL_TP_RETCODE_INVALID_DATA_LEN;
+        status = SERIAL_TP_RETCODE_INVALID_DATA_LEN;
     }
     else
     {
         // User callback
-        Serial_TP_Callback(req, &rsp);
+        status = Serial_TP_Callback(req, &rsp);
     }
 
     // Send response
-    Serial_WriteBytes(&rsp, 2);
+    Serial_WriteByte(status);
+    Serial_WriteByte(rsp.data_len);
     Serial_WriteBytes(rsp.data, rsp.data_len);
     Serial_WriteByte(SERIAL_TP_FRAME_TERMINATOR);
 }

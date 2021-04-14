@@ -76,7 +76,7 @@ Std_ReturnType Serial_Print(const void* string)
     }
 }
 
-#if SERIAL_ASYNC_RX == OFF
+#if SERIAL_ASYNC_RX != ON
 int Serial_Read(void *buffer, int buffer_len)
 {
     int rcvd_len = 0;

@@ -36,12 +36,11 @@ typedef struct {
 } Serial_TP_Request;
 
 typedef struct {
-    uint8_t status;
     uint8_t data_len;
     void    *data;
 } Serial_TP_Response;
 
 void Serial_TP_Init();
-void Serial_TP_Callback(Serial_TP_Request *req, Serial_TP_Response *rsp);
+uint8_t Serial_TP_Callback(Serial_TP_Request *req, Serial_TP_Response *rsp);
 
 #endif /* SRC_SERIAL_TP_API_SERIAL_H_ */
