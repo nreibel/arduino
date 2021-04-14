@@ -121,10 +121,10 @@ Std_ReturnType I2C_Master_RestartCondition()
     switch(TW_STATUS)
     {
         case TW_START:
-            return Status_OK;
+            return Status_Not_OK;
 
         case TW_REP_START:
-            return Status_Not_OK;
+            return Status_OK;
 
         default:
             return Status_Not_OK;
@@ -216,11 +216,11 @@ Std_ReturnType I2C_Master_ReadNak(uint8_t *data)
     switch(TW_STATUS)
     {
         case TW_MR_DATA_ACK:
-            if (data != NULL_PTR) *data = TWDR;
-            return Status_OK;
+            return Status_Not_OK;
 
         case TW_MR_DATA_NACK:
-            return Status_Not_OK;
+            if (data != NULL_PTR) *data = TWDR;
+            return Status_OK;
 
         default:
             return Status_Not_OK;
