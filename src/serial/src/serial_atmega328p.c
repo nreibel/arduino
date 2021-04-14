@@ -1,5 +1,6 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include "serial.h"
 #include "serial_cfg.h"
 #include "serial_prv.h"
 #include "os_cfg.h"
@@ -7,9 +8,10 @@
 #include "types.h"
 
 #if SERIAL_ASYNC_RX == ON
+
 ISR(USART_RX_vect)
 {
-    Serial_HAL_ISR_Rx();
+    Serial_RxCallback(UDR0);
 }
 
 void Serial_HAL_EnableRxInterrupts()

@@ -18,7 +18,7 @@ Std_ReturnType Serial_Println(const void* string);
 #if SERIAL_ASYNC_RX != ON
 int Serial_Read(void *buffer, int buffer_len);
 #else
-void Serial_RxCallback(const char *buffer, int length);
+void Serial_RxCallback(uint8_t received);
 #endif
 
 #if SERIAL_ASYNC_TX == ON

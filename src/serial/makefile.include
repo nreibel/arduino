@@ -5,5 +5,4 @@ INCLUDES+=\
 serial: \
 	$(SRC_DIR)/serial/src/serial.o \
 	$(SRC_DIR)/serial/src/serial_$(ARCH).o \
-	$(SRC_DIR)/serial/src/serial_rx_async.o \
 	$(SRC_DIR)/serial/src/serial_tx_async.o \
