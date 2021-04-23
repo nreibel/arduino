@@ -18,7 +18,7 @@ LDFLAGS = -u,vfprintf
 LIBS = printf_flt m
 
 # TODO : handle modules dependencies
-MODULES := os serial eeprom
+MODULES := os serial
 app: app/app.o
 
 include $(ARDUINO_LIBS)/makefile.include

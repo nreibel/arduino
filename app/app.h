@@ -1,6 +1,6 @@
-#ifndef SRC_APP_API_APP_H_
-#define SRC_APP_API_APP_H_
+#ifndef __APP_H__
+#define __APP_H__
 
 Std_ReturnType Task_Main(void* data);
 
-#endif /* SRC_APP_API_APP_H_ */
+#endif /* __APP_H__ */
