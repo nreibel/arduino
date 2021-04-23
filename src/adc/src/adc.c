@@ -7,8 +7,6 @@
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
 
-#include "gpio.h"
-
 volatile uint16_t data = 0;
 volatile bool ready = FALSE;
 
