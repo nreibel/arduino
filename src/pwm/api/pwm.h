@@ -9,7 +9,15 @@ typedef enum {
     NUMBER_OF_PWM_CHANNELS
 } pwm_t;
 
-void pwm_init();
+typedef enum {
+    PWM_PRESCALER_0,
+    PWM_PRESCALER_8,
+    PWM_PRESCALER_64,
+    PWM_PRESCALER_256,
+    PWM_PRESCALER_1024
+} pwm_prescaler_t;
+
+void pwm_init(pwm_prescaler_t cs);
 bool pwm_start(pwm_t self, uint8_t duty_cycle, bool inverted);
 bool pwm_set_duty_cycle(pwm_t self, uint8_t duty_cycle);
 bool pwm_stop(pwm_t self);

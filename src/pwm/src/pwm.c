@@ -12,7 +12,7 @@ static pwm_config_t config[NUMBER_OF_PWM_CHANNELS] = {
     { FALSE }
 };
 
-void pwm_init()
+void pwm_init(pwm_prescaler_t cs)
 {
     // Enable peripheral
     RESET_BIT(PRR, PRTIM0);
@@ -20,8 +20,33 @@ void pwm_init()
     // Set Fast PWM mode
     TCCR0A = BIT(WGM01) | BIT(WGM00);
 
-    // No prescaling
-    TCCR0B = BIT(CS00);
+    switch(cs)
+    {
+        case PWM_PRESCALER_0:
+            SET_BIT(TCCR0B, CS00);
+            break;
+
+        case PWM_PRESCALER_8:
+            SET_BIT(TCCR0B, CS01);
+            break;
+
+        case PWM_PRESCALER_64:
+            SET_BIT(TCCR0B, CS00);
+            SET_BIT(TCCR0B, CS01);
+            break;
+
+        case PWM_PRESCALER_256:
+            SET_BIT(TCCR0B, CS02);
+            break;
+
+        case PWM_PRESCALER_1024:
+            SET_BIT(TCCR0B, CS00);
+            SET_BIT(TCCR0B, CS02);
+            break;
+
+        default:
+            HALT;
+    }
 }
 
 bool pwm_start(pwm_t self, uint8_t duty_cycle, bool inverted)
