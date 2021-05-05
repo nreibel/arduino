@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "serial.h"
+#include "serial_tp_cfg.h"
 
 #if !defined(SRC_SERIAL_API_SERIAL_H_)
 #error "Serial TP needs module Serial"
@@ -30,15 +31,16 @@
 typedef struct {
     uint8_t function;
     uint8_t address;
-    uint8_t *data;
     uint8_t length;
+    uint8_t data[SERIAL_TP_RX_BUFFER_LEN];
 } Serial_TP_Request;
 
 typedef struct {
-    void    *data;
+    uint8_t status;
     uint8_t length;
+    uint8_t data[SERIAL_TP_TX_BUFFER_LEN];
 } Serial_TP_Response;
 
-uint8_t Serial_TP_Callback(Serial_TP_Request *req, Serial_TP_Response *rsp);
+void Serial_TP_Callback(Serial_TP_Request *req, Serial_TP_Response *rsp);
 
 #endif /* SRC_SERIAL_TP_API_SERIAL_H_ */

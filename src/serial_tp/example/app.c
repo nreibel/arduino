@@ -1,75 +1,62 @@
 #include "os.h"
+#include "app.h"
 #include "serial.h"
 #include "serial_tp.h"
 
-#define FUNCTION_WRITE_DATA   0x10
-#define FUNCTION_READ_DATA    0x11
+#define FUNCTION_WRITE_DATA 0x10
+#define FUNCTION_READ_DATA  0x11
 
 #define DATA_X 0x01
 #define DATA_Y 0x02
 
 void Serial_TP_Callback(Serial_TP_Request *req, Serial_TP_Response *rsp)
 {
-    static int x = 0;
-    static int y = 0;
+    static uint8_t data_x = 0;
+    static uint8_t data_y = 0;
 
     switch(req->function)
     {
-        case FUNCTION_WRITE_DATA:
-        {
-            switch(req->address)
-            {
-                case DATA_X:
-                {
-                    x = READ_PU8(req->data);
-                    rsp->status = SERIAL_TP_RETCODE_OK;
-                    break;
-                }
-
-                case DATA_Y:
-                {
-                    y = READ_PU8(req->data);
-                    rsp->status = SERIAL_TP_RETCODE_OK;
-                    break;
-                }
-
-                default:
-                {
-                    rsp->status = SERIAL_TP_RETCODE_ADDRESS_INVALID;
-                    break;
-                }
-            }
-
-            break;
-        }
-
         case FUNCTION_READ_DATA:
         {
             switch(req->address)
             {
                 case DATA_X:
-                {
-                    rsp->data_len = 1;
-                    rsp->data = &x;
+                    rsp->length = 1;
+                    rsp->data[0] = data_x;
                     rsp->status = SERIAL_TP_RETCODE_OK;
                     break;
-                }
 
                 case DATA_Y:
-                {
-                    rsp->data_len = 1;
-                    rsp->data = &y;
+                    rsp->length = 1;
+                    rsp->data[0] = data_y;
                     rsp->status = SERIAL_TP_RETCODE_OK;
                     break;
-                }
 
                 default:
-                {
                     rsp->status = SERIAL_TP_RETCODE_ADDRESS_INVALID;
                     break;
-                }
             }
+            break;
+        }
 
+        case FUNCTION_WRITE_DATA:
+        {
+            switch(req->address)
+            {
+                case DATA_X:
+                    data_x = req->data[0];
+                    rsp->status = SERIAL_TP_RETCODE_OK;
+                    break;
+
+                case DATA_Y:
+                    data_y = req->data[0];
+                    rsp->status = SERIAL_TP_RETCODE_OK;
+                    break;
+
+                default:
+                    rsp->status = SERIAL_TP_RETCODE_ADDRESS_INVALID;
+                    break;
+            }
             break;
         }
 
@@ -80,13 +67,10 @@ void Serial_TP_Callback(Serial_TP_Request *req, Serial_TP_Response *rsp)
         }
     }
 }
-        
+
 // App entry point
 void App_Init()
 {
     Serial_Init();
-    Serial_TP_Init();
-
-    // Not mandatory, useful for client app to detect device
     Serial_Print("READY");
 }

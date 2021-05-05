@@ -106,5 +106,10 @@ print('write to wrong data id')
 if status: print('  success');
 else: print('  error ' + str(retval));
 
+print('write wrong data length')
+(status, retval) = send_command(ser, FUNCTION_WRITE_DATA, 0xFF, b'\x00\x00')
+if status: print('  success');
+else: print('  error ' + str(retval));
+
 ser.close()
 print('ok');

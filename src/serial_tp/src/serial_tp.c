@@ -2,9 +2,9 @@
 #include "serial_tp_cfg.h"
 #include "types.h"
 #include "bits.h"
-#include "st7735.h"
+#include "string.h"
 
-static void Serial_SendResponse(uint8_t status, Serial_TP_Response *rsp);
+static void Serial_SendResponse(Serial_TP_Response *rsp);
 
 typedef enum {
     SERIAL_TP_RCVD_HEADER,
@@ -15,32 +15,19 @@ typedef enum {
     SERIAL_TP_RCVD_TERMINATOR,
 } serial_tp_state_t;
 
-static void Serial_SendResponse(uint8_t status, Serial_TP_Response *rsp)
+static void Serial_SendResponse(Serial_TP_Response *rsp)
 {
-    Serial_WriteByte(status);
-
-    if (rsp == NULL_PTR)
-    {
-        Serial_WriteByte(0);
-    }
-    else
-    {
-        Serial_WriteByte(rsp->length);
-        Serial_WriteBytes(rsp->data, rsp->length);
-    }
-
+    Serial_WriteBytes(rsp, 2 + rsp->length);
     Serial_WriteByte(SERIAL_TP_FRAME_TERMINATOR);
 }
 
 void Serial_RxCallback(uint8_t received)
 {
     static Serial_TP_Request req = {0};
-
-    static uint8_t tx_buffer[SERIAL_TP_TX_BUFFER_LEN] = {0};
-    static uint8_t rx_buffer[SERIAL_TP_RX_BUFFER_LEN] = {0};
+    static Serial_TP_Response rsp = {0};
 
     static uint8_t *rx_ptr = NULL_PTR;
-    static int rx_size = 0;
+    static int rx_len = 0;
 
     static serial_tp_state_t state = SERIAL_TP_RCVD_HEADER;
 
@@ -48,8 +35,16 @@ void Serial_RxCallback(uint8_t received)
     {
         case SERIAL_TP_RCVD_HEADER:
         {
-            if (received == SERIAL_TP_REQUEST_HEADER) state = SERIAL_TP_RCVD_FUNCTION;
-            else Serial_SendResponse(SERIAL_TP_RETCODE_INVALID_HEADER, NULL_PTR);
+            if (received == SERIAL_TP_REQUEST_HEADER)
+            {
+                memset(&rsp, 0, sizeof(Serial_TP_Response));
+                state = SERIAL_TP_RCVD_FUNCTION;
+            }
+            else
+            {
+                rsp.status = SERIAL_TP_RETCODE_INVALID_HEADER;
+                Serial_SendResponse(&rsp);
+            }
             break;
         }
 
@@ -71,10 +66,11 @@ void Serial_RxCallback(uint8_t received)
         {
             req.length = received;
 
-            rx_ptr = rx_buffer;
-            rx_size = 0;
+            // Setup buffer
+            rx_ptr = req.data;
+            rx_len = 0;
 
-            if (req.length == 0) state = SERIAL_TP_RCVD_TERMINATOR;
+            if (received == 0) state = SERIAL_TP_RCVD_TERMINATOR;
             else state = SERIAL_TP_RCVD_DATA;
 
             break;
@@ -82,14 +78,14 @@ void Serial_RxCallback(uint8_t received)
 
         case SERIAL_TP_RCVD_DATA:
         {
-            rx_size++;
+            rx_len++;
 
-            if (rx_size <= SERIAL_TP_RX_BUFFER_LEN)
+            if (rx_len <= SERIAL_TP_RX_BUFFER_LEN)
             {
                 WRITE_PU8(rx_ptr++, received);
             }
 
-            if (rx_size >= req.length)
+            if (rx_len >= req.length)
             {
                 state = SERIAL_TP_RCVD_TERMINATOR;
             }
@@ -98,26 +94,20 @@ void Serial_RxCallback(uint8_t received)
 
         case SERIAL_TP_RCVD_TERMINATOR:
         {
-            if (received == SERIAL_TP_FRAME_TERMINATOR)
+            if (received != SERIAL_TP_FRAME_TERMINATOR)
             {
-                if (rx_size > SERIAL_TP_RX_BUFFER_LEN)
-                {
-                    Serial_SendResponse(SERIAL_TP_RETCODE_BUFFER_OVERRUN, NULL_PTR);
-                }
-                else
-                {
-                    req.data = rx_buffer;
-
-                    Serial_TP_Response rsp = {tx_buffer, 0};
-                    uint8_t status = Serial_TP_Callback(&req, &rsp);
-                    Serial_SendResponse(status, &rsp);
-                }
+                rsp.status = SERIAL_TP_RETCODE_EXPECTED_EOF;
+            }
+            else if (rx_len > SERIAL_TP_RX_BUFFER_LEN)
+            {
+                rsp.status = SERIAL_TP_RETCODE_BUFFER_OVERRUN;
             }
             else
             {
-                Serial_SendResponse(SERIAL_TP_RETCODE_EXPECTED_EOF, NULL_PTR);
+                Serial_TP_Callback(&req, &rsp);
             }
 
+            Serial_SendResponse(&rsp);
             state = SERIAL_TP_RCVD_HEADER;
 
             break;
