@@ -7,121 +7,175 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
-#define NBR_OF_INT_INPUTS 2
+static volatile void* extint_data[NBR_OF_EXTINT] = {0};
+static gpio_extint_cbk_t extint_cbk[NBR_OF_EXTINT] = {0};
 
-static volatile void* int_data[NBR_OF_INT_INPUTS] = {0};
-static gpio_interrupt_callback_t int_cbk[NBR_OF_INT_INPUTS] = {0};
+static volatile void* pcint_data[NBR_OF_PORTS] = {0};
+static gpio_pcint_cbk_t pcint_cbk[NBR_OF_PORTS] = {0};
 
 ISR(INT0_vect)
 {
-    if (int_cbk[0] != NULL_PTR)
+    if (extint_cbk[0] != NULL_PTR)
     {
-        (*int_cbk[0])(int_data[0]);
+        (*extint_cbk[0])(extint_data[0]);
     }
 }
 
 ISR(INT1_vect)
 {
-    if (int_cbk[1] != NULL_PTR)
+    if (extint_cbk[1] != NULL_PTR)
     {
-        (*int_cbk[1])(int_data[1]);
+        (*extint_cbk[1])(extint_data[1]);
     }
 }
 
-int gpio_enable_interrupt(gpio_t *self, gpio_edge_t edge, gpio_interrupt_callback_t cbk, volatile void *data)
+ISR(PCINT0_vect)
+{
+    if (pcint_cbk[0] != NULL_PTR)
+    {
+        (*pcint_cbk[0])(PINB, pcint_data[0]);
+    }
+}
+
+ISR(PCINT1_vect)
+{
+    if (pcint_cbk[1] != NULL_PTR)
+    {
+        (*pcint_cbk[1])(PINC, pcint_data[1]);
+    }
+}
+
+ISR(PCINT2_vect)
+{
+    if (pcint_cbk[2] != NULL_PTR)
+    {
+        (*pcint_cbk[2])(PIND, pcint_data[2]);
+    }
+}
+
+int gpio_enable_pcint(gpio_port_t port, uint8_t mask, gpio_pcint_cbk_t cbk, volatile void *data)
+{
+    switch(port)
+    {
+        case GPIO_PORT_B: // PCINT0..7:
+        {
+            pcint_cbk[0] = cbk;
+            pcint_data[0] = data;
+
+            PCMSK0 = mask;
+            SET_BIT(PCICR, PCIE0);
+            break;
+        }
+
+        case GPIO_PORT_C: // PCINT8..14
+        {
+            pcint_cbk[1] = cbk;
+            pcint_data[1] = data;
+
+            PCMSK1 = mask;
+            SET_BIT(PCICR, PCIE1);
+            break;
+        }
+
+        case GPIO_PORT_D: // PCINT16..23
+        {
+            pcint_cbk[2] = cbk;
+            pcint_data[2] = data;
+
+            PCMSK2 = mask;
+            SET_BIT(PCICR, PCIE2);
+            break;
+        }
+
+        default: return -1;
+    }
+
+    return 0;
+}
+
+int gpio_enable_extint(gpio_int_t pin, gpio_edge_t edge, gpio_extint_cbk_t cbk, volatile void *data)
 {
     uint8_t eicra = EICRA;
     uint8_t eimsk = EIMSK;
 
-    switch(self->port)
+    switch(pin)
     {
-        case GPIO_PORT_B: return -1;
-        case GPIO_PORT_C: return -1;
-        case GPIO_PORT_D:
+        case GPIO_INT_0:
         {
-            switch(self->pin)
+            switch(edge)
             {
-                case 0: return -1;
-                case 1: return -1;
-                case 2: // INT0
-                {
-                    switch(edge)
-                    {
-                        case GPIO_EDGE_LOW:
-                            RESET_BIT(eicra, ISC01);
-                            RESET_BIT(eicra, ISC00);
-                            break;
-
-                        case GPIO_EDGE_ANY:
-                            RESET_BIT(eicra, ISC01);
-                            SET_BIT(eicra, ISC00);
-                            break;
-
-                        case GPIO_EDGE_FALLING:
-                            SET_BIT(eicra, ISC01);
-                            RESET_BIT(eicra, ISC00);
-                            break;
-
-                        case GPIO_EDGE_RISING:
-                            SET_BIT(eicra, ISC01);
-                            SET_BIT(eicra, ISC00);
-                            break;
-
-                        default:
-                            return -2;
-                    }
-
-                    SET_BIT(eimsk, INT0);
-
-                    int_data[0] = data;
-                    int_cbk[0] = cbk;
-
+                case GPIO_EDGE_LOW:
+                    RESET_BIT(eicra, ISC01);
+                    RESET_BIT(eicra, ISC00);
                     break;
-                }
-                case 3: // INT1
-                {
-                    switch(edge)
-                    {
-                        case GPIO_EDGE_LOW:
-                            RESET_BIT(eicra, ISC11);
-                            RESET_BIT(eicra, ISC10);
-                            break;
 
-                        case GPIO_EDGE_ANY:
-                            RESET_BIT(eicra, ISC11);
-                            SET_BIT(eicra, ISC10);
-                            break;
-
-                        case GPIO_EDGE_FALLING:
-                            SET_BIT(eicra, ISC11);
-                            RESET_BIT(eicra, ISC10);
-                            break;
-
-                        case GPIO_EDGE_RISING:
-                            SET_BIT(eicra, ISC11);
-                            SET_BIT(eicra, ISC10);
-                            break;
-
-                        default:
-                            return -2;
-                    }
-
-                    SET_BIT(eimsk, INT1);
-
-                    int_data[1] = data;
-                    int_cbk[1] = cbk;
-
+                case GPIO_EDGE_ANY:
+                    RESET_BIT(eicra, ISC01);
+                    SET_BIT(eicra, ISC00);
                     break;
-                }
-                case 4: return -1;
-                case 5: return -1;
-                case 6: return -1;
-                case 7: return -1;
-                default: return -2;
+
+                case GPIO_EDGE_FALLING:
+                    SET_BIT(eicra, ISC01);
+                    RESET_BIT(eicra, ISC00);
+                    break;
+
+                case GPIO_EDGE_RISING:
+                    SET_BIT(eicra, ISC01);
+                    SET_BIT(eicra, ISC00);
+                    break;
+
+                default:
+                    return -2;
             }
+
+            SET_BIT(eimsk, INT0);
+
+            extint_data[0] = data;
+            extint_cbk[0] = cbk;
+
             break;
         }
-        default: return -2;
+
+        case GPIO_INT_1:
+        {
+            switch(edge)
+            {
+                case GPIO_EDGE_LOW:
+                    RESET_BIT(eicra, ISC11);
+                    RESET_BIT(eicra, ISC10);
+                    break;
+
+                case GPIO_EDGE_ANY:
+                    RESET_BIT(eicra, ISC11);
+                    SET_BIT(eicra, ISC10);
+                    break;
+
+                case GPIO_EDGE_FALLING:
+                    SET_BIT(eicra, ISC11);
+                    RESET_BIT(eicra, ISC10);
+                    break;
+
+                case GPIO_EDGE_RISING:
+                    SET_BIT(eicra, ISC11);
+                    SET_BIT(eicra, ISC10);
+                    break;
+
+                default:
+                    return -2;
+            }
+
+            SET_BIT(eimsk, INT1);
+
+            extint_data[1] = data;
+            extint_cbk[1] = cbk;
+
+            break;
+        }
+
+        default:
+        {
+            return -1;
+        }
     }
 
     EICRA = eicra;

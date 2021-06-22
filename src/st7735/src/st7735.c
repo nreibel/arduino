@@ -24,9 +24,9 @@ void st7735_init_device(st7735_t *self, gpio_t *cs, gpio_t *dc, int w, int h)
 
     // TFT startup routine
     st7735_command(self, ST7735_SWRESET);
-    Os_Wait(120);
+    os_wait(120);
     st7735_command(self, ST7735_SLPOUT);
-    Os_Wait(120);
+    os_wait(120);
 
     // 16bits per pixel
     st7735_command(self, ST7735_COLMOD);
