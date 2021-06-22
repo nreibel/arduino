@@ -20,33 +20,45 @@ void pwm_init(pwm_prescaler_t cs)
     // Set Fast PWM mode
     TCCR0A = BIT(WGM01) | BIT(WGM00);
 
+    uint8_t tccr0b = TCCR0B;
+
     switch(cs)
     {
         case PWM_PRESCALER_0:
-            SET_BIT(TCCR0B, CS00);
+            SET_BIT(tccr0b, CS00);
+            RESET_BIT(tccr0b, CS01);
+            RESET_BIT(tccr0b, CS02);
             break;
 
         case PWM_PRESCALER_8:
-            SET_BIT(TCCR0B, CS01);
+            RESET_BIT(tccr0b, CS00);
+            SET_BIT(tccr0b, CS01);
+            RESET_BIT(tccr0b, CS02);
             break;
 
         case PWM_PRESCALER_64:
-            SET_BIT(TCCR0B, CS00);
-            SET_BIT(TCCR0B, CS01);
+            SET_BIT(tccr0b, CS00);
+            SET_BIT(tccr0b, CS01);
+            RESET_BIT(tccr0b, CS02);
             break;
 
         case PWM_PRESCALER_256:
-            SET_BIT(TCCR0B, CS02);
+            RESET_BIT(tccr0b, CS00);
+            RESET_BIT(tccr0b, CS01);
+            SET_BIT(tccr0b, CS02);
             break;
 
         case PWM_PRESCALER_1024:
-            SET_BIT(TCCR0B, CS00);
-            SET_BIT(TCCR0B, CS02);
+            SET_BIT(tccr0b, CS00);
+            RESET_BIT(tccr0b, CS01);
+            SET_BIT(tccr0b, CS02);
             break;
 
         default:
             HALT;
     }
+
+    TCCR0B = tccr0b;
 }
 
 bool pwm_start(pwm_t self, uint8_t duty_cycle, bool inverted)
