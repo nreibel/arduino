@@ -19,7 +19,7 @@ bool serial_tx_ready(serial_bus_t bus);
 void serial_write_bytes_async(serial_bus_t bus, void *buffer, int len);
 #endif
 
-void serial_bus_init(serial_bus_t bus, int baudrate);
+void serial_bus_init(serial_bus_t bus, uint32_t baudrate);
 
 int serial_read_byte(serial_bus_t bus, uint8_t *chr);
 int serial_read_bytes(serial_bus_t bus, void *buffer, int length);

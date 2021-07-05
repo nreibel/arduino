@@ -7,7 +7,7 @@
 
 #include <avr/pgmspace.h>
 
-void serial_bus_init(serial_bus_t bus, int baudrate)
+void serial_bus_init(serial_bus_t bus, uint32_t baudrate)
 {
     serial_hal_init(bus, baudrate);
 }

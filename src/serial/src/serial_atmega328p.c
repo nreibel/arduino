@@ -73,7 +73,7 @@ ISR(USART_TX_vect)
 }
 #endif
 
-void serial_hal_init(serial_bus_t bus, int baudrate)
+void serial_hal_init(serial_bus_t bus, uint32_t baudrate)
 {
     buses[bus].handle = bus;
 
