@@ -6,6 +6,8 @@
 extern volatile time_t osTimer;
 extern TimerConfig timerCfg[NUMBER_OF_TIMERS];
 
+static void Os_CyclicTasks();
+
 void Os_Wait(time_t ms)
 {
     osTimer = 0;
@@ -31,13 +33,33 @@ void Os_SetupTask(Timer timer, time_t interval, Callback callback, void* param)
     timerCfg[timer].callback = callback;
     timerCfg[timer].param = param;
     timerCfg[timer].value = 0;
+    timerCfg[timer].state = TASK_STATE_ACTIVE;
 }
 
-void Os_CyclicTasks()
+void Os_SuspendTask(Timer timer)
+{
+    timerCfg[timer].state = TASK_STATE_SUSPENDED;
+}
+
+void Os_ResumeTask(Timer timer)
+{
+    timerCfg[timer].state = TASK_STATE_ACTIVE;
+}
+
+TaskState_t Os_GetTaskState(Timer timer)
+{
+    return timerCfg[timer].state;
+}
+
+static void Os_CyclicTasks()
 {
     for (int i = 0 ; i < NUMBER_OF_TIMERS ; i++ )
     {
-        if ( timerCfg[i].interval > 0 && timerCfg[i].callback != NULL_PTR && timerCfg[i].value >= timerCfg[i].interval )
+        if ( timerCfg[i].interval > 0
+            && timerCfg[i].callback != NULL_PTR
+            && timerCfg[i].value >= timerCfg[i].interval
+            && timerCfg[i].state == TASK_STATE_ACTIVE
+        )
         {
             timerCfg[i].callback( timerCfg[i].param );
             timerCfg[i].value %= timerCfg[i].interval; // TODO : avoid modulo

@@ -7,9 +7,10 @@
 /* Holds the status of each timer channel */
 typedef struct {
     volatile time_t value;
-    time_t   interval;
+    time_t interval;
     Callback callback;
-    void*    param;
+    void* param;
+    TaskState_t state;
 } TimerConfig;
 
 extern BackgroundTask BackgroundTasksList[NUMBER_OF_BACKGROUND_TASKS];
