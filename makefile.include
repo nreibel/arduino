@@ -45,9 +45,9 @@ UPLOAD = avrdude
 MONITOR = picocom
 
 # Output files
-OBJ = obj
-OUT = bin
-FNAME = out-$(ARCH)
+OBJ ?= obj
+OUT ?= bin
+FNAME ?= out-$(ARCH)
 
 # Compilation options and flags
 WARNINGS += all extra undef
