@@ -3,10 +3,18 @@
 #include "types.h"
 #include "bits.h"
 
+/*
+ * Private data
+ */
+
 static uint8_t tx_buffer[SERIAL_TP_RESPONSE_BUFFER_LEN] = {0};
 static serial_tp_callback callbacks[NUMBER_OF_SERIAL_BUSES] =  {0};
 
-void serial_rx_cbk(serial_bus_t bus, const char *rx_buffer, int rx_length)
+/*
+ * Public functions
+ */
+
+void serial_rx_cbk(serial_bus_h bus, const char *rx_buffer, int rx_length)
 {
     serial_tp_request *req = TYPECAST(rx_buffer, serial_tp_request*);
 
@@ -36,7 +44,7 @@ void serial_rx_cbk(serial_bus_t bus, const char *rx_buffer, int rx_length)
     serial_write_byte(bus, SERIAL_TP_FRAME_TERMINATOR);
 }
 
-void serial_tp_init(serial_bus_t bus, serial_tp_callback cbk)
+void serial_tp_init(serial_bus_h bus, serial_tp_callback cbk)
 {
     serial_set_rx_callback(bus, serial_rx_cbk);
     callbacks[bus] = cbk;
