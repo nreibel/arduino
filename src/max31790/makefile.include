@@ -1,3 +1,4 @@
-INCLUDES += $(SRC_DIR)/max31790/api $(CFG_DIR)/max31790
+INCLUDES += \
+	$(SRC_DIR)/max31790/api \
 
 max31790: $(SRC_DIR)/max31790/src/max31790.o \

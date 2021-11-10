@@ -4,23 +4,23 @@
 #include "types.h"
 #include "i2c.h"
 
-typedef enum {
+enum tc74_addr_e {
     TC74A0 = 0x48,
-    TC74A1 = 0x49,
-    TC74A2 = 0x4A,
-    TC74A3 = 0x4B,
-    TC74A4 = 0x4C,
-    TC74A5 = 0x4D,
-    TC74A6 = 0x4E,
-    TC74A7 = 0x4F,
-} tc74_addr_t;
+    TC74A1,
+    TC74A2,
+    TC74A3,
+    TC74A4,
+    TC74A5,
+    TC74A6,
+    TC74A7,
+};
 
-typedef struct {
-    i2c_device_t dev;
-} tc74_t;
+typedef struct tc74_prv_s {
+    struct i2c_device_prv_s dev;
+} * tc74_h;
 
-void tc74_init(tc74_t *self, i2c_bus_t bus, uint8_t addr);
-int tc74_set_standby(tc74_t *self, bool stdby);
-int tc74_read_temperature(tc74_t *self, int *temp);
+void tc74_init(tc74_h self, i2c_bus_t bus, uint8_t addr);
+int tc74_set_standby(tc74_h self, bool stdby);
+int tc74_read_temperature(tc74_h self, int *temp);
 
 #endif /* __TC74_API_H__ */

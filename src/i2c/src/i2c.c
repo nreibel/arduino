@@ -113,24 +113,29 @@ int i2c_bus_init_master(i2c_bus_t bus, bool fast_mode)
     return -1;
 }
 
-int i2c_device_init(i2c_device_t *dev, i2c_bus_t bus, uint8_t addr)
+int i2c_device_init(i2c_device_h dev, i2c_bus_t bus, uint8_t addr)
 {
     dev->bus = bus;
     dev->addr = addr;
     return 0;
 }
 
-int i2c_device_write_byte(i2c_device_t *self, uint8_t reg, uint8_t byte)
+uint8_t i2c_device_get_addr(i2c_device_h self)
+{
+    return self->addr;
+}
+
+int i2c_device_write_byte(i2c_device_h self, uint8_t reg, uint8_t byte)
 {
     return i2c_device_write_bytes(self, reg, &byte, 1);
 }
 
-int i2c_device_read_byte(i2c_device_t *self, uint8_t reg, uint8_t *data)
+int i2c_device_read_byte(i2c_device_h self, uint8_t reg, uint8_t *data)
 {
     return i2c_device_read_bytes(self, reg, data, 1);
 }
 
-int i2c_device_write_bytes(i2c_device_t *self, uint8_t reg, void *data, unsigned int length)
+int i2c_device_write_bytes(i2c_device_h self, uint8_t reg, void *data, unsigned int length)
 {
     int written = 0, retval = 0;
     uint8_t *bytes = TYPECAST(data, uint8_t*);
@@ -157,7 +162,7 @@ int i2c_device_write_bytes(i2c_device_t *self, uint8_t reg, void *data, unsigned
     return written;
 }
 
-int i2c_device_read_bytes(i2c_device_t *self, uint8_t reg, void *data, unsigned int length)
+int i2c_device_read_bytes(i2c_device_h self, uint8_t reg, void *data, unsigned int length)
 {
     int retval = 0, read = 0;
     uint8_t *bytes = TYPECAST(data, uint8_t*);
