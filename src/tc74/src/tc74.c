@@ -14,7 +14,7 @@
  * Public functions
  */
 
-void tc74_init(tc74_h self, i2c_bus_t bus, uint8_t addr)
+void tc74_init(tc74_h self, i2c_bus_h bus, uint8_t addr)
 {
     i2c_device_init(&self->dev, bus, addr);
 }
