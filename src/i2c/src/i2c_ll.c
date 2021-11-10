@@ -2,7 +2,7 @@
 #include <avr/interrupt.h>
 #include <util/twi.h>
 
-#include "i2c.h"
+#include "i2c_ll.h"
 #include "os.h"
 #include "os_cfg.h"
 #include "bits.h"

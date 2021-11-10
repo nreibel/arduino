@@ -18,7 +18,7 @@ LDFLAGS = -u,vfprintf
 LIBS = printf_flt m
 
 # TODO : handle modules dependencies
-MODULES := os serial
+MODULES := os serial i2c
 app: app/app.o
 
 include $(ARDUINO_LIBS)/makefile.include

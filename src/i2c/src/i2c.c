@@ -1,4 +1,5 @@
 #include "i2c.h"
+#include "i2c_ll.h"
 #include "bits.h"
 #include "types.h"
 #include "os_cfg.h"
@@ -7,12 +8,12 @@
 #include <avr/interrupt.h>
 #include <util/twi.h>
 
-typedef struct {
+struct i2c_bus_prv_t {
     tx_callback tx_cbk;
     rx_callback rx_cbk;
-} i2c_t;
+};
 
-static i2c_t buses[NUMBER_OF_I2C_BUSES];
+static struct i2c_bus_prv_t i2c_bus_instances[NUMBER_OF_I2C_BUSES];
 
 ISR(TWI_vect)
 {
@@ -30,9 +31,9 @@ ISR(TWI_vect)
         case TW_ST_SLA_ACK: // Received SLA+R
         case TW_ST_DATA_ACK: // Sent data, received ACK
         case TW_ST_DATA_NACK: // Sent data, received NACK
-            if (buses[I2C_BUS_0].tx_cbk != NULL_PTR)
+            if (i2c_bus_instances[I2C_BUS_0].tx_cbk != NULL_PTR)
             {
-                TWDR = buses[I2C_BUS_0].tx_cbk(I2C_BUS_0, offset);
+                TWDR = i2c_bus_instances[I2C_BUS_0].tx_cbk(I2C_BUS_0, offset);
             }
             else
             {
@@ -47,9 +48,9 @@ ISR(TWI_vect)
                 offset = TWDR;
                 init = FALSE;
             }
-            else if (buses[I2C_BUS_0].rx_cbk != NULL_PTR)
+            else if (i2c_bus_instances[I2C_BUS_0].rx_cbk != NULL_PTR)
             {
-                buses[I2C_BUS_0].rx_cbk(I2C_BUS_0, offset++, TWDR);
+                i2c_bus_instances[I2C_BUS_0].rx_cbk(I2C_BUS_0, offset++, TWDR);
             }
             else
             {
@@ -72,25 +73,32 @@ ISR(TWI_vect)
     TWCR = BIT(TWIE) | BIT(TWINT) | BIT(TWEA) | BIT(TWEN);
 }
 
-int i2c_bus_init_slave(i2c_bus_t bus, uint8_t addr)
-{
-    buses[bus].tx_cbk = NULL_PTR;
-    buses[bus].rx_cbk = NULL_PTR;
-
-    RESET_BIT(PRR, PRTWI);
-
-    TWAR = addr << 1;
-    TWCR = BIT(TWIE) | BIT(TWEA) | BIT(TWINT) | BIT(TWEN);
-
-    return 0;
-}
-
-int i2c_bus_init_master(i2c_bus_t bus, bool fast_mode)
+int i2c_bus_init_slave(i2c_bus_h bus, uint8_t addr)
 {
     switch(bus)
     {
         case I2C_BUS_0:
-        {
+            i2c_bus_instances[bus].tx_cbk = NULL_PTR;
+            i2c_bus_instances[bus].rx_cbk = NULL_PTR;
+
+            RESET_BIT(PRR, PRTWI);
+
+            TWAR = addr << 1;
+            TWCR = BIT(TWIE) | BIT(TWEA) | BIT(TWINT) | BIT(TWEN);
+            return 0;
+
+        default:
+            return -1;
+    }
+
+    return -1;
+}
+
+int i2c_bus_init_master(i2c_bus_h bus, bool fast_mode)
+{
+    switch(bus)
+    {
+        case I2C_BUS_0:
             RESET_BIT(PRR, PRTWI);
 
             TWSR = 0; // Prescaler = 1
@@ -104,7 +112,6 @@ int i2c_bus_init_master(i2c_bus_t bus, bool fast_mode)
             #endif
 
             return 0;
-        }
 
         default:
             return -1;
@@ -113,7 +120,7 @@ int i2c_bus_init_master(i2c_bus_t bus, bool fast_mode)
     return -1;
 }
 
-int i2c_device_init(i2c_device_h dev, i2c_bus_t bus, uint8_t addr)
+int i2c_device_init(i2c_device_h dev, i2c_bus_h bus, uint8_t addr)
 {
     dev->bus = bus;
     dev->addr = addr;
@@ -199,12 +206,31 @@ int i2c_device_read_bytes(i2c_device_h self, uint8_t reg, void *data, unsigned i
     return read;
 }
 
-void i2c_set_tx_callback(i2c_bus_t bus, tx_callback cbk)
+int i2c_set_tx_callback(i2c_bus_h bus, tx_callback cbk)
 {
-    buses[bus].tx_cbk = cbk;
-}
+    switch(bus)
+    {
+        case I2C_BUS_0:
+            i2c_bus_instances[bus].tx_cbk = cbk;
+            return 0;
 
-void i2c_set_rx_callback(i2c_bus_t bus, rx_callback cbk)
+        default:
+            return -1;
+    }
+
+    return -1;
+}
+int i2c_set_rx_callback(i2c_bus_h bus, rx_callback cbk)
 {
-    buses[bus].rx_cbk = cbk;
+    switch(bus)
+    {
+        case I2C_BUS_0:
+            i2c_bus_instances[bus].rx_cbk = cbk;
+            return 0;
+
+        default:
+            return -1;
+    }
+
+    return -1;
 }
