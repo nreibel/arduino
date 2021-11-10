@@ -4,4 +4,3 @@ INCLUDES+=\
 
 serial: \
 	$(SRC_DIR)/serial/src/serial.o \
-	$(SRC_DIR)/serial/src/serial_$(ARCH).o \

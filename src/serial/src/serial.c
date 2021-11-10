@@ -1,43 +1,173 @@
 #include "serial.h"
 #include "serial_cfg.h"
-#include "serial_prv.h"
 #include "os_cfg.h"
 #include "types.h"
 #include "bits.h"
 
-#include <avr/pgmspace.h>
+#include <avr/io.h>
+#include <avr/interrupt.h>
 
-void serial_bus_init(serial_bus_t bus, uint32_t baudrate)
+/*
+ * Private types
+ */
+
+struct serial_prv_s {
+
+#if SERIAL_ASYNC_RX != OFF
+    serial_rx_callback rx_cbk;
+    char  rx_buf[SERIAL_RECEIVE_BUFFER_LENGTH];
+    char *rx_ptr;
+    int   rx_sz;
+#endif
+
+#if SERIAL_ASYNC_TX != OFF
+    volatile void *tx_buf;
+    volatile int   tx_sz;
+#endif
+
+};
+
+/*
+ * Private functions prototypes
+ */
+
+static bool serial_ll_tx_ready(serial_bus_h bus);
+static bool serial_ll_rx_ready(serial_bus_h bus);
+static void serial_ll_write_byte(serial_bus_h bus, uint8_t byte);
+static uint8_t serial_ll_read_byte(serial_bus_h bus);
+
+/*
+ * Private data
+ */
+
+static struct serial_prv_s instances[NUMBER_OF_SERIAL_BUSES];
+
+/*
+ * Public functions
+ */
+
+void serial_bus_init(serial_bus_h bus, uint32_t baudrate)
 {
-    serial_hal_init(bus, baudrate);
+
+#if SERIAL_ASYNC_RX != OFF
+    instances[bus].rx_cbk = NULL_PTR;
+    instances[bus].rx_ptr = instances[bus].rx_buf;
+    instances[bus].rx_sz = 0;
+#endif
+
+#if SERIAL_ASYNC_TX != OFF
+    instances[bus].tx_buf = NULL_PTR;
+    instances[bus].tx_sz = 0;
+#endif
+
+    // Enable peripheral
+    RESET_BIT(PRR, PRUSART0);
+
+    // Formula is UBRR = (Freq / (BAUD * 16) - 1)
+    word ubrr = { (F_CPU/16/baudrate)-1U };
+
+    // Set UBRR
+    UBRR0H = ubrr.bytes[1];
+    UBRR0L = ubrr.bytes[0];
+
+    // Frame format: 8 bits, no parity bit, 1 stop bit
+    UCSR0C = 0x06;
+
+    // Enable transmitter
+    uint8_t ucsr = BIT(RXEN0) | BIT(TXEN0);
+
+    // Enable interrupts
+#if SERIAL_ASYNC_RX != OFF
+    SET_BIT(ucsr, RXCIE0);
+#endif
+
+#if SERIAL_ASYNC_TX != OFF
+    SET_BIT(ucsr, TXCIE0);
+#endif
+
+    UCSR0B = ucsr;
 }
 
 #if SERIAL_ASYNC_RX != OFF
-void serial_set_rx_callback(serial_bus_t bus, serial_rx_callback cbk)
+ISR(USART_RX_vect)
 {
-    serial_hal_set_rx_callback(bus, cbk);
+    char b = serial_ll_read_byte(SERIAL_BUS_0);
+
+    if (b == SERIAL_LINE_TERMINATOR)
+    {
+        // Terminate string
+        *instances[SERIAL_BUS_0].rx_ptr = 0;
+
+        // Call user callback
+        if (instances[SERIAL_BUS_0].rx_cbk != NULL_PTR)
+        {
+            instances[SERIAL_BUS_0].rx_cbk(SERIAL_BUS_0, instances[SERIAL_BUS_0].rx_buf, instances[SERIAL_BUS_0].rx_sz + 1);
+        }
+
+        // Reset buffer
+        instances[SERIAL_BUS_0].rx_ptr = instances[SERIAL_BUS_0].rx_buf;
+        instances[SERIAL_BUS_0].rx_sz = 0;
+    }
+    else
+    {
+        // TODO : handle buffer full
+        *instances[SERIAL_BUS_0].rx_ptr = b;
+        instances[SERIAL_BUS_0].rx_ptr++;
+        instances[SERIAL_BUS_0].rx_sz++;
+    }
+}
+
+void serial_set_rx_callback(serial_bus_h bus, serial_rx_callback cbk)
+{
+    instances[bus].rx_cbk = cbk;
 }
 #endif
 
 #if SERIAL_ASYNC_TX != OFF
-bool serial_tx_ready(serial_bus_t bus)
+ISR(USART_TX_vect)
 {
-    return serial_hal_tx_buffer_ready(bus);
+    if (instances[SERIAL_BUS_0].tx_sz > 0)
+    {
+        uint8_t b = READ_PU8(instances[SERIAL_BUS_0].tx_buf);
+        serial_ll_write_byte(SERIAL_BUS_0, b);
+
+        instances[SERIAL_BUS_0].tx_buf++;
+        instances[SERIAL_BUS_0].tx_sz--;
+    }
+    else
+    {
+        instances[SERIAL_BUS_0].tx_buf = NULL_PTR;
+        instances[SERIAL_BUS_0].tx_sz = 0;
+    }
 }
-void serial_write_bytes_async(serial_bus_t bus, void *buffer, int length)
+
+bool serial_tx_ready(serial_bus_h bus)
 {
-    serial_hal_set_tx_buffer(bus, buffer, length);
+    return instances[bus].tx_buf == NULL_PTR && instances[bus].tx_sz == 0;
+}
+
+void serial_write_async(serial_bus_h bus, void *buffer, int length)
+{
+    if (length > 0 && buffer != NULL_PTR)
+    {
+        instances[bus].tx_buf = buffer+1;
+        instances[bus].tx_sz = length-1;
+
+        // Kickstart transmission
+        uint8_t b = READ_PU8(buffer);
+        serial_ll_write_byte(SERIAL_BUS_0, b);
+    }
 }
 #endif
 
-int serial_write_byte(serial_bus_t bus, uint8_t chr)
+int serial_write_byte(serial_bus_h bus, uint8_t chr)
 {
-    serial_hal_write_byte(bus, chr);
-    while( !serial_hal_tx_ready(bus) );
+    serial_ll_write_byte(bus, chr);
+    while( !serial_ll_tx_ready(bus) );
     return 1;
 }
 
-int serial_write_bytes(serial_bus_t bus, void *buffer, int length)
+int serial_write_bytes(serial_bus_h bus, void *buffer, int length)
 {
     int written = 0;
 
@@ -49,12 +179,12 @@ int serial_write_bytes(serial_bus_t bus, void *buffer, int length)
     return written;
 }
 
-int serial_new_line(serial_bus_t bus)
+int serial_new_line(serial_bus_h bus)
 {
     return serial_write_bytes(bus, "\r\n", 2);
 }
 
-int serial_print(serial_bus_t bus, const void* string)
+int serial_print(serial_bus_h bus, const void* string)
 {
     int written = 0;
 
@@ -66,35 +196,19 @@ int serial_print(serial_bus_t bus, const void* string)
     return written;
 }
 
-int serial_println(serial_bus_t bus, const void* string)
+int serial_println(serial_bus_h bus, const void* string)
 {
     return serial_print(bus, string) + serial_new_line(bus);
 }
 
-// void serial_print_P(serial_bus_t bus, const __flash void* string)
-// {
-//     while (TRUE)
-//     {
-//         uint8_t b = pgm_read_byte(string++);
-//         if (b != 0) serial_write_byte(bus, b);
-//         else break;
-//     }
-// }
-//
-// void serial_println_P(serial_bus_t bus, const __flash void* string)
-// {
-//     serial_print_P(bus, string);
-//     serial_new_line(bus);
-// }
-
-int serial_read_byte(serial_bus_t bus, uint8_t *byte)
+int serial_read_byte(serial_bus_h bus, uint8_t *byte)
 {
-    while( !serial_hal_rx_ready(bus) );
-    *byte = serial_hal_read_byte(bus);
+    while( !serial_ll_rx_ready(bus) );
+    *byte = serial_ll_read_byte(bus);
     return 1;
 }
 
-int serial_read_bytes(serial_bus_t bus, void *buffer, int length)
+int serial_read_bytes(serial_bus_h bus, void *buffer, int length)
 {
     int received = 0;
 
@@ -104,4 +218,32 @@ int serial_read_bytes(serial_bus_t bus, void *buffer, int length)
     }
 
     return received;
+}
+
+/*
+ * Private functions
+ */
+
+static bool serial_ll_tx_ready(serial_bus_h bus)
+{
+    UNUSED(bus);
+    return IS_SET_BIT(UCSR0A, UDRE0);
+}
+
+static bool serial_ll_rx_ready(serial_bus_h bus)
+{
+    UNUSED(bus);
+    return IS_SET_BIT(UCSR0A, RXC0);
+}
+
+static uint8_t serial_ll_read_byte(serial_bus_h bus)
+{
+    UNUSED(bus);
+    return UDR0;
+}
+
+static void serial_ll_write_byte(serial_bus_h bus, uint8_t byte)
+{
+    UNUSED(bus);
+    UDR0 = byte;
 }

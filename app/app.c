@@ -24,6 +24,7 @@ Std_ReturnType Task_Main(void* data)
     UNUSED(data);
 
     serial_println(SERIAL_BUS_0, "Tick");
+    serial_write_async(SERIAL_BUS_0, "Async\r\n", 7);
 
     return Status_OK;
 }
