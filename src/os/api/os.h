@@ -33,4 +33,10 @@ void os_reset();
 void os_watchdog_reset();
 int os_watchdog_enable(os_watchdog_t wd);
 
+#if OS_MALLOC
+void* os_malloc(unsigned int sz);
+void* os_calloc(unsigned int sz);
+void  os_free(void *ptr);
+#endif // OS_MALLOC
+
 #endif /* __OS_API_H__ */

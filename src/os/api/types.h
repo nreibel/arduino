@@ -12,7 +12,7 @@ typedef enum {
 
 typedef enum {
     FALSE = 0,
-    TRUE = 1
+    TRUE = !FALSE
 } bool;
 
 typedef void (*Interrupt)(volatile void*);

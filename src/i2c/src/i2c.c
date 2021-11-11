@@ -172,7 +172,7 @@ int i2c_device_write_bytes(i2c_device_t self, uint8_t reg, void *data, unsigned 
 int i2c_device_read_bytes(i2c_device_t self, uint8_t reg, void *data, unsigned int length)
 {
     int retval = 0, read = 0;
-    uint8_t *bytes = TYPECAST(data, uint8_t*);
+    uint8_t *bytes = data;
 
     if ( i2c_ll_start_condition() < 0)
         return -1;

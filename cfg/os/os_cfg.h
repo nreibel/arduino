@@ -14,6 +14,13 @@ typedef uint16_t time_t;
 // In ms
 #define OS_TIMER_GRANULARITY 1
 
+// Enable malloc and free (not recommended)
+#define OS_MALLOC ON
+
+#if OS_MALLOC
+#define OS_HEAP_SIZE 64
+#endif // OS_MALLOC
+
 #define OS_SLEEP_MODE SLEEP_MODE_IDLE
 
 #define NUMBER_OF_BACKGROUND_TASKS 0

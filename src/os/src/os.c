@@ -2,6 +2,7 @@
 #include "os_prv.h"
 #include "os_cfg.h"
 #include "bits.h"
+#include "string.h"
 
 #if NUMBER_OF_BACKGROUND_TASKS > 0
 static int execute_background_tasks();
@@ -112,3 +113,40 @@ int main(void)
 
     return 1;
 }
+
+#if OS_MALLOC
+
+/*
+ * Really basic implementation, will fail once heap is used
+ */
+
+static uint8_t malloc_heap[OS_HEAP_SIZE];
+static uint8_t malloc_idx = 0;
+
+void* os_calloc(unsigned int sz)
+{
+    void *ptr = os_malloc(sz);
+    if (ptr != NULL_PTR) memset(ptr, 0, sz);
+    return ptr;
+}
+
+void* os_malloc(unsigned int sz)
+{
+    void *ptr = NULL_PTR;
+
+    if (malloc_idx + sz <= OS_HEAP_SIZE)
+    {
+        ptr = &malloc_heap[malloc_idx];
+        malloc_idx += sz;
+    }
+
+    return ptr;
+}
+
+void os_free(void *ptr)
+{
+    UNUSED(ptr);
+    // TODO
+}
+
+#endif // OS_MALLOC

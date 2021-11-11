@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "i2c.h"
+#include "os_cfg.h"
 
 enum tc74_addr_e {
     TC74A0 = 0x48,
@@ -18,6 +19,11 @@ enum tc74_addr_e {
 typedef struct tc74_prv_s {
     struct i2c_device_prv_s dev;
 } * tc74_t;
+
+#if OS_MALLOC
+tc74_t tc74_create(i2c_bus_t bus, uint8_t addr);
+void tc74_destroy(tc74_t self);
+#endif // OS_MALLOC
 
 void tc74_init(tc74_t self, i2c_bus_t bus, uint8_t addr);
 int tc74_set_standby(tc74_t self, bool stdby);
