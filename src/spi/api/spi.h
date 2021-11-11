@@ -12,24 +12,24 @@ typedef enum {
     SPI_CLOCK_DIV_32,
     SPI_CLOCK_DIV_64,
     SPI_CLOCK_DIV_128
-} spi_clock_e;
+} spi_clock_t;
 
 typedef enum {
     SPI_MODE_0,
     SPI_MODE_1,
     SPI_MODE_2,
     SPI_MODE_3
-} spi_mode_e;
+} spi_mode_t;
 
 typedef struct {
     gpio_t *cs;
-    spi_clock_e clk;
-    spi_mode_e mode;
+    spi_clock_t clk;
+    spi_mode_t mode;
     bool transaction_mode;
 } spi_device_t;
 
 void spi_init();
-void spi_device_init(spi_device_t *self, gpio_t *cs, spi_clock_e clk, spi_mode_e mode);
+void spi_device_init(spi_device_t *self, gpio_t *cs, spi_clock_t clk, spi_mode_t mode);
 void spi_set_transaction_mode_enabled(spi_device_t *self, bool enabled);
 void spi_disable_slave(spi_device_t *self);
 void spi_enable_slave(spi_device_t *self);

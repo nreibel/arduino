@@ -17,10 +17,10 @@ enum tc74_addr_e {
 
 typedef struct tc74_prv_s {
     struct i2c_device_prv_s dev;
-} * tc74_h;
+} * tc74_t;
 
-void tc74_init(tc74_h self, i2c_bus_h bus, uint8_t addr);
-int tc74_set_standby(tc74_h self, bool stdby);
-int tc74_read_temperature(tc74_h self, int *temp);
+void tc74_init(tc74_t self, i2c_bus_t bus, uint8_t addr);
+int tc74_set_standby(tc74_t self, bool stdby);
+int tc74_read_temperature(tc74_t self, int *temp);
 
 #endif /* __TC74_API_H__ */

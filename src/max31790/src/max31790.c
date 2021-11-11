@@ -21,7 +21,7 @@
  * Public functions
  */
 
-int max31790_init(max31790_h self, i2c_bus_t bus, uint8_t addr)
+int max31790_init(max31790_t self, i2c_bus_t bus, uint8_t addr)
 {
     i2c_device_init(&self->dev, bus, addr);
 
@@ -32,7 +32,7 @@ int max31790_init(max31790_h self, i2c_bus_t bus, uint8_t addr)
     return i2c_device_write_byte(&self->dev, MAX31790_REG_GLOBAL_CONFIGURATION, cfg);
 }
 
-int max31790_set_target_rpm(max31790_h self, max31790_fan_t fan, uint16_t rpm)
+int max31790_set_target_rpm(max31790_t self, max31790_fan_t fan, uint16_t rpm)
 {
     uint8_t reg = 0;
 
@@ -53,7 +53,7 @@ int max31790_set_target_rpm(max31790_h self, max31790_fan_t fan, uint16_t rpm)
     return i2c_device_write_bytes(&self->dev, reg, &rpm, 2);
 }
 
-int max31790_set_target_pwm(max31790_h self, max31790_fan_t fan, uint16_t pwm)
+int max31790_set_target_pwm(max31790_t self, max31790_fan_t fan, uint16_t pwm)
 {
     uint8_t reg = 0;
 
@@ -74,7 +74,7 @@ int max31790_set_target_pwm(max31790_h self, max31790_fan_t fan, uint16_t pwm)
     return i2c_device_write_bytes(&self->dev, reg, &pwm, 2);
 }
 
-int max31790_set_frequency(max31790_h self, max31790_frequency_t freq)
+int max31790_set_frequency(max31790_t self, max31790_frequency_t freq)
 {
     uint8_t regval = 0;
 
@@ -98,7 +98,7 @@ int max31790_set_frequency(max31790_h self, max31790_frequency_t freq)
     return i2c_device_write_byte(&self->dev, MAX31790_REG_PWM_FREQUENCY, regval);
 }
 
-int max31790_set_watchdog(max31790_h self, max31790_watchdog_t watchdog)
+int max31790_set_watchdog(max31790_t self, max31790_watchdog_t watchdog)
 {
     uint8_t reg = 0;
 
@@ -117,7 +117,7 @@ int max31790_set_watchdog(max31790_h self, max31790_watchdog_t watchdog)
     return i2c_device_write_byte(&self->dev, MAX31790_REG_GLOBAL_CONFIGURATION, reg);
 }
 
-int max31790_clear_watchdog(max31790_h self)
+int max31790_clear_watchdog(max31790_t self)
 {
     uint8_t reg = 0;
 
@@ -129,7 +129,7 @@ int max31790_clear_watchdog(max31790_h self)
     return i2c_device_write_byte(&self->dev, MAX31790_REG_GLOBAL_CONFIGURATION, reg);
 }
 
-int max31790_set_fan_mode(max31790_h self, max31790_fan_t fan, max31790_mode_t mode)
+int max31790_set_fan_mode(max31790_t self, max31790_fan_t fan, max31790_mode_t mode)
 {
     uint8_t reg = 0;
     uint8_t val = 0;

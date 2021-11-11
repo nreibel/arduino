@@ -31,10 +31,10 @@ struct serial_prv_s {
  * Private functions prototypes
  */
 
-static bool serial_ll_tx_ready(serial_bus_h bus);
-static bool serial_ll_rx_ready(serial_bus_h bus);
-static void serial_ll_write_byte(serial_bus_h bus, uint8_t byte);
-static uint8_t serial_ll_read_byte(serial_bus_h bus);
+static bool serial_ll_tx_ready(serial_bus_t bus);
+static bool serial_ll_rx_ready(serial_bus_t bus);
+static void serial_ll_write_byte(serial_bus_t bus, uint8_t byte);
+static uint8_t serial_ll_read_byte(serial_bus_t bus);
 
 /*
  * Private data
@@ -46,7 +46,7 @@ static struct serial_prv_s instances[NUMBER_OF_SERIAL_BUSES];
  * Public functions
  */
 
-void serial_bus_init(serial_bus_h bus, uint32_t baudrate)
+void serial_bus_init(serial_bus_t bus, uint32_t baudrate)
 {
 
 #if SERIAL_ASYNC_RX != OFF
@@ -117,7 +117,7 @@ ISR(USART_RX_vect)
     }
 }
 
-void serial_set_rx_callback(serial_bus_h bus, serial_rx_callback cbk)
+void serial_set_rx_callback(serial_bus_t bus, serial_rx_callback cbk)
 {
     instances[bus].rx_cbk = cbk;
 }
@@ -141,12 +141,12 @@ ISR(USART_TX_vect)
     }
 }
 
-bool serial_tx_ready(serial_bus_h bus)
+bool serial_tx_ready(serial_bus_t bus)
 {
     return instances[bus].tx_buf == NULL_PTR && instances[bus].tx_sz == 0;
 }
 
-void serial_write_async(serial_bus_h bus, void *buffer, int length)
+void serial_write_async(serial_bus_t bus, void *buffer, int length)
 {
     if (length > 0 && buffer != NULL_PTR)
     {
@@ -160,14 +160,14 @@ void serial_write_async(serial_bus_h bus, void *buffer, int length)
 }
 #endif
 
-int serial_write_byte(serial_bus_h bus, uint8_t chr)
+int serial_write_byte(serial_bus_t bus, uint8_t chr)
 {
     serial_ll_write_byte(bus, chr);
     while( !serial_ll_tx_ready(bus) );
     return 1;
 }
 
-int serial_write_bytes(serial_bus_h bus, void *buffer, int length)
+int serial_write_bytes(serial_bus_t bus, void *buffer, int length)
 {
     int written = 0;
 
@@ -179,12 +179,12 @@ int serial_write_bytes(serial_bus_h bus, void *buffer, int length)
     return written;
 }
 
-int serial_new_line(serial_bus_h bus)
+int serial_new_line(serial_bus_t bus)
 {
     return serial_write_bytes(bus, "\r\n", 2);
 }
 
-int serial_print(serial_bus_h bus, const void* string)
+int serial_print(serial_bus_t bus, const void* string)
 {
     int written = 0;
 
@@ -196,19 +196,19 @@ int serial_print(serial_bus_h bus, const void* string)
     return written;
 }
 
-int serial_println(serial_bus_h bus, const void* string)
+int serial_println(serial_bus_t bus, const void* string)
 {
     return serial_print(bus, string) + serial_new_line(bus);
 }
 
-int serial_read_byte(serial_bus_h bus, uint8_t *byte)
+int serial_read_byte(serial_bus_t bus, uint8_t *byte)
 {
     while( !serial_ll_rx_ready(bus) );
     *byte = serial_ll_read_byte(bus);
     return 1;
 }
 
-int serial_read_bytes(serial_bus_h bus, void *buffer, int length)
+int serial_read_bytes(serial_bus_t bus, void *buffer, int length)
 {
     int received = 0;
 
@@ -224,25 +224,25 @@ int serial_read_bytes(serial_bus_h bus, void *buffer, int length)
  * Private functions
  */
 
-static bool serial_ll_tx_ready(serial_bus_h bus)
+static bool serial_ll_tx_ready(serial_bus_t bus)
 {
     UNUSED(bus);
     return IS_SET_BIT(UCSR0A, UDRE0);
 }
 
-static bool serial_ll_rx_ready(serial_bus_h bus)
+static bool serial_ll_rx_ready(serial_bus_t bus)
 {
     UNUSED(bus);
     return IS_SET_BIT(UCSR0A, RXC0);
 }
 
-static uint8_t serial_ll_read_byte(serial_bus_h bus)
+static uint8_t serial_ll_read_byte(serial_bus_t bus)
 {
     UNUSED(bus);
     return UDR0;
 }
 
-static void serial_ll_write_byte(serial_bus_h bus, uint8_t byte)
+static void serial_ll_write_byte(serial_bus_t bus, uint8_t byte)
 {
     UNUSED(bus);
     UDR0 = byte;

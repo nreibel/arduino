@@ -9,7 +9,7 @@ void spi_hal_enable()
     RESET_BIT(PRR, PRSPI);
 }
 
-void spi_hal_configure(spi_clock_e clock, spi_mode_e mode)
+void spi_hal_configure(spi_clock_t clock, spi_mode_t mode)
 {
     // Enable SPI, Master Mode
     uint8_t spcr = BIT(MSTR) | BIT(SPE);

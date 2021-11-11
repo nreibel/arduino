@@ -18,7 +18,7 @@ LDFLAGS = -u,vfprintf
 LIBS = printf_flt m
 
 # TODO : handle modules dependencies
-MODULES := os serial serial_tp i2c tc74
+MODULES := os serial serial_tp i2c tc74 pca954x
 app: app/app.o
 
 include $(ARDUINO_LIBS)/makefile.include

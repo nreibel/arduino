@@ -14,12 +14,12 @@
  * Public functions
  */
 
-void tc74_init(tc74_h self, i2c_bus_h bus, uint8_t addr)
+void tc74_init(tc74_t self, i2c_bus_t bus, uint8_t addr)
 {
     i2c_device_init(&self->dev, bus, addr);
 }
 
-int tc74_set_standby(tc74_h self, bool stdby)
+int tc74_set_standby(tc74_t self, bool stdby)
 {
     uint8_t regval = 0;
 
@@ -31,7 +31,7 @@ int tc74_set_standby(tc74_h self, bool stdby)
     return i2c_device_write_byte(&self->dev, TC74_REG_RWCR, regval);
 }
 
-int tc74_read_temperature(tc74_h self, int *temp)
+int tc74_read_temperature(tc74_t self, int *temp)
 {
     uint8_t reg = 0;
     int retval = i2c_device_read_byte(&self->dev, TC74_REG_RTR, &reg);

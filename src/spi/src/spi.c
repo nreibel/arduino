@@ -14,7 +14,7 @@ void spi_init()
     spi_hal_enable();
 }
 
-void spi_device_init(spi_device_t *self, gpio_t *cs, spi_clock_e clk, spi_mode_e mode)
+void spi_device_init(spi_device_t *self, gpio_t *cs, spi_clock_t clk, spi_mode_t mode)
 {
     self->cs = cs;
     self->clk = clk;
