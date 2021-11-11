@@ -43,7 +43,6 @@ void os_watchdog_trigger();
 void os_reset();
 
 // Memory Allocation
-
 #if OS_MALLOC
 void* os_malloc(unsigned int sz);
 void* os_calloc(unsigned int sz);

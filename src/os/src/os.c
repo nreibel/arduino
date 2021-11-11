@@ -31,6 +31,8 @@ void os_interrupts_disable();
  * Private functions prototypes
  */
 
+static void os_cyclic_tasks();
+
 #if NUMBER_OF_BACKGROUND_TASKS > 0
 static int execute_background_tasks();
 #endif
@@ -41,6 +43,11 @@ static int execute_background_tasks();
 
 static timer_config_t timers[NUMBER_OF_TIMERS] = {0};
 static task_config_t tasks[NUMBER_OF_TASKS] = {0};
+
+#if OS_MALLOC
+static uint8_t malloc_heap[OS_HEAP_SIZE];
+static uint8_t malloc_idx = 0;
+#endif // OS_MALLOC
 
 /*
  * Public functions
@@ -87,7 +94,7 @@ void os_task_setup(task_t task, time_t interval, callback_t callback, void* para
     tasks[task].last = os_millis() - interval;
 }
 
-void Os_CyclicTasks()
+static void os_cyclic_tasks()
 {
     for(int i = 0; i < NUMBER_OF_TASKS; i++)
     {
@@ -136,7 +143,7 @@ int main(void)
     while(1)
     {
 
-        Os_CyclicTasks();
+        os_cyclic_tasks();
 
 #if NUMBER_OF_BACKGROUND_TASKS > 0
         // Execute background tasks in the spare time, or sleep until next tick
@@ -155,9 +162,6 @@ int main(void)
 /*
  * Really basic implementation, will fail once heap is used
  */
-
-static uint8_t malloc_heap[OS_HEAP_SIZE];
-static uint8_t malloc_idx = 0;
 
 void* os_calloc(unsigned int sz)
 {
