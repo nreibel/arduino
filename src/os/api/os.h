@@ -24,14 +24,25 @@ extern background_task background_tasks_list[NUMBER_OF_BACKGROUND_TASKS];
 // App entry point
 extern void app_init(void);
 
-// OS functions
-void os_timer_reset(timer_t timer);
-time_t os_timer_get_value(timer_t timer);
-void os_task_setup(timer_t timer, time_t interval, callback_t callback, void* param);
+// OS Timers
 void os_wait(time_t ms);
-void os_reset();
-void os_watchdog_reset();
+void os_timer_start(timer_t timer);
+void os_timer_reset(timer_t timer);
+void os_timer_stop(timer_t timer);
+time_t os_timer_get_value(timer_t timer);
+time_t os_millis();
+
+// OS Tasks
+void os_task_setup(task_t task, time_t interval, callback_t callback, void* param);
+
+// HW Watchdog
 int os_watchdog_enable(os_watchdog_t wd);
+void os_watchdog_trigger();
+
+// OS Functions
+void os_reset();
+
+// Memory Allocation
 
 #if OS_MALLOC
 void* os_malloc(unsigned int sz);

@@ -1,15 +1,21 @@
 #include "os.h"
 #include "os_cfg.h"
-#include "os_prv.h"
 #include "bits.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
 #include <avr/wdt.h>
 
+static volatile time_t os_timer = 0;
+
 ISR(TIMER2_COMPA_vect)
 {
-    os_timer_callback();
+    os_timer++;
+}
+
+time_t os_millis()
+{
+    return os_timer;
 }
 
 void os_interrupts_disable()
@@ -29,7 +35,7 @@ void os_reset()
   HALT; // wait for watchdog to reset processor
 }
 
-void os_watchdog_reset()
+void os_watchdog_trigger()
 {
     wdt_reset();
 }
@@ -38,50 +44,19 @@ int os_watchdog_enable(os_watchdog_t wd)
 {
     switch(wd)
     {
-        case OS_WATCHDOG_15MS:
-            wdt_enable(WDTO_15MS);
-            return 0;
-
-        case OS_WATCHDOG_30MS:
-            wdt_enable(WDTO_30MS);
-            return 0;
-
-        case OS_WATCHDOG_60MS:
-            wdt_enable(WDTO_60MS);
-            return 0;
-
-        case OS_WATCHDOG_120MS:
-            wdt_enable(WDTO_120MS);
-            return 0;
-
-        case OS_WATCHDOG_250MS:
-            wdt_enable(WDTO_250MS);
-            return 0;
-
-        case OS_WATCHDOG_500MS:
-            wdt_enable(WDTO_500MS);
-            return 0;
-
-        case OS_WATCHDOG_1S:
-            wdt_enable(WDTO_1S);
-            return 0;
-
-        case OS_WATCHDOG_2S:
-            wdt_enable(WDTO_2S);
-            return 0;
-
-        case OS_WATCHDOG_4S:
-            wdt_enable(WDTO_4S);
-            return 0;
-
-        case OS_WATCHDOG_8S:
-            wdt_enable(WDTO_8S);
-            return 0;
+        case OS_WATCHDOG_15MS:  wdt_enable(WDTO_15MS);  return 0;
+        case OS_WATCHDOG_30MS:  wdt_enable(WDTO_30MS);  return 0;
+        case OS_WATCHDOG_60MS:  wdt_enable(WDTO_60MS);  return 0;
+        case OS_WATCHDOG_120MS: wdt_enable(WDTO_120MS); return 0;
+        case OS_WATCHDOG_250MS: wdt_enable(WDTO_250MS); return 0;
+        case OS_WATCHDOG_500MS: wdt_enable(WDTO_500MS); return 0;
+        case OS_WATCHDOG_1S:    wdt_enable(WDTO_1S);    return 0;
+        case OS_WATCHDOG_2S:    wdt_enable(WDTO_2S);    return 0;
+        case OS_WATCHDOG_4S:    wdt_enable(WDTO_4S);    return 0;
+        case OS_WATCHDOG_8S:    wdt_enable(WDTO_8S);    return 0;
+        default: return -1;
     }
-
-    return -1;
 }
-
 
 void os_sleep()
 {
@@ -118,24 +93,8 @@ void os_init()
 // TODO : OCR2A = ticks - 1 ??
 
 #if F_CPU == 16000000
-    #if OS_TIMER_GRANULARITY == 16
-        OCR2A  = 250;            // Count 250 ticks
-        TCCR2B = 0x7;            // Set prescaler to 1024
-    #elif OS_TIMER_GRANULARITY == 8
-        OCR2A  = 125;            // Count 125 ticks
-        TCCR2B = 0x7;            // Set prescaler to 1024
-    #elif OS_TIMER_GRANULARITY == 4
-        OCR2A  = 250;            // Count 125 ticks
-        TCCR2B = 0x6;            // Set prescaler to 256
-    #elif OS_TIMER_GRANULARITY == 2
-        OCR2A  = 125;            // Count 125 ticks
-        TCCR2B = 0x6;            // Set prescaler to 256
-    #elif OS_TIMER_GRANULARITY == 1
-        OCR2A  = 125;            // Count 125 ticks
-        TCCR2B = 0x5;            // Set prescaler to 128
-    #else
-        #error OS_TIMER_GRANULARITY value is not supported
-    #endif
+    OCR2A  = 125;            // Count 125 ticks
+    TCCR2B = 0x5;            // Set prescaler to 128
 #else
     #error F_CPU value is not supported
 #endif

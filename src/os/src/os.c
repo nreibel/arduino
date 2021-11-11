@@ -1,68 +1,104 @@
 #include "os.h"
-#include "os_prv.h"
 #include "os_cfg.h"
 #include "bits.h"
 #include "string.h"
+
+/*
+ * Private types
+ */
+
+typedef struct {
+    time_t value;
+} timer_config_t;
+
+typedef struct {
+    time_t interval;
+    time_t last;
+    callback_t callback;
+    void* param;
+} task_config_t;
+
+/*
+ * Extern functions prototypes
+ */
+
+void os_init();
+void os_sleep();
+void os_interrupts_enable();
+void os_interrupts_disable();
+
+/*
+ * Private functions prototypes
+ */
 
 #if NUMBER_OF_BACKGROUND_TASKS > 0
 static int execute_background_tasks();
 #endif
 
-/* Holds the status of each timer channel */
-typedef struct {
-    time_t interval;
-    volatile time_t value;
-    callback_t callback;
-    void* param;
-} timer_config_t;
+/*
+ * Private data
+ */
 
-static volatile time_t os_timer = {0};
-static timer_config_t timer_cfg[NUMBER_OF_TIMERS] = {0};
+static timer_config_t timers[NUMBER_OF_TIMERS] = {0};
+static task_config_t tasks[NUMBER_OF_TASKS] = {0};
+
+/*
+ * Public functions
+ */
 
 void os_wait(time_t ms)
 {
-    os_timer = 0;
-    while (os_timer < ms)
+    const time_t start = os_millis();
+
+    while(1)
     {
-        os_sleep();
+        time_t elapsed = os_millis() - start;
+        if (elapsed >= ms ) return;
+        else os_sleep();
     }
 }
 
-void os_timer_callback()
+void os_timer_start(timer_t timer)
 {
-    os_timer += OS_TIMER_GRANULARITY;
-    for ( int i = 0 ; i < NUMBER_OF_TIMERS ; i++ )
-    {
-        timer_cfg[i].value += OS_TIMER_GRANULARITY;
-    }
+    timers[timer].value = os_millis();
 }
 
 void os_timer_reset(timer_t timer)
 {
-    timer_cfg[timer].value = 0;
+    timers[timer].value = os_millis();
+}
+
+void os_timer_stop(timer_t timer)
+{
+    UNUSED(timer);
+    // Do nothing...
 }
 
 time_t os_timer_get_value(timer_t timer)
 {
-    return timer_cfg[timer].value;
+    return os_millis() - timers[timer].value;
 }
 
-void os_task_setup(timer_t timer, time_t interval, callback_t callback, void* param)
+void os_task_setup(task_t task, time_t interval, callback_t callback, void* param)
 {
-    timer_cfg[timer].interval = interval;
-    timer_cfg[timer].callback = callback;
-    timer_cfg[timer].param = param;
-    timer_cfg[timer].value = interval;
+    tasks[task].interval = interval;
+    tasks[task].callback = callback;
+    tasks[task].param = param;
+    tasks[task].last = os_millis() - interval;
 }
 
 void Os_CyclicTasks()
 {
-    for (int i = 0 ; i < NUMBER_OF_TIMERS ; i++ )
+    for(int i = 0; i < NUMBER_OF_TASKS; i++)
     {
-        if ( timer_cfg[i].interval > 0 && timer_cfg[i].callback != NULL_PTR && timer_cfg[i].value >= timer_cfg[i].interval )
+        if(tasks[i].interval <= 0 || tasks[i].callback == NULL_PTR) continue;
+
+        time_t elapsed = os_millis() - tasks[i].last;
+
+        if(elapsed >= tasks[i].interval)
         {
-            timer_cfg[i].callback( timer_cfg[i].param );
-            timer_cfg[i].value %= timer_cfg[i].interval;
+            tasks[i].callback(tasks[i].param);
+            tasks[i].last += tasks[i].interval;
         }
     }
 }

@@ -37,7 +37,8 @@ void app_init()
     }
 
     // Init tasks
-    os_task_setup(TIMER_MAIN, 1000, Task_Main, NULL_PTR);
+    os_task_setup(TASK_MAIN, 1000, Task_Main, NULL_PTR);
+    os_timer_start(TIMER_INTERVAL);
 
     // Ready!
     serial_println(SERIAL_BUS_0, "READY");
@@ -48,11 +49,13 @@ Std_ReturnType Task_Main(void* data)
 {
     UNUSED(data);
 
-    serial_println(SERIAL_BUS_0, "Tick");
+    time_t time = os_timer_get_value(TIMER_INTERVAL);
+    sprintf(buffer, "t=%us", time/1000);
+    serial_println(SERIAL_BUS_0, buffer);
 
     int temperature = 0;
     tc74_read_temperature(tc74, &temperature);
-    sprintf(buffer, "Temperature is %d°C", temperature);
+    sprintf(buffer, "T=%d°C", temperature);
     serial_println(SERIAL_BUS_0, buffer);
 
     return Status_OK;
