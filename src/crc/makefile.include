@@ -1,5 +1,6 @@
-INCLUDES+=\
+INCLUDES += \
 	$(SRC_DIR)/crc/api \
 	$(CFG_DIR)/crc \
 
-crc:    $(SRC_DIR)/crc/src/crc.o \
+SOURCES += \
+	$(SRC_DIR)/crc/src/crc.c \

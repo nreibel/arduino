@@ -2,23 +2,24 @@
 SERIAL_TTY := /dev/ttyUSB0
 SERIAL_BAUDRATE := 19200
 
-ARDUINO_LIBS := ./
+ARDUINO_LIBS := .
+
+TARGET := $(ARDUINO_LIBS)/targets/uno.mk
 
 # Libraries paths
 SRC_DIR := $(ARDUINO_LIBS)/src
-TARGET := $(ARDUINO_LIBS)/targets/uno.mk
-
-# Include paths
 CFG_DIR := ./cfg
+
+# Source and header files
 INCLUDES := ./app ./res
+SOURCES := app/app.c
 
 # Enable support for doubles and floats in printf
 # Adds ~2.5kB to ROM data!!!
-LDFLAGS = -u,vfprintf
-LIBS = printf_flt m
+LDFLAGS := -u,vfprintf
+LIBS := printf_flt m
 
-# TODO : handle modules dependencies
+# Enable selected modules
 MODULES := os serial serial_tp i2c tc74 pca954x
-app: app/app.o
 
 include $(ARDUINO_LIBS)/makefile.include

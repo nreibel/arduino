@@ -1,3 +1,5 @@
-INCLUDES+= $(SRC_DIR)/gpio/api
+INCLUDES += \
+	$(SRC_DIR)/gpio/api \
 
-gpio: $(SRC_DIR)/gpio/src/gpio.o
+SOURCES += \
+	$(SRC_DIR)/gpio/src/gpio.c \

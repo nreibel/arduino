@@ -1,4 +1,5 @@
-INCLUDES+=\
+INCLUDES += \
 	$(SRC_DIR)/pwm/api \
 
-pwm:    $(SRC_DIR)/pwm/src/pwm.o \
+SOURCES += \
+	$(SRC_DIR)/pwm/src/pwm.c \

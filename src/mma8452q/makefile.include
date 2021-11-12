@@ -1,5 +1,6 @@
-INCLUDES+=\
+INCLUDES += \
 	$(SRC_DIR)/mma8452q/api \
 	$(CFG_DIR)/mma8452q \
 
-mma8452q:    $(SRC_DIR)/mma8452q/src/mma8452q.o \
+SOURCES += \
+	$(SRC_DIR)/mma8452q/src/mma8452q.c \

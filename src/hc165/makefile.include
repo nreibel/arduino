@@ -1,7 +1,7 @@
-INCLUDES+=\
+INCLUDES += \
 	$(SRC_DIR)/hc165/api \
 	$(CFG_DIR)/hc165 \
 
-hc165: \
-	$(SRC_DIR)/hc165/src/hc165.o \
-	$(CFG_DIR)/hc165/hc165_cfg.o \
+SOURCES +=  \
+	$(SRC_DIR)/hc165/src/hc165.c \
+	$(CFG_DIR)/hc165/hc165_cfg.c \

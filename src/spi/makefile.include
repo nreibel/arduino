@@ -1,5 +1,6 @@
-INCLUDES += $(SRC_DIR)/spi/api
+INCLUDES += \
+	$(SRC_DIR)/spi/api \
 
-spi: \
-	$(SRC_DIR)/spi/src/spi.o \
-	$(SRC_DIR)/spi/src/spi_$(ARCH).o \
+SOURCES += \
+	$(SRC_DIR)/spi/src/spi.c \
+	$(SRC_DIR)/spi/src/spi_$(ARCH).c \

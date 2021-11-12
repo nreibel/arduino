@@ -1,4 +1,5 @@
-INCLUDES+=\
+INCLUDES += \
 	$(SRC_DIR)/pca954x/api \
 
-pca954x:    $(SRC_DIR)/pca954x/src/pca954x.o \
+SOURCES += \
+	$(SRC_DIR)/pca954x/src/pca954x.c \

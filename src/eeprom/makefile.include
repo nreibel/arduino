@@ -1,5 +1,6 @@
-INCLUDES+=\
+INCLUDES += \
 	$(SRC_DIR)/eeprom/api \
 	$(CFG_DIR)/eeprom \
 
-eeprom: $(SRC_DIR)/eeprom/src/eeprom.o \
+SOURCES += \
+	$(SRC_DIR)/eeprom/src/eeprom.c \

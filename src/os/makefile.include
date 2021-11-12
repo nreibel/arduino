@@ -1,7 +1,8 @@
-INCLUDES+=\
+INCLUDES += \
 	$(SRC_DIR)/os/api \
 	$(CFG_DIR)/os \
 
-os:     $(SRC_DIR)/os/src/os.o \
-	$(SRC_DIR)/os/src/os_$(ARCH).o \
-	$(CFG_DIR)/os/os_cfg.o \
+SOURCES += \
+	$(SRC_DIR)/os/src/os.c \
+	$(SRC_DIR)/os/src/os_$(ARCH).c \
+	$(CFG_DIR)/os/os_cfg.c \

@@ -1,6 +1,6 @@
-INCLUDES+=\
+INCLUDES += \
 	$(SRC_DIR)/serial_tp/api \
 	$(CFG_DIR)/serial_tp \
 
-serial_tp: \
-	$(SRC_DIR)/serial_tp/src/serial_tp.o
+SOURCES += \
+	$(SRC_DIR)/serial_tp/src/serial_tp.c \
