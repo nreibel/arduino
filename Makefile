@@ -6,6 +6,8 @@ ARDUINO_LIBS := .
 
 TARGET := $(ARDUINO_LIBS)/targets/uno.mk
 
+APP := out
+
 # Libraries paths
 SRC_DIR := $(ARDUINO_LIBS)/src
 CFG_DIR := ./cfg

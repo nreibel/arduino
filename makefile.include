@@ -1,5 +1,10 @@
 SHELL=/bin/sh
 
+ifndef APP
+$(error APP is not set)
+# APP = out
+endif
+
 ifndef SRC_DIR
 $(error SRC_DIR is not set)
 # SRC_DIR = ../libs/src
@@ -46,7 +51,6 @@ include $(TARGET)
 include $(MODULES:%=$(SRC_DIR)/%/makefile.include)
 
 # Output files
-APP = out
 OUT = bin/$(ARCH)
 OBJ = obj/$(ARCH)
 HEX = $(OUT)/$(APP).hex
@@ -78,8 +82,8 @@ prepare:
 	@echo "Preparing workspace"
 	@mkdir -p "$(OBJ)" "$(OUT)"
 
-upload:
-	@$(UPLOAD) -b $(UPLOAD_BAUD_RATE) -c $(PROGRAMMER) -p $(ARCH) -P $(SERIAL_TTY) -U flash:w:"$(HEX)"
+upload: $(HEX)
+	@$(UPLOAD) -b $(UPLOAD_BAUD_RATE) -c $(PROGRAMMER) -p $(ARCH) -P $(SERIAL_TTY) -U flash:w:"$<"
 
 monitor:
 	@$(MONITOR) -b $(SERIAL_BAUDRATE) $(SERIAL_TTY)
@@ -88,7 +92,7 @@ $(HEX): $(ELF)
 	@echo "Creating HEX file..."
 	@$(OBJCOPY) -O ihex "$<" "$@"
 	@echo "=================================="
-	@$(SIZE) -C --mcu=$(ARCH) "$(ELF)"
+	@$(SIZE) -C --mcu=$(ARCH) "$<"
 	@echo "Done"
 
 $(ELF): prepare $(OBJECTS)
