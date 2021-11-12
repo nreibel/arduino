@@ -2,39 +2,21 @@
 #include "os.h"
 #include "app.h"
 #include "serial.h"
-#include "serial_tp.h"
-#include "i2c.h"
-#include "tc74.h"
-#include "pca954x.h"
+#include "hc165.h"
 
 // Allocate string buffer
 char buffer[64];
 
-// Dynamically allocated
-static tc74_t tc74 = NULL_PTR;
-
-// Statically allocated of PCA9544
-static struct pca954x_prv_s pca9544_data;
-static pca954x_t pca9544 = &pca9544_data;
+static struct hc165_prv_s hc165_data;
+static hc165_t hc165 = &hc165_data;
 
 // App entry point
 void app_init()
 {
     // Init buses
     serial_bus_init(SERIAL_BUS_0, 19200);
-    i2c_bus_init_master(I2C_BUS_0, FALSE);
 
-    // Init I2C mux
-    pca954x_init(pca9544, I2C_BUS_0, 0x70);
-
-    // Init TC74
-    tc74 = tc74_create(I2C_BUS_0, TC74A4);
-
-    if (tc74 == NULL_PTR)
-    {
-        serial_println(SERIAL_BUS_0, "TC74 memory allocation failed");
-        HALT;
-    }
+    hc165_init(hc165);
 
     // Init tasks
     os_task_setup(TASK_MAIN, 1000, Task_Main, NULL_PTR);
@@ -53,9 +35,8 @@ Std_ReturnType Task_Main(void* data)
     sprintf(buffer, "t=%us", time/1000);
     serial_println(SERIAL_BUS_0, buffer);
 
-    int temperature = 0;
-    tc74_read_temperature(tc74, &temperature);
-    sprintf(buffer, "T=%d°C", temperature);
+    uint16_t input = hc165_read_word(hc165);
+    sprintf(buffer, "inputs=%02x", input);
     serial_println(SERIAL_BUS_0, buffer);
 
     return Status_OK;

@@ -1,7 +1,5 @@
 INCLUDES += \
 	$(SRC_DIR)/hc165/api \
-	$(CFG_DIR)/hc165 \
 
 SOURCES +=  \
 	$(SRC_DIR)/hc165/src/hc165.c \
-	$(CFG_DIR)/hc165/hc165_cfg.c \

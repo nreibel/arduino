@@ -1,60 +1,60 @@
+#include "os.h"
 #include "types.h"
-#include "hc165.h"
-#include "hc165_prv.h"
 #include "bits.h"
+#include "hc165.h"
 #include "gpio.h"
 
-void HC165_Init()
+void hc165_init(hc165_t self)
 {
-    GPIO_SetDataDirection(HC165_Pin_Serial, GPIO_Input);
-    GPIO_SetDataDirection(HC165_Pin_Clock, GPIO_Output);
-    GPIO_SetDataDirection(HC165_Pin_Latch, GPIO_Output);
-
-    GPIO_SetState(HC165_Pin_Clock, GPIO_Low);
-    GPIO_SetState(HC165_Pin_Latch, GPIO_Low);
+    // TODO : set custom pinout once GPIO module is rewritten
+    gpio_init(&self->serial, GPIO_PORT_C, 1, GPIO_INPUT_HIGH_Z);
+    gpio_init(&self->latch,  GPIO_PORT_C, 2, GPIO_OUTPUT_ACTIVE_HIGH);
+    gpio_init(&self->clock,  GPIO_PORT_C, 3, GPIO_OUTPUT_ACTIVE_HIGH);
 }
 
-int HC165_Read(buffer_t buf, int len)
+int hc165_read(hc165_t self, buffer_t buf, int len)
 {
-    GPIO_State ser = GPIO_Low;
+    bool ser = FALSE;
 
-    GPIO_SetState(HC165_Pin_Latch, GPIO_High);
+    gpio_set(&self->latch);
 
     for (int i = 0 ; i < len ; i++)
     {
         uint8_t *data = TYPECAST(buf++, uint8_t*);
         for (int j = 7 ; j >= 0 ; j--)
         {
-            GPIO_GetState(HC165_Pin_Serial, &ser);
+            gpio_get(&self->serial, &ser);
 
-            if (ser == GPIO_High) SET_BIT(*data, j);
+            if (ser) SET_BIT(*data, j);
 
-            GPIO_RisingEdge(HC165_Pin_Clock);
+            gpio_set(&self->clock);
+            os_wait(1);
+            gpio_reset(&self->clock);
         }
     }
 
-    GPIO_SetState(HC165_Pin_Latch, GPIO_Low);
+    gpio_reset(&self->latch);
 
     return len;
 }
 
-uint8_t HC165_ReadByte()
+uint8_t hc165_read_byte(hc165_t self)
 {
     uint8_t data = 0;
-    HC165_Read(&data, 1);
+    hc165_read(self, &data, 1);
     return data;
 }
 
-uint16_t HC165_ReadWord()
+uint16_t hc165_read_word(hc165_t self)
 {
     uint16_t data = 0;
-    HC165_Read(&data, 2);
+    hc165_read(self, &data, 2);
     return data;
 }
 
-uint32_t HC165_ReadDWord()
+uint32_t hc165_read_dword(hc165_t self)
 {
     uint32_t data = 0;
-    HC165_Read(&data, 4);
+    hc165_read(self, &data, 4);
     return data;
 }
