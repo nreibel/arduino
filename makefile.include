@@ -42,6 +42,9 @@ SIZE = avr-size
 UPLOAD = avrdude
 MONITOR = picocom
 
+include $(TARGET)
+include $(MODULES:%=$(SRC_DIR)/%/makefile.include)
+
 # Output files
 OUT = bin/$(ARCH)
 OBJ = obj/$(ARCH)
@@ -51,9 +54,6 @@ FNAME = out
 WARNINGS += all extra undef
 CFLAGS += -O2 -g0 -mmcu=$(ARCH) -ffunction-sections -fdata-sections
 LDFLAGS += -gc-sections --relax -Map,$(OUT)/$(FNAME).map
-
-include $(TARGET)
-include $(MODULES:%=$(SRC_DIR)/%/makefile.include)
 
 OBJECTS = $(SOURCES:%.c=$(OBJ)/%.o)
 
