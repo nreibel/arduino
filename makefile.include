@@ -46,14 +46,17 @@ include $(TARGET)
 include $(MODULES:%=$(SRC_DIR)/%/makefile.include)
 
 # Output files
+APP = out
 OUT = bin/$(ARCH)
 OBJ = obj/$(ARCH)
-FNAME = out
+HEX = $(OUT)/$(APP).hex
+ELF = $(OUT)/$(APP).elf
+MAP = $(OUT)/$(APP).map
 
 # Compilation options and flags
 WARNINGS += all extra undef
 CFLAGS += -O2 -g0 -mmcu=$(ARCH) -ffunction-sections -fdata-sections
-LDFLAGS += -gc-sections --relax -Map,$(OUT)/$(FNAME).map
+LDFLAGS += -gc-sections --relax -Map,$(MAP)
 
 OBJECTS = $(SOURCES:%.c=$(OBJ)/%.o)
 
@@ -62,14 +65,9 @@ l=-l
 I=-I
 W=-W
 
-all: prepare $(OBJECTS)
-	@echo "Linking object files..."
-	@$(CC) $(addprefix $l,$(LIBS)) $(addprefix $w,$(LDFLAGS)) $(CFLAGS) $(OBJECTS) -o "$(OUT)/$(FNAME).elf"
-	@echo "Creating HEX file..."
-	@$(OBJCOPY) -O ihex "$(OUT)/$(FNAME).elf" "$(OUT)/$(FNAME).hex"
-	@echo "=================================="
-	@$(SIZE) -C --mcu=$(ARCH) "$(OUT)/$(FNAME).elf"
-	@echo "Done"
+.PHONY: clean prepare all upload monitor
+
+all: $(HEX)
 
 clean:
 	@echo "Cleaning workspace"
@@ -81,14 +79,24 @@ prepare:
 	@mkdir -p "$(OBJ)" "$(OUT)"
 
 upload:
-	$(UPLOAD) -b $(UPLOAD_BAUD_RATE) -c $(PROGRAMMER) -p $(ARCH) -P $(SERIAL_TTY) -U flash:w:"$(OUT)/$(FNAME).hex"
+	@$(UPLOAD) -b $(UPLOAD_BAUD_RATE) -c $(PROGRAMMER) -p $(ARCH) -P $(SERIAL_TTY) -U flash:w:"$(HEX)"
 
-# Generic rules for compiling objects
+monitor:
+	@$(MONITOR) -b $(SERIAL_BAUDRATE) $(SERIAL_TTY)
+
+$(HEX): $(ELF)
+	@echo "Creating HEX file..."
+	@$(OBJCOPY) -O ihex "$<" "$@"
+	@echo "=================================="
+	@$(SIZE) -C --mcu=$(ARCH) "$(ELF)"
+	@echo "Done"
+
+$(ELF): prepare $(OBJECTS)
+	@echo "Linking object files..."
+	@$(CC) $(addprefix $l,$(LIBS)) $(addprefix $w,$(LDFLAGS)) $(CFLAGS) $(OBJECTS) -o "$@"
+
+# Generic rules for compiling C files
 $(OBJ)/%.o: %.c
 	@echo "Building $<"
 	@mkdir -p "$(@D)"
 	@$(CC) $(addprefix $I,$(INCLUDES)) $(addprefix $W,$(WARNINGS)) $(CFLAGS) -c -o "$@" "$<"
-
-# Serial monitor
-monitor:
-	@$(MONITOR) -b $(SERIAL_BAUDRATE) $(SERIAL_TTY)
