@@ -29,7 +29,8 @@ void os_wait(time_t ms);
 void os_timer_start(timer_t timer);
 void os_timer_reset(timer_t timer);
 void os_timer_stop(timer_t timer);
-time_t os_timer_get_value(timer_t timer);
+void os_timer_resume(timer_t timer);
+time_t os_timer_value(timer_t timer);
 time_t os_millis();
 
 // OS Tasks

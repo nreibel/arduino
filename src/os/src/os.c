@@ -1,6 +1,7 @@
 #include "os.h"
 #include "os_cfg.h"
 #include "bits.h"
+#include "types.h"
 #include "string.h"
 
 /*
@@ -9,6 +10,7 @@
 
 typedef struct {
     time_t value;
+    bool running;
 } timer_config_t;
 
 typedef struct {
@@ -70,6 +72,7 @@ void os_wait(time_t ms)
 void os_timer_start(timer_t timer)
 {
     timers[timer].value = os_millis();
+    timers[timer].running = TRUE;
 }
 
 void os_timer_reset(timer_t timer)
@@ -79,13 +82,20 @@ void os_timer_reset(timer_t timer)
 
 void os_timer_stop(timer_t timer)
 {
-    UNUSED(timer);
-    // TODO
+    timers[timer].value = os_millis() - timers[timer].value;
+    timers[timer].running = FALSE;
 }
 
-time_t os_timer_get_value(timer_t timer)
+void os_timer_resume(timer_t timer)
 {
-    return os_millis() - timers[timer].value;
+    timers[timer].value = os_millis() - timers[timer].value;
+    timers[timer].running = TRUE;
+}
+
+time_t os_timer_value(timer_t timer)
+{
+    if (timers[timer].running) return os_millis() - timers[timer].value;
+    else return timers[timer].value;
 }
 
 void os_task_setup(task_t task, time_t interval, callback_t callback, void* param)
