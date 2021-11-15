@@ -58,11 +58,10 @@ int i2c_ll_stop_condition()
 
 int i2c_ll_slave_write(uint8_t addr)
 {
-    Std_ReturnType retval = Status_Not_OK;
     uint8_t status = 0;
 
-    retval = i2c_ll_write( I2C_ADDR(addr, TW_WRITE), &status );
-    if (retval < 0) return retval;
+    int ret = i2c_ll_write( I2C_ADDR(addr, TW_WRITE), &status );
+    if (ret < 0) return ret;
 
     switch(status)
     {
@@ -78,11 +77,10 @@ int i2c_ll_slave_write(uint8_t addr)
 
 int i2c_ll_slave_read(uint8_t addr)
 {
-    Std_ReturnType retval = Status_Not_OK;
     uint8_t status = 0;
 
-    retval = i2c_ll_write( I2C_ADDR(addr, TW_READ), &status );
-    if (retval < 0) return retval;
+    int ret = i2c_ll_write( I2C_ADDR(addr, TW_READ), &status );
+    if (ret < 0) return ret;
 
     switch(status)
     {

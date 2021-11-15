@@ -18,7 +18,7 @@ void app_init()
     serial_bus_init(SERIAL_BUS_0, 19200);
 
     // Init tasks
-    os_task_setup(TASK_MAIN, 100, Task_Main, NULL_PTR);
+    os_task_setup(TASK_MAIN, 100, task_main, NULL_PTR);
     os_timer_start(TIMER_INTERVAL);
 
     // Ready!
@@ -26,13 +26,13 @@ void app_init()
 }
 
 // Main task
-Std_ReturnType Task_Main(void* data)
+int task_main(void* data)
 {
     UNUSED(data);
 
     time_t time = os_timer_value(TIMER_INTERVAL);
-    sprintf(buffer, "%lums", time);
+    sprintf(buffer, "%ums", time);
     serial_println(SERIAL_BUS_0, buffer);
 
-    return Status_OK;
+    return 0;
 }

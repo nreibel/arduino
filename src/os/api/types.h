@@ -4,19 +4,12 @@
 #include <stdint.h>
 
 typedef enum {
-    Status_Not_OK = 0,
-    Status_Invalid_Parameter,
-    Status_Pending,
-    Status_OK
-} Std_ReturnType;
-
-typedef enum {
     FALSE = 0,
     TRUE = !FALSE
 } bool;
 
 typedef void (*Interrupt)(volatile void*);
-typedef Std_ReturnType (*callback_t)(void*);
+typedef int (*callback_t)(void*);
 
 typedef union {
     uint16_t value;
