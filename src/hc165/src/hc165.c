@@ -4,6 +4,10 @@
 #include "hc165.h"
 #include "gpio.h"
 
+#ifndef HC165_EDGE_DELAY
+#define HC165_EDGE_DELAY 0
+#endif // HC165_EDGE_DELAY
+
 void hc165_init(hc165_t self)
 {
     // TODO : set custom pinout once GPIO module is rewritten
@@ -28,7 +32,7 @@ int hc165_read(hc165_t self, buffer_t buf, int len)
             if (ser) SET_BIT(*data, j);
 
             gpio_set(&self->clock);
-            os_wait(1);
+            os_wait(HC165_EDGE_DELAY);
             gpio_reset(&self->clock);
         }
     }

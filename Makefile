@@ -22,6 +22,6 @@ LDFLAGS := -u,vfprintf
 LIBS := printf_flt m
 
 # Enable selected modules
-MODULES := os gpio serial serial_tp i2c tc74 pca954x hc165
+MODULES := os gpio serial serial_tp i2c tc74 pca954x hc165 hc595
 
 include $(ARDUINO_LIBS)/makefile.include

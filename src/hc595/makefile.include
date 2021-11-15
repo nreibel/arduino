@@ -1,7 +1,5 @@
 INCLUDES += \
 	$(SRC_DIR)/hc595/api \
-	$(CFG_DIR)/hc595 \
 
 SOURCES += \
 	$(SRC_DIR)/hc595/src/hc595.c \
-	$(CFG_DIR)/hc595/hc595_cfg.c \

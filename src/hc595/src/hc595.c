@@ -1,46 +1,53 @@
 #include "hc595.h"
-#include "hc595_prv.h"
 #include "bits.h"
 #include "gpio.h"
+#include "os.h"
 
-void HC595_Init()
+#ifndef HC595_EDGE_DELAY
+#define HC595_EDGE_DELAY 0
+#endif // HC595_EDGE_DELAY
+
+void hc595_init(hc595_t self)
 {
-    GPIO_SetDataDirection(HC595_Pin_Serial, GPIO_Output);
-    GPIO_SetDataDirection(HC595_Pin_Clock, GPIO_Output);
-    GPIO_SetDataDirection(HC595_Pin_Latch, GPIO_Output);
-
-    GPIO_SetState(HC595_Pin_Serial, FALSE);
-    GPIO_SetState(HC595_Pin_Clock, FALSE);
-    GPIO_SetState(HC595_Pin_Latch, FALSE);
+    // TODO : set custom pinout once GPIO module is rewritten
+    gpio_init(&self->serial, GPIO_PORT_D, 2, GPIO_OUTPUT_ACTIVE_HIGH);
+    gpio_init(&self->latch,  GPIO_PORT_D, 3, GPIO_OUTPUT_ACTIVE_HIGH);
+    gpio_init(&self->clock,  GPIO_PORT_D, 4, GPIO_OUTPUT_ACTIVE_HIGH);
 }
 
-void HC595_Write(buffer_t data, int len)
+void hc595_write(hc595_t self, buffer_t data, int len)
 {
     for (int i = len ; i > 0 ; i--)
     {
         uint8_t val = READ_PU8(data+i-1);
-        for (int j = 8 ; j > 0 ; j--)
+        for (int j = 7 ; j >= 0 ; j--)
         {
-            GPIO_State st = IS_SET_BIT(val, j-1) ? GPIO_High : GPIO_Low;
-            GPIO_SetState(HC595_Pin_Serial, st);
-            GPIO_RisingEdge(HC595_Pin_Clock);
+            bool st = IS_SET_BIT(val, j);
+            if (st) gpio_set(&self->serial);
+            else gpio_reset(&self->serial);
+
+            gpio_set(&self->clock);
+            os_wait(HC595_EDGE_DELAY);
+            gpio_reset(&self->clock);
         }
     }
 
-    GPIO_RisingEdge(HC595_Pin_Latch);
+    gpio_set(&self->latch);
+    os_wait(HC595_EDGE_DELAY);
+    gpio_reset(&self->latch);
 }
 
-void HC595_WriteByte(uint8_t val)
+void hc595_write_byte(hc595_t self, uint8_t val)
 {
-    HC595_Write(&val, 1);
+    hc595_write(self, &val, 1);
 }
 
-void HC595_WriteWord(uint16_t val)
+void hc595_write_word(hc595_t self, uint16_t val)
 {
-    HC595_Write(&val, 2);
+    hc595_write(self, &val, 2);
 }
 
-void HC595_WriteDWord(uint32_t val)
+void hc595_write_dword(hc595_t self, uint32_t val)
 {
-    HC595_Write(&val, 4);
+    hc595_write(self, &val, 4);
 }

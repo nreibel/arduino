@@ -34,7 +34,7 @@ void os_interrupts_disable();
 static void os_cyclic_tasks();
 
 #if NUMBER_OF_BACKGROUND_TASKS > 0
-static int execute_background_tasks();
+static int os_background_tasks();
 #endif
 
 /*
@@ -55,6 +55,8 @@ static uint8_t malloc_idx = 0;
 
 void os_wait(time_t ms)
 {
+    if (ms <= 0) return;
+
     const time_t start = os_millis();
 
     while(1)
@@ -78,7 +80,7 @@ void os_timer_reset(timer_t timer)
 void os_timer_stop(timer_t timer)
 {
     UNUSED(timer);
-    // Do nothing...
+    // TODO
 }
 
 time_t os_timer_get_value(timer_t timer)
@@ -111,7 +113,7 @@ static void os_cyclic_tasks()
 }
 
 #if NUMBER_OF_BACKGROUND_TASKS > 0
-static int execute_background_tasks()
+static int os_background_tasks()
 {
     int retval = 0;
 
@@ -147,7 +149,7 @@ int main(void)
 
 #if NUMBER_OF_BACKGROUND_TASKS > 0
         // Execute background tasks in the spare time, or sleep until next tick
-        if (execute_background_tasks() == 0)
+        if (os_background_tasks() == 0)
 #endif
         {
             os_sleep();
