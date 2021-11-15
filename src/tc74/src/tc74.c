@@ -15,7 +15,6 @@
  * Public functions
  */
 
-
 #if OS_MALLOC
 tc74_t tc74_create(i2c_bus_t bus, uint8_t addr)
 {
@@ -30,9 +29,9 @@ void tc74_destroy(tc74_t self)
 }
 #endif // OS_MALLOC
 
-void tc74_init(tc74_t self, i2c_bus_t bus, uint8_t addr)
+int tc74_init(tc74_t self, i2c_bus_t bus, uint8_t addr)
 {
-    i2c_device_init(&self->dev, bus, addr);
+    return i2c_device_init(&self->dev, bus, addr);
 }
 
 int tc74_set_standby(tc74_t self, bool stdby)

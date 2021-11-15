@@ -8,6 +8,20 @@
 #define HC165_EDGE_DELAY 1
 #endif // HC165_EDGE_DELAY
 
+#if OS_MALLOC
+hc165_t hc165_create(gpio_t serial, gpio_t clock, gpio_t latch)
+{
+    hc165_t instance = os_malloc(sizeof(*instance));
+    if (instance != NULL_PTR) hc165_init(instance, serial, clock, latch);
+    return instance;
+}
+
+void hc165_destroy(hc165_t self)
+{
+    os_free(self);
+}
+#endif // OS_MALLOC
+
 void hc165_init(hc165_t self, gpio_t serial, gpio_t clock, gpio_t latch)
 {
     gpio_set_data_direction(serial, GPIO_INPUT_HIGH_Z);

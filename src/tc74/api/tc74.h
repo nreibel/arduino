@@ -25,7 +25,7 @@ tc74_t tc74_create(i2c_bus_t bus, uint8_t addr);
 void tc74_destroy(tc74_t self);
 #endif // OS_MALLOC
 
-void tc74_init(tc74_t self, i2c_bus_t bus, uint8_t addr);
+int tc74_init(tc74_t self, i2c_bus_t bus, uint8_t addr);
 int tc74_set_standby(tc74_t self, bool stdby);
 int tc74_read_temperature(tc74_t self, int *temp);
 

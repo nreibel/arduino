@@ -7,6 +7,20 @@
 #define HC595_EDGE_DELAY 1
 #endif // HC595_EDGE_DELAY
 
+#if OS_MALLOC
+hc595_t hc595_create(gpio_t serial, gpio_t clock, gpio_t latch)
+{
+    hc595_t instance = os_malloc(sizeof(*instance));
+    if (instance != NULL_PTR) hc595_init(instance, serial, clock, latch);
+    return instance;
+}
+
+void hc595_destroy(hc595_t self)
+{
+    os_free(self);
+}
+#endif // OS_MALLOC
+
 void hc595_init(hc595_t self, gpio_t serial, gpio_t clock, gpio_t latch)
 {
     gpio_set_data_direction(serial, GPIO_OUTPUT_ACTIVE_HIGH);
