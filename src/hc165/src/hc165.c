@@ -5,39 +5,42 @@
 #include "gpio.h"
 
 #ifndef HC165_EDGE_DELAY
-#define HC165_EDGE_DELAY 0
+#define HC165_EDGE_DELAY 1
 #endif // HC165_EDGE_DELAY
 
-void hc165_init(hc165_t self)
+void hc165_init(hc165_t self, gpio_t serial, gpio_t clock, gpio_t latch)
 {
-    // TODO : set custom pinout once GPIO module is rewritten
-    gpio_init(&self->serial, GPIO_PORT_C, 1, GPIO_INPUT_HIGH_Z);
-    gpio_init(&self->latch,  GPIO_PORT_C, 2, GPIO_OUTPUT_ACTIVE_HIGH);
-    gpio_init(&self->clock,  GPIO_PORT_C, 3, GPIO_OUTPUT_ACTIVE_HIGH);
+    gpio_set_data_direction(serial, GPIO_INPUT_HIGH_Z);
+    gpio_set_data_direction(clock,  GPIO_OUTPUT_ACTIVE_HIGH);
+    gpio_set_data_direction(latch,  GPIO_OUTPUT_ACTIVE_HIGH);
+
+    self->serial = serial;
+    self->clock = clock;
+    self->latch = latch;
 }
 
 int hc165_read(hc165_t self, buffer_t buf, int len)
 {
     bool ser = FALSE;
 
-    gpio_set(&self->latch);
+    gpio_set(self->latch);
 
     for (int i = 0 ; i < len ; i++)
     {
         uint8_t *data = TYPECAST(buf++, uint8_t*);
         for (int j = 7 ; j >= 0 ; j--)
         {
-            gpio_get(&self->serial, &ser);
+            gpio_get(self->serial, &ser);
 
             if (ser) SET_BIT(*data, j);
 
-            gpio_set(&self->clock);
+            gpio_set(self->clock);
             os_wait(HC165_EDGE_DELAY);
-            gpio_reset(&self->clock);
+            gpio_reset(self->clock);
         }
     }
 
-    gpio_reset(&self->latch);
+    gpio_reset(self->latch);
 
     return len;
 }

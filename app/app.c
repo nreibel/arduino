@@ -20,10 +20,8 @@ void app_init()
     // Init buses
     serial_bus_init(SERIAL_BUS_0, 19200);
 
-    hc165_init(hc165);
-    hc595_init(hc595);
-
-    hc595_write_word(hc595, 0);
+    hc165_init(hc165, A1, A3, A2);
+    hc595_init(hc595, D2, D4, D3);
 
     // Init tasks
     os_task_setup(TASK_MAIN, 200, Task_Main, NULL_PTR);
@@ -43,7 +41,7 @@ Std_ReturnType Task_Main(void* data)
     serial_println(SERIAL_BUS_0, buffer);
 
     uint16_t input = hc165_read_word(hc165);
-    sprintf(buffer, "inputs=%02x", input);
+    sprintf(buffer, "inputs=%04x", input);
     serial_println(SERIAL_BUS_0, buffer);
 
     static uint16_t cpt = 1;

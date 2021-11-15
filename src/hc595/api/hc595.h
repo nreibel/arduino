@@ -5,12 +5,12 @@
 #include "gpio.h"
 
 typedef struct hc595_prv_s {
-    gpio_t latch;
-    gpio_t clock;
     gpio_t serial;
+    gpio_t clock;
+    gpio_t latch;
 } * hc595_t;
 
-void hc595_init(hc595_t self);
+void hc595_init(hc595_t self, gpio_t serial, gpio_t clock, gpio_t latch);
 void hc595_write(hc595_t self, buffer_t data, int len);
 
 void hc595_write_byte(hc595_t self, uint8_t val);

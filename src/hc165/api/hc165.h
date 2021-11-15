@@ -5,12 +5,12 @@
 #include "types.h"
 
 typedef struct hc165_prv_s {
-    gpio_t latch;
-    gpio_t clock;
     gpio_t serial;
+    gpio_t clock;
+    gpio_t latch;
 } * hc165_t;
 
-void hc165_init(hc165_t self);
+void hc165_init(hc165_t self, gpio_t serial, gpio_t clock, gpio_t latch);
 int hc165_read(hc165_t self, buffer_t buf, int len);
 
 uint8_t hc165_read_byte(hc165_t self);

@@ -7,17 +7,86 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
+
+/*
+ * Private data
+ */
+
 static volatile void* extint_data[NBR_OF_EXTINT] = {0};
 static gpio_extint_cbk_t extint_cbk[NBR_OF_EXTINT] = {0};
 
 static volatile void* pcint_data[NBR_OF_PORTS] = {0};
 static gpio_pcint_cbk_t pcint_cbk[NBR_OF_PORTS] = {0};
 
+static struct gpio_prv_s _PB0 = { .port = GPIO_PORT_B, .pin = 0 };
+static struct gpio_prv_s _PB1 = { .port = GPIO_PORT_B, .pin = 1 };
+static struct gpio_prv_s _PB2 = { .port = GPIO_PORT_B, .pin = 2 };
+static struct gpio_prv_s _PB3 = { .port = GPIO_PORT_B, .pin = 3 };
+static struct gpio_prv_s _PB4 = { .port = GPIO_PORT_B, .pin = 4 };
+static struct gpio_prv_s _PB5 = { .port = GPIO_PORT_B, .pin = 5 };
+static struct gpio_prv_s _PC0 = { .port = GPIO_PORT_C, .pin = 0 };
+static struct gpio_prv_s _PC1 = { .port = GPIO_PORT_C, .pin = 1 };
+static struct gpio_prv_s _PC2 = { .port = GPIO_PORT_C, .pin = 2 };
+static struct gpio_prv_s _PC3 = { .port = GPIO_PORT_C, .pin = 3 };
+static struct gpio_prv_s _PC4 = { .port = GPIO_PORT_C, .pin = 4 };
+static struct gpio_prv_s _PC5 = { .port = GPIO_PORT_C, .pin = 5 };
+static struct gpio_prv_s _PD0 = { .port = GPIO_PORT_D, .pin = 0 };
+static struct gpio_prv_s _PD1 = { .port = GPIO_PORT_D, .pin = 1 };
+static struct gpio_prv_s _PD2 = { .port = GPIO_PORT_D, .pin = 2 };
+static struct gpio_prv_s _PD3 = { .port = GPIO_PORT_D, .pin = 3 };
+static struct gpio_prv_s _PD4 = { .port = GPIO_PORT_D, .pin = 4 };
+static struct gpio_prv_s _PD5 = { .port = GPIO_PORT_D, .pin = 5 };
+static struct gpio_prv_s _PD6 = { .port = GPIO_PORT_D, .pin = 6 };
+static struct gpio_prv_s _PD7 = { .port = GPIO_PORT_D, .pin = 7 };
+
+/*
+ * Public constants
+ */
+
+// Analog inputs
+const gpio_t A0 = &_PC0;
+const gpio_t A1 = &_PC1;
+const gpio_t A2 = &_PC2;
+const gpio_t A3 = &_PC3;
+const gpio_t A4 = &_PC4;
+const gpio_t A5 = &_PC5;
+
+// Digital inputs
+const gpio_t D0  = &_PD0;
+const gpio_t D1  = &_PD1;
+const gpio_t D2  = &_PD2;
+const gpio_t D3  = &_PD3;
+const gpio_t D4  = &_PD4;
+const gpio_t D5  = &_PD5;
+const gpio_t D6  = &_PD6;
+const gpio_t D7  = &_PD7;
+const gpio_t D8  = &_PB0;
+const gpio_t D9  = &_PB1;
+const gpio_t D10 = &_PB2;
+const gpio_t D11 = &_PB3;
+const gpio_t D12 = &_PB4;
+const gpio_t D13 = &_PB5;
+
+// Aliases
+const gpio_t RX   = &_PD0;
+const gpio_t TX   = &_PD1;
+const gpio_t CS   = &_PB2;
+const gpio_t MOSI = &_PB3;
+const gpio_t MISO = &_PB4;
+const gpio_t SCK  = &_PB5;
+const gpio_t LED  = &_PB5;
+const gpio_t SDA  = &_PC4;
+const gpio_t SCL  = &_PC5;
+
+/*
+ * Interrupt routines
+ */
+
 ISR(INT0_vect)
 {
     if (extint_cbk[0] != NULL_PTR)
     {
-        (*extint_cbk[0])(extint_data[0]);
+        (*extint_cbk[0])(GPIO_INT_0, extint_data[0]);
     }
 }
 
@@ -25,7 +94,7 @@ ISR(INT1_vect)
 {
     if (extint_cbk[1] != NULL_PTR)
     {
-        (*extint_cbk[1])(extint_data[1]);
+        (*extint_cbk[1])(GPIO_INT_1, extint_data[1]);
     }
 }
 
@@ -33,7 +102,7 @@ ISR(PCINT0_vect)
 {
     if (pcint_cbk[0] != NULL_PTR)
     {
-        (*pcint_cbk[0])(PINB, pcint_data[0]);
+        (*pcint_cbk[0])(GPIO_PORT_B, PINB, pcint_data[0]);
     }
 }
 
@@ -41,7 +110,7 @@ ISR(PCINT1_vect)
 {
     if (pcint_cbk[1] != NULL_PTR)
     {
-        (*pcint_cbk[1])(PINC, pcint_data[1]);
+        (*pcint_cbk[1])(GPIO_PORT_C, PINC, pcint_data[1]);
     }
 }
 
@@ -49,9 +118,13 @@ ISR(PCINT2_vect)
 {
     if (pcint_cbk[2] != NULL_PTR)
     {
-        (*pcint_cbk[2])(PIND, pcint_data[2]);
+        (*pcint_cbk[2])(GPIO_PORT_D, PIND, pcint_data[2]);
     }
 }
+
+/*
+ * External interrupts
+ */
 
 int gpio_enable_pcint(gpio_port_t port, uint8_t mask, gpio_pcint_cbk_t cbk, volatile void *data)
 {
@@ -87,10 +160,10 @@ int gpio_enable_pcint(gpio_port_t port, uint8_t mask, gpio_pcint_cbk_t cbk, vola
             break;
         }
 
-        default: return -1;
+        default: return -GPIO_INVALID_PORT;
     }
 
-    return 0;
+    return GPIO_OK;
 }
 
 int gpio_enable_extint(gpio_int_t pin, gpio_edge_t edge, gpio_extint_cbk_t cbk, volatile void *data)
@@ -125,7 +198,7 @@ int gpio_enable_extint(gpio_int_t pin, gpio_edge_t edge, gpio_extint_cbk_t cbk, 
                     break;
 
                 default:
-                    return -2;
+                    return -GPIO_INVALID_MODE;
             }
 
             SET_BIT(eimsk, INT0);
@@ -161,7 +234,7 @@ int gpio_enable_extint(gpio_int_t pin, gpio_edge_t edge, gpio_extint_cbk_t cbk, 
                     break;
 
                 default:
-                    return -2;
+                    return -GPIO_INVALID_MODE;
             }
 
             SET_BIT(eimsk, INT1);
@@ -174,23 +247,32 @@ int gpio_enable_extint(gpio_int_t pin, gpio_edge_t edge, gpio_extint_cbk_t cbk, 
 
         default:
         {
-            return -1;
+            return -GPIO_INVALID_INT;
         }
     }
 
     EICRA = eicra;
     EIMSK = eimsk;
 
-    return 0;
+    return GPIO_OK;
 }
 
-int gpio_init(gpio_t *self, gpio_port_t port, uint8_t pin, gpio_data_direction_t direction)
+/*
+ * Public functions
+ */
+
+int gpio_init(gpio_t self, gpio_port_t port, uint8_t pin)
 {
     self->port = port;
     self->pin = pin;
-    self->direction = direction;
+    self->direction = GPIO_DIRECTION_NONE;
 
-    if (self->pin >= 8) return -1;
+    return GPIO_OK;
+}
+
+int gpio_set_data_direction(gpio_t self, gpio_data_direction_t direction)
+{
+    self->direction = direction;
 
     // Set DDR
     switch(direction)
@@ -203,7 +285,7 @@ int gpio_init(gpio_t *self, gpio_port_t port, uint8_t pin, gpio_data_direction_t
                 case GPIO_PORT_B: SET_BIT(DDRB, self->pin); break;
                 case GPIO_PORT_C: SET_BIT(DDRC, self->pin); break;
                 case GPIO_PORT_D: SET_BIT(DDRD, self->pin); break;
-                default: return -1;
+                default: return -GPIO_INVALID_PORT;
             }
             break;
         }
@@ -216,12 +298,12 @@ int gpio_init(gpio_t *self, gpio_port_t port, uint8_t pin, gpio_data_direction_t
                 case GPIO_PORT_B: RESET_BIT(DDRB, self->pin); break;
                 case GPIO_PORT_C: RESET_BIT(DDRC, self->pin); break;
                 case GPIO_PORT_D: RESET_BIT(DDRD, self->pin); break;
-                default: return -1;
+                default: return -GPIO_INVALID_PORT;
             }
             break;
         }
 
-        default: return -1;
+        default: return -GPIO_INVALID_MODE;
     }
 
     // Set PORT
@@ -235,7 +317,7 @@ int gpio_init(gpio_t *self, gpio_port_t port, uint8_t pin, gpio_data_direction_t
                 case GPIO_PORT_B: SET_BIT(PORTB, self->pin); break;
                 case GPIO_PORT_C: SET_BIT(PORTC, self->pin); break;
                 case GPIO_PORT_D: SET_BIT(PORTD, self->pin); break;
-                default: return -1;
+                default: return -GPIO_INVALID_PORT;
             }
             break;
         }
@@ -248,20 +330,20 @@ int gpio_init(gpio_t *self, gpio_port_t port, uint8_t pin, gpio_data_direction_t
                 case GPIO_PORT_B: RESET_BIT(PORTB, self->pin); break;
                 case GPIO_PORT_C: RESET_BIT(PORTC, self->pin); break;
                 case GPIO_PORT_D: RESET_BIT(PORTD, self->pin); break;
-                default: return -1;
+                default: return -GPIO_INVALID_PORT;
             }
             break;
         }
 
-        default: return -1;
+        default: return -GPIO_INVALID_MODE;
     }
 
-    return 0;
+    return GPIO_OK;
 }
 
-int gpio_get(gpio_t *self, bool *state)
+int gpio_get(gpio_t self, bool *state)
 {
-    if (self->pin >= 8) return -1;
+    if (self->pin >= 8) return -GPIO_INVALID_PIN;
 
     switch(self->direction)
     {
@@ -273,20 +355,20 @@ int gpio_get(gpio_t *self, bool *state)
                 case GPIO_PORT_B: *state = IS_SET_BIT(PINB, self->pin) ? TRUE : FALSE; break;
                 case GPIO_PORT_C: *state = IS_SET_BIT(PINC, self->pin) ? TRUE : FALSE; break;
                 case GPIO_PORT_D: *state = IS_SET_BIT(PIND, self->pin) ? TRUE : FALSE; break;
-                default: return -1;
+                default: return -GPIO_INVALID_PORT;
             }
             break;
         }
 
-        default: return -2;
+        default: return -GPIO_INVALID_MODE;
     }
 
-    return 0;
+    return GPIO_OK;
 }
 
-int gpio_set(gpio_t *self)
+int gpio_set(gpio_t self)
 {
-    if (self->pin >= 8) return -1;
+    if (self->pin >= 8) return -GPIO_INVALID_PIN;
 
     switch(self->direction)
     {
@@ -297,7 +379,7 @@ int gpio_set(gpio_t *self)
                 case GPIO_PORT_B: SET_BIT(PORTB, self->pin); break;
                 case GPIO_PORT_C: SET_BIT(PORTC, self->pin); break;
                 case GPIO_PORT_D: SET_BIT(PORTD, self->pin); break;
-                default: return -1;
+                default: return -GPIO_INVALID_PORT;
             }
             break;
         }
@@ -309,20 +391,20 @@ int gpio_set(gpio_t *self)
                 case GPIO_PORT_B: RESET_BIT(PORTB, self->pin); break;
                 case GPIO_PORT_C: RESET_BIT(PORTC, self->pin); break;
                 case GPIO_PORT_D: RESET_BIT(PORTD, self->pin); break;
-                default: return -1;
+                default: return -GPIO_INVALID_PORT;
             }
             break;
         }
 
-        default: return -2;
+        default: return -GPIO_INVALID_MODE;
     }
 
-    return 0;
+    return GPIO_OK;
 }
 
-int gpio_reset(gpio_t *self)
+int gpio_reset(gpio_t self)
 {
-    if (self->pin >= 8) return -1;
+    if (self->pin >= 8) return -GPIO_INVALID_PIN;
 
     switch(self->direction)
     {
@@ -333,7 +415,7 @@ int gpio_reset(gpio_t *self)
                 case GPIO_PORT_B: RESET_BIT(PORTB, self->pin); break;
                 case GPIO_PORT_C: RESET_BIT(PORTC, self->pin); break;
                 case GPIO_PORT_D: RESET_BIT(PORTD, self->pin); break;
-                default: return -1;
+                default: return -GPIO_INVALID_PORT;
             }
             break;
         }
@@ -345,13 +427,13 @@ int gpio_reset(gpio_t *self)
                 case GPIO_PORT_B: SET_BIT(PORTB, self->pin); break;
                 case GPIO_PORT_C: SET_BIT(PORTC, self->pin); break;
                 case GPIO_PORT_D: SET_BIT(PORTD, self->pin); break;
-                default: return -1;
+                default: return -GPIO_INVALID_PORT;
             }
             break;
         }
 
-        default: return -2;
+        default: return -GPIO_INVALID_MODE;
     }
 
-    return 0;
+    return GPIO_OK;
 }
