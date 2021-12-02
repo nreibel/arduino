@@ -4,32 +4,45 @@
 #include "types.h"
 
 typedef enum {
-    I2C_BUS_0,
-    NUMBER_OF_I2C_BUSES
-} i2c_bus_t;
+    I2C_OK = 0,
+    I2C_FAIL,
+    I2C_TIMEOUT,
+    I2C_SEQ_FAIL,
+    I2C_NOT_IMPLEMENTED,
+    NUMBER_OF_I2C_ERRORS
+} i2c_error_t;
+
+struct i2c_driver_prv_s;
+
+typedef struct i2c_bus_prv_s {
+    struct i2c_driver_prv_s * drv;
+} * i2c_bus_t;
 
 typedef struct i2c_device_prv_s {
     i2c_bus_t bus;
-    uint8_t   addr;
+    uint8_t addr;
 } * i2c_device_t;
 
-typedef uint8_t (*tx_callback)(i2c_bus_t bus, unsigned int offset);
-typedef void (*rx_callback)(i2c_bus_t bus, unsigned int offset, uint8_t data);
+typedef struct i2c_driver_prv_s {
+    int (*init)(i2c_bus_t self);
+    int (*read)(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length);
+    int (*write)(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length);
+} * i2c_driver_t;
 
-int i2c_bus_init_slave(i2c_bus_t bus, uint8_t addr);
-int i2c_bus_init_master(i2c_bus_t bus, bool fast_mode);
+char* i2c_get_error_string(i2c_error_t errcode);
+
+int i2c_bus_init(i2c_bus_t self, i2c_driver_t drv);
+int i2c_bus_read(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length);
+int i2c_bus_write(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length);
 
 int i2c_device_init(i2c_device_t self, i2c_bus_t bus, uint8_t addr);
-
 int i2c_device_write_byte(i2c_device_t self, uint8_t reg, uint8_t byte);
 int i2c_device_write_bytes(i2c_device_t self, uint8_t reg, void *data, unsigned int length);
-
 int i2c_device_read_byte(i2c_device_t self, uint8_t reg, uint8_t *data);
 int i2c_device_read_bytes(i2c_device_t self, uint8_t reg, void *data, unsigned int length);
 
-uint8_t i2c_device_get_addr(i2c_device_t self);
-
-int i2c_set_tx_callback(i2c_bus_t bus, tx_callback cbk);
-int i2c_set_rx_callback(i2c_bus_t bus, rx_callback cbk);
+#if defined (__AVR_ATmega328P__) || defined (__AVR_ATmega328__)
+#include "i2c_atmega328p.h"
+#endif
 
 #endif // __I2C_API_H__

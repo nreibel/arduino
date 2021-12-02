@@ -1,43 +1,106 @@
-#include "i2c_ll.h"
+#include "i2c.h"
 #include "pca954x.h"
-#include "types.h"
 #include "bits.h"
+#include "types.h"
 
-int pca954x_init(pca954x_t self, i2c_bus_t bus, uint8_t addr)
+/*
+ * Private functions prototypes
+ */
+
+static int read(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length);
+static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length);
+static int select_channel(pca954x_t self, pca954x_bus_t bus);
+
+/*
+ * Private data
+ */
+
+static struct i2c_driver_prv_s pca954x_i2c_drv = {
+    .init = NULL_PTR,
+    .read = read,
+    .write = write
+};
+
+/*
+ * Public functions
+ */
+
+int pca9544_init(pca954x_t self, i2c_bus_t parent, uint8_t addr)
 {
-    i2c_device_init(&self->dev, bus, addr);
-    self->current_channel = 0xFF;
-    return 0;
+    return pca954x_init(self, parent, addr, 4);
 }
 
-int pca954x_disable(pca954x_t self)
+int pca954x_init(pca954x_t self, i2c_bus_t parent, uint8_t addr, unsigned int nbr_of_channels)
 {
-    uint8_t dev_addr = i2c_device_get_addr(&self->dev);
+    // Call superclass constructor
+    i2c_device_init(&self->super, parent, addr);
 
-    self->current_channel = 0xFF;
+    self->nbr_of_channels = nbr_of_channels;
+    self->current = NULL_PTR;
 
-    i2c_ll_start_condition();
-    i2c_ll_slave_write(dev_addr);
-    i2c_ll_write(0, NULL_PTR);
-    i2c_ll_stop_condition();
-
-    return 0;
-}
-
-int pca954x_select(pca954x_t self, uint8_t channel)
-{
-    uint8_t regval = BIT(2) | MASK(channel, 0x3);
-    uint8_t dev_addr = i2c_device_get_addr(&self->dev);
-
-    if (self->current_channel != channel)
+    for (unsigned int i = 0 ; i < nbr_of_channels ; i++)
     {
-        i2c_ll_start_condition();
-        i2c_ll_slave_write(dev_addr);
-        i2c_ll_write(regval, NULL_PTR);
-        i2c_ll_stop_condition();
+        // Call superclass constructor on each bus
+        i2c_bus_init(&self->bus[i].super, &pca954x_i2c_drv);
+        self->bus[i].dev = self;
+        self->bus[i].channel_id = i;
     }
 
-    self->current_channel = channel;
+    return I2C_OK;
+}
 
-    return 0;
+i2c_bus_t pca954x_get_bus(pca954x_t self, unsigned int bus)
+{
+    if (bus >= self->nbr_of_channels) return NULL_PTR;
+    else return (i2c_bus_t) &self->bus[bus];
+}
+
+/*
+ * Private functions
+ */
+
+static int read(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length)
+{
+    pca954x_bus_t ch = (pca954x_bus_t) self;
+    pca954x_t dev = ch->dev;
+    i2c_bus_t bus = dev->super.bus;
+
+    if (dev->current != ch)
+    {
+        int retval = select_channel(dev, ch);
+        if (retval < 0) return retval;
+    }
+
+    return i2c_bus_read(bus, addr, reg, data, length);
+}
+
+static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length)
+{
+    pca954x_bus_t ch = (pca954x_bus_t) self;
+    pca954x_t dev = ch->dev;
+    i2c_bus_t bus = dev->super.bus;
+
+    if (dev->current != ch)
+    {
+        int retval = select_channel(dev, ch);
+        if (retval < 0) return retval;
+    }
+
+    return i2c_bus_write(bus, addr, reg, data, length);
+}
+
+static int select_channel(pca954x_t self, pca954x_bus_t bus)
+{
+    uint8_t reg = BIT(2) | MASK(bus->channel_id, 0x3);
+    int retval = i2c_device_write_bytes(&self->super, reg, NULL_PTR, 0);
+    if (retval < 0)
+    {
+        self->current = NULL_PTR;
+        return retval;
+    }
+    else
+    {
+        self->current = bus;
+        return I2C_OK;
+    }
 }
