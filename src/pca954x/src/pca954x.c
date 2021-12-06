@@ -2,6 +2,7 @@
 #include "pca954x.h"
 #include "bits.h"
 #include "types.h"
+#include "os.h"
 
 /*
  * Private constants
@@ -31,6 +32,28 @@ static struct i2c_driver_prv_s pca954x_i2c_drv = {
 /*
  * Public functions
  */
+
+
+#if OS_MALLOC
+
+pca954x_t pca954x_create(i2c_bus_t parent, uint8_t addr, unsigned int nbr_of_channels)
+{
+    pca954x_t instance = os_malloc(sizeof(*instance));
+    if (instance != NULL_PTR) pca954x_init(instance, parent, addr, nbr_of_channels);
+    return instance;
+}
+
+pca954x_t pca9544_create(i2c_bus_t parent, uint8_t addr)
+{
+    return pca954x_create(parent, addr, 4);
+}
+
+void pca954x_destroy(pca954x_t self)
+{
+    os_free(self);
+}
+
+#endif // OS_MALLOC
 
 int pca9544_init(pca954x_t self, i2c_bus_t parent, uint8_t addr)
 {

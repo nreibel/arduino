@@ -3,6 +3,7 @@
 
 #include "i2c.h"
 #include "types.h"
+#include "os_cfg.h"
 
 /*
  * Public constants
@@ -32,6 +33,12 @@ typedef struct pca954x_prv_s {
 /*
  * Exported functions
  */
+
+#if OS_MALLOC
+pca954x_t pca954x_create(i2c_bus_t parent, uint8_t addr, unsigned int nbr_of_channels);
+pca954x_t pca9544_create(i2c_bus_t parent, uint8_t addr);
+void pca954x_destroy(pca954x_t self);
+#endif // OS_MALLOC
 
 int pca954x_init(pca954x_t self, i2c_bus_t parent, uint8_t addr, unsigned int nbr_of_channels);
 int pca9544_init(pca954x_t self, i2c_bus_t parent, uint8_t addr);
