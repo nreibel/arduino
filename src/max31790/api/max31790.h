@@ -6,6 +6,14 @@
 #include "os_cfg.h"
 
 typedef enum {
+    MAX31790_OK,
+    MAX31790_ERROR,
+    MAX31790_INVALID_ARGUMENT,
+    MAX31790_FAN_FAULT,
+    MAX31790_HW_ERROR
+} max31790_error_t;
+
+typedef enum {
     MAX31790_FAN_0,
     MAX31790_FAN_1,
     MAX31790_FAN_2,
@@ -59,5 +67,6 @@ int max31790_set_fan_mode(max31790_t self, max31790_fan_t fan, max31790_mode_t m
 int max31790_set_frequency(max31790_t self, max31790_frequency_t freq);
 int max31790_set_watchdog(max31790_t self, max31790_watchdog_t watchdog);
 int max31790_clear_watchdog(max31790_t self);
+int max31790_read_rpm(max31790_t self, max31790_fan_t fan, unsigned int *rpm);
 
 #endif // __MAX31790_API_H__
