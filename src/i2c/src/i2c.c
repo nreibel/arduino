@@ -1,6 +1,25 @@
 #include "i2c.h"
 #include "types.h"
 
+#define MAX_I2C_BUS_COUNT 16
+
+static unsigned int current_i2c_bus_count = 0;
+static i2c_bus_t registered_bus[MAX_I2C_BUS_COUNT];
+
+int i2c_register_bus(i2c_bus_t bus)
+{
+    if (bus == NULL_PTR) return -I2C_FAIL;
+    if (current_i2c_bus_count >= MAX_I2C_BUS_COUNT) return -I2C_FAIL;
+    registered_bus[current_i2c_bus_count++] = bus;
+    return I2C_OK;
+}
+
+i2c_bus_t i2c_get_bus(unsigned int id)
+{
+    if (id >= current_i2c_bus_count) return NULL_PTR;
+    else return registered_bus[id];
+}
+
 /*
  * I2C Bus
  */

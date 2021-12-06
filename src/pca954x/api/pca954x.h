@@ -38,5 +38,4 @@ int pca9544_init(pca954x_t self, i2c_bus_t parent, uint8_t addr);
 
 i2c_bus_t pca954x_get_bus(pca954x_t self, unsigned int bus);
 
-
 #endif // __PCA954X_API_H__

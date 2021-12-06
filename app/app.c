@@ -29,14 +29,16 @@ max31790_t max31790 = &max31790_data;
 void app_init()
 {
     // Init buses
-    i2c_atmega328p_init(I2C_BUS_0, FALSE);
-    pca9544_init(pca9544, (i2c_bus_t) I2C_BUS_0, 0x70);
+    i2c_atmega328p_init(FALSE);
+    i2c_bus_t i2c_avr = i2c_get_bus(0);
+
+    pca9544_init(pca9544, i2c_avr, 0x70);
+    i2c_bus_t mux_bus_0 = i2c_get_bus(1);
+    i2c_bus_t mux_bus_1 = i2c_get_bus(2);
+    i2c_bus_t mux_bus_3 = i2c_get_bus(4);
 
     serial_bus_init(SERIAL_BUS_0, 19200);
 
-    i2c_bus_t mux_bus_0 = pca954x_get_bus(pca9544, 0);
-    i2c_bus_t mux_bus_1 = pca954x_get_bus(pca9544, 1);
-    i2c_bus_t mux_bus_3 = pca954x_get_bus(pca9544, 3);
 
     tc74_init(tc74[0], mux_bus_0, TC74A4);
     tc74_init(tc74[1], mux_bus_0, TC74A7);
@@ -44,7 +46,7 @@ void app_init()
     tc74_init(tc74[3], mux_bus_3, TC74A2);
 
     // Init MAX31790 fan controller
-    int ret = max31790_init(max31790, (i2c_bus_t) I2C_BUS_0, 0x20);
+    int ret = max31790_init(max31790, i2c_avr, 0x20);
     if (ret < 0)
     {
         snprintf(buffer, BUFFER_SZ, "MAX31790 ERROR %d : %s", ret, i2c_get_error_string(ret));
