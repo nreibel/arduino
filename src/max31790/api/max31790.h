@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "i2c.h"
+#include "os_cfg.h"
 
 typedef enum {
     MAX31790_FAN_0,
@@ -41,11 +42,15 @@ typedef enum {
     MAX31790_MODE_RPM
 } max31790_mode_t;
 
-
 typedef struct max31790_prv_s {
     struct i2c_device_prv_s dev;
     max31790_mode_t mode;
 } * max31790_t;
+
+#if OS_MALLOC
+max31790_t max31790_create(i2c_bus_t bus, uint8_t addr);
+void max31790_destroy(max31790_t self);
+#endif // OS_MALLOC
 
 int max31790_init(max31790_t self, i2c_bus_t bus, uint8_t addr);
 int max31790_set_target_speed(max31790_t self, max31790_fan_t fan, uint16_t target);

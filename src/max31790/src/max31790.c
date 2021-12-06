@@ -2,6 +2,7 @@
 #include "types.h"
 #include "bits.h"
 #include "i2c.h"
+#include "os.h"
 
 /*
  * Private constants
@@ -27,6 +28,23 @@ static int max31790_set_target_rpm(max31790_t self, max31790_fan_t fan, uint16_t
 /*
  * Public functions
  */
+
+
+#if OS_MALLOC
+
+max31790_t max31790_create(i2c_bus_t bus, uint8_t addr)
+{
+    max31790_t instance = os_malloc(sizeof(*instance));
+    if (instance != NULL_PTR) max31790_init(instance, bus, addr);
+    return instance;
+}
+
+void max31790_destroy(max31790_t self)
+{
+    os_free(self);
+}
+
+#endif // OS_MALLOC
 
 int max31790_init(max31790_t self, i2c_bus_t bus, uint8_t addr)
 {
