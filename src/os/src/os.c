@@ -175,6 +175,11 @@ int main(void)
  * Really basic implementation, will fail once heap is used
  */
 
+unsigned int os_get_used_heap()
+{
+    return malloc_idx;
+}
+
 void* os_calloc(unsigned int sz)
 {
     void *ptr = os_malloc(sz);
