@@ -80,7 +80,7 @@ void max31790_destroy(max31790_t self);
 
 int max31790_init(max31790_t self, i2c_bus_t bus, uint8_t addr);
 int max31790_set_target_speed(max31790_t self, max31790_fan_t fan, uint16_t target);
-max31790_mode_t max31790_get_fan_mode(max31790_t self, max31790_fan_t fan);
+int max31790_get_fan_mode(max31790_t self, max31790_fan_t fan, max31790_mode_t *mode);
 int max31790_set_fan_mode(max31790_t self, max31790_fan_t fan, max31790_mode_t mode);
 int max31790_set_frequency(max31790_t self, max31790_frequency_t freq);
 int max31790_set_watchdog(max31790_t self, max31790_watchdog_t watchdog);

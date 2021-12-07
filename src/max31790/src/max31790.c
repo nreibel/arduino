@@ -74,7 +74,7 @@ int max31790_set_target_speed(max31790_t self, max31790_fan_t fan, uint16_t targ
         case MAX31790_MODE_PWM:   return max31790_set_target_pwm(self, fan, target);
         case MAX31790_MODE_RPM:   return max31790_set_target_rpm(self, fan, target);
         case MAX31790_MODE_TACHY: return -MAX31790_INVALID_MODE;
-        default: return -MAX31790_ERROR;
+        default:                  return -MAX31790_ERROR;
     }
 }
 
@@ -142,10 +142,22 @@ int max31790_clear_watchdog(max31790_t self)
     return MAX31790_OK;
 }
 
-max31790_mode_t max31790_get_fan_mode(max31790_t self, max31790_fan_t fan)
+int max31790_get_fan_mode(max31790_t self, max31790_fan_t fan, max31790_mode_t *mode)
 {
-    // TODO : check fan
-    return self->mode[fan];
+    switch(fan)
+    {
+        case MAX31790_FAN_1:
+        case MAX31790_FAN_2:
+        case MAX31790_FAN_3:
+        case MAX31790_FAN_4:
+        case MAX31790_FAN_5:
+        case MAX31790_FAN_6:
+            *mode = self->mode[fan];
+            return MAX31790_OK;
+
+        default:
+            return -MAX31790_INVALID_ARGUMENT;
+    }
 }
 
 int max31790_set_fan_mode(max31790_t self, max31790_fan_t fan, max31790_mode_t mode)
@@ -164,21 +176,28 @@ int max31790_set_fan_mode(max31790_t self, max31790_fan_t fan, max31790_mode_t m
         default: return -MAX31790_INVALID_ARGUMENT;
     }
 
-    int ret = i2c_device_read_byte(&self->dev, reg, &val);
-    if (ret < 0) return ret;
-
     switch(mode)
     {
-        case MAX31790_MODE_PWM: RESET_BIT(val, 7); break;
-        case MAX31790_MODE_RPM:   SET_BIT(val, 7); break;
-        case MAX31790_MODE_TACHY: SET_BIT(val, 0); break;
-        default: return -MAX31790_INVALID_ARGUMENT;
+        case MAX31790_MODE_PWM:
+            val = 0b0001000; // PWM Mode, TACH Input Enable
+            break;
+
+        case MAX31790_MODE_RPM:
+            val = 0b1001000; // RPM Mode, TACH Input Enable
+            break;
+
+        case MAX31790_MODE_TACHY:
+            val = 0b0001001; // TACH Mode, TACH Input Enable
+            break;
+
+        default:
+            return -MAX31790_INVALID_ARGUMENT;
     }
 
-    self->mode[fan] = mode;
-
-    ret = i2c_device_write_byte(&self->dev, reg, val);
+    int ret = i2c_device_write_byte(&self->dev, reg, val);
     if (ret < 0) return ret;
+
+    self->mode[fan] = mode;
 
     return MAX31790_OK;
 }
@@ -272,28 +291,46 @@ static int max31790_read_tachy(max31790_t self, max31790_tach_t tachy, unsigned 
         default: return -MAX31790_INVALID_ARGUMENT;
     }
 
-    // TODO : check fan mode
-
-    word read = {0};
-    i2c_device_read_bytes(&self->dev, reg, &read, 2);
-
-    if ( MASK(read.bytes[1], 0x1F) != 0 )
+    switch(tachy)
     {
-        // Read wrong value, HW error?
+        case MAX31790_TACH_7:
+        case MAX31790_TACH_8:
+        case MAX31790_TACH_9:
+        case MAX31790_TACH_10:
+        case MAX31790_TACH_11:
+        case MAX31790_TACH_12:
+            if (self->mode[tachy - MAX31790_NUMBER_OF_FANS] != MAX31790_MODE_TACHY)
+                return -MAX31790_INVALID_MODE;
+            break;
+
+        default:
+            // Do nothing
+            break;
+    }
+
+    uint8_t read[2];
+
+    int ret = i2c_device_read_bytes(&self->dev, reg, &read, 2);
+    if (ret < 0 || read[1] & 0x1F)
+    {
+        // Lower 5 bits always return zeros
         return -MAX31790_HW_ERROR;
     }
 
-    if ( read.value== 0xE0FF )
+
+    if ( read[0] == 0xFF && read[1] == 0xE0 )
     {
-        // Fan fault or stopped
+        // All bits are 1 : fan fault or stopped
         return -MAX31790_FAN_FAULT;
     }
 
     // Swap bytes and shift result
-    word *w = TYPECAST(value, word*);
-    w->bytes[0] = read.bytes[1];
-    w->bytes[1] = read.bytes[0];
-    w->value >>= 5;
+    word w = {
+        .bytes[0] = read[1],
+        .bytes[1] = read[0]
+    };
+
+    *value = w.value >> 5;
 
     return MAX31790_OK;
 }
