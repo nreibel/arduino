@@ -39,8 +39,10 @@ static struct i2c_driver_prv_s pca954x_i2c_drv = {
 pca954x_t pca954x_create(i2c_bus_t parent, uint8_t addr, unsigned int nbr_of_channels)
 {
     pca954x_t instance = os_malloc(sizeof(*instance));
-    if (instance != NULL_PTR) pca954x_init(instance, parent, addr, nbr_of_channels);
-    return instance;
+    if (instance != NULL_PTR && pca954x_init(instance, parent, addr, nbr_of_channels) >= 0)
+        return instance;
+    else
+        return NULL_PTR;
 }
 
 pca954x_t pca9544_create(i2c_bus_t parent, uint8_t addr)

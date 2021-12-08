@@ -36,8 +36,8 @@ static int max31790_set_target_rpm(max31790_t self, max31790_fan_t fan, uint16_t
 max31790_t max31790_create(i2c_bus_t bus, uint8_t addr)
 {
     max31790_t instance = os_malloc(sizeof(*instance));
-    if (instance != NULL_PTR) max31790_init(instance, bus, addr);
-    return instance;
+    if (instance != NULL_PTR && max31790_init(instance, bus, addr) >= 0) return instance;
+    else return NULL_PTR;
 }
 
 void max31790_destroy(max31790_t self)

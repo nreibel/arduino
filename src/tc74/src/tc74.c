@@ -19,8 +19,10 @@
 tc74_t tc74_create(i2c_bus_t bus, uint8_t addr)
 {
     tc74_t instance = os_malloc(sizeof(*instance));
-    if (instance != NULL_PTR) tc74_init(instance, bus, addr);
-    return instance;
+    if (instance != NULL_PTR && tc74_init(instance, bus, addr) >= 0)
+        return instance;
+    else
+        return NULL_PTR;
 }
 
 void tc74_destroy(tc74_t self)
