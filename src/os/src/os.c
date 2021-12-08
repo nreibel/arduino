@@ -180,6 +180,11 @@ unsigned int os_get_used_heap()
     return malloc_idx;
 }
 
+unsigned int os_get_free_heap()
+{
+    return OS_HEAP_SIZE-malloc_idx;
+}
+
 void* os_calloc(unsigned int sz)
 {
     void *ptr = os_malloc(sz);
@@ -195,6 +200,10 @@ void* os_malloc(unsigned int sz)
     {
         ptr = &malloc_heap[malloc_idx];
         malloc_idx += sz;
+    }
+    else
+    {
+        os_heap_full(NULL_PTR);
     }
 
     return ptr;
