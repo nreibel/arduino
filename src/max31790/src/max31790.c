@@ -23,8 +23,6 @@
  */
 
 static int max31790_read_tachy(max31790_t self, max31790_tach_t fan, unsigned int *tach);
-static int max31790_set_target_pwm(max31790_t self, max31790_fan_t fan, uint16_t pwm);
-static int max31790_set_target_rpm(max31790_t self, max31790_fan_t fan, uint16_t rpm);
 
 /*
  * Public functions
@@ -63,19 +61,6 @@ int max31790_init(max31790_t self, i2c_bus_t bus, uint8_t addr)
     if (ret < 0) return ret;
 
     return MAX31790_OK;
-}
-
-int max31790_set_target_speed(max31790_t self, max31790_fan_t fan, uint16_t target)
-{
-    // TODO : check fan
-
-    switch(self->mode[fan])
-    {
-        case MAX31790_MODE_PWM:   return max31790_set_target_pwm(self, fan, target);
-        case MAX31790_MODE_RPM:   return max31790_set_target_rpm(self, fan, target);
-        case MAX31790_MODE_TACHY: return -MAX31790_INVALID_MODE;
-        default:                  return -MAX31790_ERROR;
-    }
 }
 
 int max31790_set_frequency(max31790_t self, max31790_frequency_t freq)
@@ -218,9 +203,11 @@ int max31790_read_rpm(max31790_t self, max31790_tach_t tachy, unsigned int *rpm)
  * Private functions
  */
 
-static int max31790_set_target_rpm(max31790_t self, max31790_fan_t fan, uint16_t rpm)
+int max31790_set_target_rpm(max31790_t self, max31790_fan_t fan, unsigned int rpm)
 {
     uint8_t reg = 0;
+
+    if(self->mode[fan] != MAX31790_MODE_RPM) return -MAX31790_INVALID_MODE;
 
     switch(fan)
     {
@@ -244,9 +231,11 @@ static int max31790_set_target_rpm(max31790_t self, max31790_fan_t fan, uint16_t
     return MAX31790_OK;
 }
 
-static int max31790_set_target_pwm(max31790_t self, max31790_fan_t fan, uint16_t pwm)
+int max31790_set_target_pwm(max31790_t self, max31790_fan_t fan, uint8_t pwm)
 {
     uint8_t reg = 0;
+
+    if(self->mode[fan] != MAX31790_MODE_PWM) return -MAX31790_INVALID_MODE;
 
     switch(fan)
     {
@@ -259,18 +248,13 @@ static int max31790_set_target_pwm(max31790_t self, max31790_fan_t fan, uint16_t
         default: return -MAX31790_INVALID_ARGUMENT;
     }
 
-    uint8_t bytes[2] = {
-        pwm >> 1,
-        pwm << 7
-    };
-
-    int ret = i2c_device_write_bytes(&self->dev, reg, bytes, 2);
+    int ret = i2c_device_write_bytes(&self->dev, reg, &pwm, 1);
     if (ret < 0) return ret;
 
     return MAX31790_OK;
 }
 
-static int max31790_read_tachy(max31790_t self, max31790_tach_t tachy, unsigned int *value)
+int max31790_read_tachy(max31790_t self, max31790_tach_t tachy, unsigned int *value)
 {
     uint8_t reg = 0;
 
