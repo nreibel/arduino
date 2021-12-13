@@ -12,6 +12,7 @@
 
 #define SERIAL_TP_RETCODE_OK                0x00
 #define SERIAL_TP_RETCODE_ERROR             0x01
+#define SERIAL_TP_RETCODE_OUT_OF_BOUNDS     0x02
 
 // Protol errors
 #define SERIAL_TP_RETCODE_INVALID_HEADER    0x10
