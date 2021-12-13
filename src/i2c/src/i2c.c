@@ -39,7 +39,7 @@ int i2c_bus_init(i2c_bus_t self, i2c_driver_t drv)
     else return drv->init(self);
 }
 
-int i2c_bus_write(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length)
+int i2c_bus_write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, unsigned int length)
 {
     if (self->drv->write == NULL_PTR) return -I2C_NOT_IMPLEMENTED;
     else return self->drv->write(self, addr, reg, data, length);
@@ -62,7 +62,7 @@ int i2c_device_init(i2c_device_t dev, i2c_bus_t bus, uint8_t addr)
     return I2C_OK;
 }
 
-int i2c_device_write_byte(i2c_device_t self, uint8_t reg, uint8_t byte)
+int i2c_device_write_byte(i2c_device_t self, uint8_t reg, const uint8_t byte)
 {
     return i2c_device_write_bytes(self, reg, &byte, 1);
 }
@@ -72,7 +72,7 @@ int i2c_device_read_byte(i2c_device_t self, uint8_t reg, uint8_t *data)
     return i2c_device_read_bytes(self, reg, data, 1);
 }
 
-int i2c_device_write_bytes(i2c_device_t self, uint8_t reg, void *data, unsigned int length)
+int i2c_device_write_bytes(i2c_device_t self, uint8_t reg, const void *data, unsigned int length)
 {
     return i2c_bus_write(self->bus, self->addr, reg, data, length);
 }

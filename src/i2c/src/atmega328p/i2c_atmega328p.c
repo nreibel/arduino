@@ -32,7 +32,7 @@ typedef struct i2c_atmega328p_bus_prv_s {
  */
 
 static int read(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length);
-static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length);
+static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, unsigned int length);
 static int init(i2c_bus_t self);
 
 static int i2c_ll_wait_tx(unsigned int ms);
@@ -95,13 +95,13 @@ static int init(i2c_bus_t self)
     return I2C_OK;
 }
 
-static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length)
+static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, unsigned int length)
 {
     UNUSED(self);
 
     int ret = I2C_OK;
     unsigned int written = 0;
-    uint8_t *bytes = data;
+    const uint8_t *bytes = data;
 
     ret = i2c_ll_start_condition();
     if (ret < 0) return ret;

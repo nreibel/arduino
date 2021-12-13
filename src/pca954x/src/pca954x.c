@@ -16,7 +16,7 @@
  */
 
 static int read(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length);
-static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length);
+static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, unsigned int length);
 static int select_channel(pca954x_t self, pca954x_bus_t bus);
 
 /*
@@ -108,7 +108,7 @@ static int read(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned 
     return i2c_bus_read(bus, addr, reg, data, length);
 }
 
-static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length)
+static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, unsigned int length)
 {
     pca954x_bus_t ch = (pca954x_bus_t) self;
     pca954x_t dev = ch->dev;
