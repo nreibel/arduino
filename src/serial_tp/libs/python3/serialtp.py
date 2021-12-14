@@ -24,7 +24,7 @@ class SerialTPException(Exception):
     ERROR_ADDRESS_INVALID  = 0x21
     ERROR_DATA_INVALID     = 0x22
 
-    def __init__(self, code):
+    def __init__(self, code:int=ERROR):
         self.code = code
 
 
@@ -93,14 +93,16 @@ class SerialTP:
     def write_byte(self, fn, addr, byte):
         try: data = struct.pack('B', byte)
         except struct.error: raise SerialTPException(SerialTPException.ERROR_INVALID_DATA_LEN)
-        (status, retval) = self.send_command(fn, addr, data)
-        if not status: raise SerialTPException(retval)
+        else:
+            (status, retval) = self.send_command(fn, addr, data)
+            if not status: raise SerialTPException(retval)
 
     def write_word(self, fn, addr, byte):
         try: data = struct.pack('H', byte)
         except struct.error: raise SerialTPException(SerialTPException.ERROR_INVALID_DATA_LEN)
-        (status, retval) = self.send_command(fn, addr, data)
-        if not status: raise SerialTPException(retval)
+        else:
+            (status, retval) = self.send_command(fn, addr, data)
+            if not status: raise SerialTPException(retval)
 
     def read_string(self, fn, addr):
         (status, retval) = self.send_command(fn, addr)
@@ -108,10 +110,13 @@ class SerialTP:
         else: raise SerialTPException(retval)
 
     def read_byte(self, fn, addr):
-        return self.read_format(fn, addr, 'B')[0];
+        try: return self.read_format(fn, addr, 'B')[0];
+        except IndexError: raise SerialTPException(SerialTPException.ERROR_DATA_INVALID)
 
     def read_word(self, fn, addr):
-        return self.read_format(fn, addr, 'H')[0];
+        try: return self.read_format(fn, addr, 'H')[0];
+        except IndexError: raise SerialTPException(SerialTPException.ERROR_DATA_INVALID)
 
     def read_float(self, fn, addr):
-        return self.read_format(fn, addr, 'f')[0];
+        try: return self.read_format(fn, addr, 'f')[0];
+        except IndexError: raise SerialTPException(SerialTPException.ERROR_DATA_INVALID)
