@@ -42,7 +42,8 @@
 // Map a value x range [in1,in2] to range [out1,out2]
 #define MAP(x, in1, in2, out1, out2) (((x)-(in1))*((out2)-(out1))/((in2)-(in1))+(out1))
 
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MAX(a, b)          ((a) > (b) ? (a) : (b))
+#define MIN(a, b)          ((a) < (b) ? (a) : (b))
+#define LIMIT(x, min, max) ((x) > (min) ? (x) < (max) ? (x) : (max) : (min))
 
 #endif /* SRC_OS_API_BITS_H_ */
