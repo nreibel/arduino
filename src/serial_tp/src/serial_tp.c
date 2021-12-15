@@ -28,14 +28,14 @@ static void serial_rx_cbk(serial_bus_t bus, const char *rx_buffer, int rx_length
     static serial_tp_response rsp;
     serial_tp_request *req = TYPECAST(rx_buffer, serial_tp_request*);
 
+    rsp.length = 0;
+
     if ( req->header != SERIAL_TP_REQUEST_HEADER )
     {
-        rsp.length = 0;
         rsp.status = SERIAL_TP_RETCODE_INVALID_HEADER;
     }
     else if ( req->data_len != rx_length - sizeof(serial_tp_request) - 1 )
     {
-        rsp.length = 0;
         rsp.status = SERIAL_TP_RETCODE_INVALID_DATA_LEN;
     }
     else
