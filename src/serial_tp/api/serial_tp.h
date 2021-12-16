@@ -22,7 +22,10 @@ typedef enum {
     // User callback errors
     SERIAL_TP_RETCODE_FUNCTION_INVALID = 0x20,
     SERIAL_TP_RETCODE_ADDRESS_INVALID,
-    SERIAL_TP_RETCODE_DATA_INVALID
+    SERIAL_TP_RETCODE_DATA_INVALID,
+
+    // User App errors start here
+    SERIAL_TP_RETCODE_USER_APP = 0x80 // This error code should not be used directly
 } serial_tp_error_t;
 
 
