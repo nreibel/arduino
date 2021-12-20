@@ -1,6 +1,25 @@
 #include "i2c.h"
 #include "types.h"
 
+#define MAX_I2C_BUS_COUNT 16
+
+static unsigned int current_i2c_bus_count = 0;
+static i2c_bus_t registered_bus[MAX_I2C_BUS_COUNT];
+
+int i2c_register_bus(i2c_bus_t bus)
+{
+    if (bus == NULL_PTR) return -I2C_FAIL;
+    if (current_i2c_bus_count >= MAX_I2C_BUS_COUNT) return -I2C_FAIL;
+    registered_bus[current_i2c_bus_count++] = bus;
+    return I2C_OK;
+}
+
+i2c_bus_t i2c_get_bus(unsigned int id)
+{
+    if (id >= current_i2c_bus_count) return NULL_PTR;
+    else return registered_bus[id];
+}
+
 /*
  * I2C Bus
  */
@@ -20,7 +39,7 @@ int i2c_bus_init(i2c_bus_t self, i2c_driver_t drv)
     else return drv->init(self);
 }
 
-int i2c_bus_write(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length)
+int i2c_bus_write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, unsigned int length)
 {
     if (self->drv->write == NULL_PTR) return -I2C_NOT_IMPLEMENTED;
     else return self->drv->write(self, addr, reg, data, length);
@@ -43,7 +62,7 @@ int i2c_device_init(i2c_device_t dev, i2c_bus_t bus, uint8_t addr)
     return I2C_OK;
 }
 
-int i2c_device_write_byte(i2c_device_t self, uint8_t reg, uint8_t byte)
+int i2c_device_write_byte(i2c_device_t self, uint8_t reg, const uint8_t byte)
 {
     return i2c_device_write_bytes(self, reg, &byte, 1);
 }
@@ -53,7 +72,7 @@ int i2c_device_read_byte(i2c_device_t self, uint8_t reg, uint8_t *data)
     return i2c_device_read_bytes(self, reg, data, 1);
 }
 
-int i2c_device_write_bytes(i2c_device_t self, uint8_t reg, void *data, unsigned int length)
+int i2c_device_write_bytes(i2c_device_t self, uint8_t reg, const void *data, unsigned int length)
 {
     return i2c_bus_write(self->bus, self->addr, reg, data, length);
 }

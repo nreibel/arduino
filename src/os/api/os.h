@@ -48,6 +48,9 @@ void os_reset();
 void* os_malloc(unsigned int sz);
 void* os_calloc(unsigned int sz);
 void  os_free(void *ptr);
+unsigned int os_get_used_heap();
+unsigned int os_get_free_heap();
+void os_heap_full();
 #endif // OS_MALLOC
 
 #endif /* __OS_API_H__ */

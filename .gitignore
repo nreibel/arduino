@@ -4,3 +4,4 @@ bin/
 .directory
 .project
 .settings
+__pycache__

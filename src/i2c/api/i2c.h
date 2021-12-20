@@ -26,18 +26,21 @@ typedef struct i2c_device_prv_s {
 typedef struct i2c_driver_prv_s {
     int (*init)(i2c_bus_t self);
     int (*read)(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length);
-    int (*write)(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length);
+    int (*write)(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, unsigned int length);
 } * i2c_driver_t;
 
 char* i2c_get_error_string(i2c_error_t errcode);
 
+int i2c_register_bus(i2c_bus_t bus);
+i2c_bus_t i2c_get_bus(unsigned int id);
+
 int i2c_bus_init(i2c_bus_t self, i2c_driver_t drv);
 int i2c_bus_read(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length);
-int i2c_bus_write(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length);
+int i2c_bus_write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, unsigned int length);
 
 int i2c_device_init(i2c_device_t self, i2c_bus_t bus, uint8_t addr);
-int i2c_device_write_byte(i2c_device_t self, uint8_t reg, uint8_t byte);
-int i2c_device_write_bytes(i2c_device_t self, uint8_t reg, void *data, unsigned int length);
+int i2c_device_write_byte(i2c_device_t self, uint8_t reg, const uint8_t byte);
+int i2c_device_write_bytes(i2c_device_t self, uint8_t reg, const void *data, unsigned int length);
 int i2c_device_read_byte(i2c_device_t self, uint8_t reg, uint8_t *data);
 int i2c_device_read_bytes(i2c_device_t self, uint8_t reg, void *data, unsigned int length);
 

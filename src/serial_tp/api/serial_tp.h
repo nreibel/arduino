@@ -8,19 +8,25 @@
 #error "Serial TP needs SERIAL_ASYNC_RX enabled!"
 #endif
 
-#define SERIAL_TP_REQUEST_HEADER            0xA0
+typedef enum {
+    // Generic errors
+    SERIAL_TP_RETCODE_OK = 0x0,
+    SERIAL_TP_RETCODE_ERROR,
+    SERIAL_TP_RETCODE_OUT_OF_BOUNDS,
 
-#define SERIAL_TP_RETCODE_OK                0x00
-#define SERIAL_TP_RETCODE_ERROR             0x01
+    // Protol errors
+    SERIAL_TP_RETCODE_PROTOCOL = 0x10,
+    SERIAL_TP_RETCODE_INVALID_HEADER,
+    SERIAL_TP_RETCODE_INVALID_DATA_LEN,
 
-// Protol errors
-#define SERIAL_TP_RETCODE_INVALID_HEADER    0x10
-#define SERIAL_TP_RETCODE_INVALID_DATA_LEN  0x11
+    // User callback errors
+    SERIAL_TP_RETCODE_FUNCTION_INVALID = 0x20,
+    SERIAL_TP_RETCODE_ADDRESS_INVALID,
+    SERIAL_TP_RETCODE_DATA_INVALID,
 
-// User callback errors
-#define SERIAL_TP_RETCODE_FUNCTION_INVALID  0x20
-#define SERIAL_TP_RETCODE_ADDRESS_INVALID   0x21
-#define SERIAL_TP_RETCODE_DATA_INVALID      0x22
+    // User App errors start here
+    SERIAL_TP_RETCODE_USER_APP = 0x80 // This error code should not be used directly
+} serial_tp_error_t;
 
 
 typedef struct {
@@ -31,7 +37,7 @@ typedef struct {
     uint8_t data[];
 } serial_tp_request;
 
-typedef uint8_t (*serial_tp_callback)(serial_tp_request *req, void *rsp_data, int *rsp_length);
+typedef uint8_t (*serial_tp_callback)(serial_tp_request *req, void *rsp_data, uint8_t *rsp_length);
 
 void serial_tp_init(serial_bus_t bus, serial_tp_callback cbk);
 

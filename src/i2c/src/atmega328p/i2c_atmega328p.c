@@ -19,11 +19,20 @@
 #define I2C_POLL_TIMEOUT 100 // in ms
 
 /*
+ * Private types definition
+ */
+
+typedef struct i2c_atmega328p_bus_prv_s {
+    struct i2c_bus_prv_s super;
+    bool fast_mode; // 400kHz
+} * i2c_atmega328p_bus_t;
+
+/*
  * Private functions declaration
  */
 
 static int read(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length);
-static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length);
+static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, unsigned int length);
 static int init(i2c_bus_t self);
 
 static int i2c_ll_wait_tx(unsigned int ms);
@@ -51,17 +60,20 @@ static struct i2c_driver_prv_s atmega328p_i2c_drv = {
  * Exported data
  */
 
-static struct i2c_atmega328p_bus_prv_s bus0_data;
-const i2c_atmega328p_bus_t I2C_BUS_0 = &bus0_data;
+static struct i2c_atmega328p_bus_prv_s i2c_bus[NUMBER_OF_I2C_BUS];
 
 /*
  * Public functions
  */
 
-int i2c_atmega328p_init(i2c_atmega328p_bus_t self, bool fast_mode)
+int i2c_atmega328p_init(bool fast_mode)
 {
-    self->fast_mode = fast_mode;
-    return i2c_bus_init(&self->super, &atmega328p_i2c_drv);
+    int ret = i2c_bus_init(&i2c_bus[0].super, &atmega328p_i2c_drv);
+    if (ret < 0) return ret;
+
+    i2c_bus[0].fast_mode = fast_mode;
+
+    return i2c_register_bus(&i2c_bus[0].super);
 }
 
 /*
@@ -83,13 +95,13 @@ static int init(i2c_bus_t self)
     return I2C_OK;
 }
 
-static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length)
+static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, unsigned int length)
 {
     UNUSED(self);
 
     int ret = I2C_OK;
     unsigned int written = 0;
-    uint8_t *bytes = data;
+    const uint8_t *bytes = data;
 
     ret = i2c_ll_start_condition();
     if (ret < 0) return ret;
