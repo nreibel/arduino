@@ -32,8 +32,11 @@ typedef union {
  */
 
 struct {
+    bool is_init;
     timer_prescaler_t prescaler;
-} timer_cfg[NUMBER_OF_TIMERS];
+} timer_cfg[NUMBER_OF_TIMERS] = {
+    [TIMER_0] = { FALSE, TIMER_PRESCALER_STOPPED }
+};
 
 /*
  * Public methods
@@ -41,7 +44,8 @@ struct {
 
 int timer_init(timer_t self, timer_config_t * config)
 {
-    // TODO : check instance
+    if (self >= NUMBER_OF_TIMERS)
+        return -TIMER_ERROR_INSTANCE;
 
     // Enable peripheral
     RESET_BIT(PRR, PRTIM0);
@@ -132,12 +136,18 @@ int timer_init(timer_t self, timer_config_t * config)
     TCCR0A = tccra.byte;
     TCCR0B = tccrb.byte;
 
+    timer_cfg[self].is_init = TRUE;
+
     return TIMER_OK;
 }
 
 int timer_start(timer_t self)
 {
-    // TODO : check instance
+    if (self >= NUMBER_OF_TIMERS)
+        return -TIMER_ERROR_INSTANCE;
+
+    if (!timer_cfg[self].is_init)
+        return -TIMER_ERROR_NOT_INIT;
 
     tccrb_t tccrb = { .byte = TCCR0B };
     tccrb.bits.CS = timer_cfg[self].prescaler;
@@ -148,9 +158,12 @@ int timer_start(timer_t self)
 
 int timer_stop(timer_t self)
 {
-    // TODO : check instance
+    if (self >= NUMBER_OF_TIMERS)
+        return -TIMER_ERROR_INSTANCE;
 
-    UNUSED(self);
+    if (!timer_cfg[self].is_init)
+        return -TIMER_ERROR_NOT_INIT;
+
     tccrb_t tccrb = { .byte = TCCR0B };
     tccrb.bits.CS = TIMER_PRESCALER_STOPPED;
     TCCR0B = tccrb.byte;
