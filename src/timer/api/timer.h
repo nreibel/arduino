@@ -59,7 +59,8 @@ typedef enum {
 
 typedef struct {
     timer_mode_t mode;
-    timer_output_mode_t output_mode;
+    timer_output_mode_t output_mode_a;
+    timer_output_mode_t output_mode_b;
     timer_prescaler_t prescaler;
     timer_oca_mode_t oca_mode;
     timer_interrupt_t imask;
