@@ -17,7 +17,7 @@ typedef enum {
 typedef enum {
     TIMER_0,
     // TIMER_1, // TODO
-    // TIMER_2, // TODO
+    TIMER_2,
     NUMBER_OF_TIMERS
 } timer_t;
 

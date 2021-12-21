@@ -35,7 +35,8 @@ struct {
     bool is_init;
     timer_prescaler_t prescaler;
 } timer_cfg[NUMBER_OF_TIMERS] = {
-    [TIMER_0] = { FALSE, TIMER_PRESCALER_STOPPED }
+    [TIMER_0] = { FALSE, TIMER_PRESCALER_STOPPED },
+    [TIMER_2] = { FALSE, TIMER_PRESCALER_STOPPED },
 };
 
 /*
@@ -47,11 +48,23 @@ int timer_init(timer_t self, timer_config_t * config)
     if (self >= NUMBER_OF_TIMERS)
         return -TIMER_ERROR_INSTANCE;
 
-    // Enable peripheral
-    RESET_BIT(PRR, PRTIM0);
-
     tccra_t tccra = { .byte = 0 };
     tccrb_t tccrb = { .byte = 0 };
+    uint8_t ddr = 0;
+
+    switch(self)
+    {
+        case TIMER_0:
+            ddr = DDRD;
+            break;
+
+        case TIMER_2:
+            // TODO
+            break;
+
+        default:
+            return -TIMER_ERROR_INSTANCE;
+    }
 
     // Set Waveform Generation Mode
     switch(config->mode)
@@ -109,10 +122,20 @@ int timer_init(timer_t self, timer_config_t * config)
         case TIMER_OUTPUT_MODE_DEFAULT:
         case TIMER_OUTPUT_MODE_INVERTED:
         {
-            uint8_t ddrd = DDRD;
-            SET_BIT(ddrd, 5);
-            SET_BIT(ddrd, 6);
-            DDRD = ddrd;
+            switch(self)
+            {
+                case TIMER_0:
+                    SET_BIT(ddr, 5);
+                    SET_BIT(ddr, 6);
+                    break;
+
+                case TIMER_2:
+                    // TODO
+                    break;
+
+                default:
+                return -TIMER_ERROR_INSTANCE;
+            }
             break;
         }
 
@@ -131,10 +154,28 @@ int timer_init(timer_t self, timer_config_t * config)
             return -TIMER_ERROR_OCA_MODE;
     }
 
-    OCR0A = config->ocra;
-    OCR0B = config->ocrb;
-    TCCR0A = tccra.byte;
-    TCCR0B = tccrb.byte;
+    switch(self)
+    {
+        case TIMER_0:
+            RESET_BIT(PRR, PRTIM0);
+            OCR0A = config->ocra;
+            OCR0B = config->ocrb;
+            TCCR0A = tccra.byte;
+            TCCR0B = tccrb.byte;
+            DDRD = ddr;
+            break;
+
+        case TIMER_2:
+            RESET_BIT(PRR, PRTIM2);
+            OCR2A = config->ocra;
+            OCR2B = config->ocrb;
+            TCCR2A = tccra.byte;
+            TCCR2B = tccrb.byte;
+            break;
+
+        default:
+            return -TIMER_ERROR_INSTANCE;
+    }
 
     timer_cfg[self].is_init = TRUE;
 
@@ -143,30 +184,56 @@ int timer_init(timer_t self, timer_config_t * config)
 
 int timer_start(timer_t self)
 {
-    if (self >= NUMBER_OF_TIMERS)
-        return -TIMER_ERROR_INSTANCE;
-
-    if (!timer_cfg[self].is_init)
+    if (self < NUMBER_OF_TIMERS && !timer_cfg[self].is_init)
         return -TIMER_ERROR_NOT_INIT;
 
-    tccrb_t tccrb = { .byte = TCCR0B };
-    tccrb.bits.CS = timer_cfg[self].prescaler;
-    TCCR0B = tccrb.byte;
+    tccrb_t tccrb = { .byte = 0 };
+
+    switch(self)
+    {
+        case TIMER_0:
+            tccrb.byte = TCCR0B;
+            tccrb.bits.CS = timer_cfg[self].prescaler;
+            TCCR0B = tccrb.byte;
+            break;
+
+        case TIMER_2:
+            tccrb.byte = TCCR2B;
+            tccrb.bits.CS = timer_cfg[self].prescaler;
+            TCCR2B = tccrb.byte;
+            break;
+
+        default:
+            return -TIMER_ERROR_INSTANCE;
+    }
 
     return TIMER_OK;
 }
 
 int timer_stop(timer_t self)
 {
-    if (self >= NUMBER_OF_TIMERS)
-        return -TIMER_ERROR_INSTANCE;
-
-    if (!timer_cfg[self].is_init)
+    if (self < NUMBER_OF_TIMERS && !timer_cfg[self].is_init)
         return -TIMER_ERROR_NOT_INIT;
 
-    tccrb_t tccrb = { .byte = TCCR0B };
-    tccrb.bits.CS = TIMER_PRESCALER_STOPPED;
-    TCCR0B = tccrb.byte;
+    tccrb_t tccrb = { .byte = 0 };
+
+    switch(self)
+    {
+        case TIMER_0:
+            tccrb.byte = TCCR0B;
+            tccrb.bits.CS = TIMER_PRESCALER_STOPPED;
+            TCCR0B = tccrb.byte;
+            break;
+
+        case TIMER_2:
+            tccrb.byte = TCCR2B;
+            tccrb.bits.CS = TIMER_PRESCALER_STOPPED;
+            TCCR2B = tccrb.byte;
+            break;
+
+        default:
+            return -TIMER_ERROR_INSTANCE;
+    }
 
     return TIMER_OK;
 }
