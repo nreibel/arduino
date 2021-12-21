@@ -55,12 +55,40 @@ int timer_init(timer_t self, timer_config_t * config)
     switch(self)
     {
         case TIMER_0:
+        {
             ddr = DDRD;
+
+            switch(config->prescaler)
+            {
+                case TIMER_PRESCALER_0:    timer_cfg[self].prescaler = 0x1; break;
+                case TIMER_PRESCALER_8:    timer_cfg[self].prescaler = 0x2; break;
+                case TIMER_PRESCALER_64:   timer_cfg[self].prescaler = 0x3; break;
+                case TIMER_PRESCALER_256:  timer_cfg[self].prescaler = 0x4; break;
+                case TIMER_PRESCALER_1024: timer_cfg[self].prescaler = 0x5; break;
+                default: return -TIMER_ERROR_PRESCALER;
+            }
+
             break;
+        }
 
         case TIMER_2:
-            // TODO
+        {
+            // TODO : read DDR
+
+            switch(config->prescaler)
+            {
+                case TIMER_PRESCALER_0:    timer_cfg[self].prescaler = 0x1; break;
+                case TIMER_PRESCALER_8:    timer_cfg[self].prescaler = 0x2; break;
+                case TIMER_PRESCALER_32:   timer_cfg[self].prescaler = 0x3; break;
+                case TIMER_PRESCALER_64:   timer_cfg[self].prescaler = 0x4; break;
+                case TIMER_PRESCALER_128:  timer_cfg[self].prescaler = 0x5; break;
+                case TIMER_PRESCALER_256:  timer_cfg[self].prescaler = 0x6; break;
+                case TIMER_PRESCALER_1024: timer_cfg[self].prescaler = 0x7; break;
+                default: return -TIMER_ERROR_PRESCALER;
+            }
+
             break;
+        }
 
         default:
             return -TIMER_ERROR_INSTANCE;
@@ -78,22 +106,6 @@ int timer_init(timer_t self, timer_config_t * config)
 
         default:
             return -TIMER_ERROR_MODE;
-    }
-
-    // Set Prescaler
-    switch(config->prescaler)
-    {
-        case TIMER_PRESCALER_0:
-        case TIMER_PRESCALER_8:
-        case TIMER_PRESCALER_64:
-        case TIMER_PRESCALER_256:
-        case TIMER_PRESCALER_1024:
-            tccrb.bits.CS = TIMER_PRESCALER_STOPPED;
-            timer_cfg[self].prescaler = config->prescaler;
-            break;
-
-        default:
-            return -TIMER_ERROR_PRESCALER;
     }
 
     // Set Compare Outpout Mode
@@ -125,16 +137,20 @@ int timer_init(timer_t self, timer_config_t * config)
             switch(self)
             {
                 case TIMER_0:
+                {
                     SET_BIT(ddr, 5);
                     SET_BIT(ddr, 6);
                     break;
+                }
 
                 case TIMER_2:
+                {
                     // TODO
                     break;
+                }
 
                 default:
-                return -TIMER_ERROR_INSTANCE;
+                    return -TIMER_ERROR_INSTANCE;
             }
             break;
         }
@@ -160,6 +176,7 @@ int timer_init(timer_t self, timer_config_t * config)
             RESET_BIT(PRR, PRTIM0);
             OCR0A = config->ocra;
             OCR0B = config->ocrb;
+            TIMSK0 = config->interrupts & 0x3;
             TCCR0A = tccra.byte;
             TCCR0B = tccrb.byte;
             DDRD = ddr;
@@ -169,8 +186,10 @@ int timer_init(timer_t self, timer_config_t * config)
             RESET_BIT(PRR, PRTIM2);
             OCR2A = config->ocra;
             OCR2B = config->ocrb;
+            TIMSK2 = config->interrupts & 0x3;
             TCCR2A = tccra.byte;
             TCCR2B = tccrb.byte;
+            // TODO : write DDR
             break;
 
         default:
@@ -195,12 +214,14 @@ int timer_start(timer_t self)
             tccrb.byte = TCCR0B;
             tccrb.bits.CS = timer_cfg[self].prescaler;
             TCCR0B = tccrb.byte;
+            TCNT0 = 0;
             break;
 
         case TIMER_2:
             tccrb.byte = TCCR2B;
             tccrb.bits.CS = timer_cfg[self].prescaler;
             TCCR2B = tccrb.byte;
+            TCNT2 = 0;
             break;
 
         default:

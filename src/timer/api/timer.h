@@ -32,7 +32,9 @@ typedef enum {
     TIMER_PRESCALER_STOPPED,
     TIMER_PRESCALER_0,
     TIMER_PRESCALER_8,
+    TIMER_PRESCALER_32, // Timer 2 only
     TIMER_PRESCALER_64,
+    TIMER_PRESCALER_128, // Timer 2 only
     TIMER_PRESCALER_256,
     TIMER_PRESCALER_1024
 } timer_prescaler_t;
@@ -49,11 +51,18 @@ typedef enum {
     TIMER_OCA_MODE_TOP, // OCRA is TOP value for OCB, OCA duty cycle fixed at 50%
 } timer_oca_mode_t;
 
+typedef enum {
+    TIMER_INTERRUPT_OVERFLOW,
+    TIMER_INTERRUPT_OCM_A,
+    TIMER_INTERRUPT_OCM_B,
+} timer_interrupt_t;
+
 typedef struct {
     timer_mode_t mode;
     timer_output_mode_t output_mode;
     timer_prescaler_t prescaler;
     timer_oca_mode_t oca_mode;
+    timer_interrupt_t interrupts;
     uint8_t ocra;
     uint8_t ocrb;
 } timer_config_t;
