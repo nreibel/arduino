@@ -1,6 +1,7 @@
 #include "os.h"
 #include "os_cfg.h"
 #include "bits.h"
+#include "timer.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
@@ -84,18 +85,17 @@ void os_init()
     PORTC = 0xFF;
     PORTD = 0xFF;
 
-    // Init timer_t2 as CTC counter with interrupts
-    RESET_BIT(PRR, PRTIM2);  // Enable peripheral
-    SET_BIT(TIMSK2, OCIE2A); // Enable interrupt on Compare Match A
-    TCNT2  = 0;              // Reset timer value
-    TCCR2A = 0x2;            // CTC mode
+    // Configure Timer 2 as 1ms system timer
+    timer_config_t timer_cfg = {
+        .mode = TIMER_MODE_CTC,
+        .interrupts = BIT(TIMER_INTERRUPT_OCM_A),
+        .prescaler = TIMER_PRESCALER_128,
+        .ocra = 125
+    };
 
-// TODO : OCR2A = ticks - 1 ??
+    if (timer_init(TIMER_2, &timer_cfg) < 0)
+        HALT;
 
-#if F_CPU == 16000000
-    OCR2A  = 125;            // Count 125 ticks
-    TCCR2B = 0x5;            // Set prescaler to 128
-#else
-    #error F_CPU value is not supported
-#endif
+    if (timer_start(TIMER_2) < 0)
+        HALT;
 }
