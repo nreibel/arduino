@@ -25,12 +25,12 @@ typedef uint16_t time_t;
 
 typedef enum {
     TIMER_INTERVAL,
-    NUMBER_OF_TIMERS
-} timer_t;
+    NUMBER_OF_OS_TIMERS
+} os_timer_t;
 
 typedef enum {
     TASK_MAIN,
-    NUMBER_OF_TASKS
-} task_t;
+    NUMBER_OF_OS_TASKS
+} os_task_t;
 
 #endif /* SRC_OS_CFG_OS_CFG_H_ */

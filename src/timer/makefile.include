@@ -1,0 +1,5 @@
+INCLUDES += \
+	$(SRC_DIR)/timer/api \
+
+SOURCES += \
+	$(SRC_DIR)/timer/src/timer.c \

@@ -22,6 +22,6 @@ LDFLAGS := -u,vfprintf
 LIBS := printf_flt m
 
 # Enable selected modules
-MODULES := os gpio serial i2c tc74 pca954x max31790
+MODULES := os gpio serial timer
 
 include $(ARDUINO_LIBS)/makefile.include

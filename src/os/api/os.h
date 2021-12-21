@@ -26,15 +26,15 @@ extern void app_init(void);
 
 // OS Timers
 void os_wait(time_t ms);
-void os_timer_start(timer_t timer);
-void os_timer_reset(timer_t timer);
-void os_timer_stop(timer_t timer);
-void os_timer_resume(timer_t timer);
-time_t os_timer_value(timer_t timer);
+void os_timer_start(os_timer_t timer);
+void os_timer_reset(os_timer_t timer);
+void os_timer_stop(os_timer_t timer);
+void os_timer_resume(os_timer_t timer);
+time_t os_timer_value(os_timer_t timer);
 time_t os_millis();
 
 // OS Tasks
-void os_task_setup(task_t task, time_t interval, callback_t callback, void* param);
+void os_task_setup(os_task_t task, time_t interval, callback_t callback, void* param);
 
 // HW Watchdog
 int os_watchdog_enable(os_watchdog_t wd);

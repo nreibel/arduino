@@ -5,22 +5,6 @@
 #include "string.h"
 
 /*
- * Private types
- */
-
-typedef struct {
-    time_t value;
-    bool running;
-} timer_config_t;
-
-typedef struct {
-    time_t interval;
-    time_t last;
-    callback_t callback;
-    void* param;
-} task_config_t;
-
-/*
  * Extern functions prototypes
  */
 
@@ -43,8 +27,17 @@ static int os_background_tasks();
  * Private data
  */
 
-static timer_config_t timers[NUMBER_OF_TIMERS] = {0};
-static task_config_t tasks[NUMBER_OF_TASKS] = {0};
+static struct {
+    time_t value;
+    bool running;
+} timers[NUMBER_OF_OS_TIMERS] = {0};
+
+static struct {
+    time_t interval;
+    time_t last;
+    callback_t callback;
+    void* param;
+} tasks[NUMBER_OF_OS_TASKS] = {0};
 
 #if OS_MALLOC
 static uint8_t malloc_heap[OS_HEAP_SIZE];
@@ -69,36 +62,36 @@ void os_wait(time_t ms)
     }
 }
 
-void os_timer_start(timer_t timer)
+void os_timer_start(os_timer_t timer)
 {
     timers[timer].value = os_millis();
     timers[timer].running = TRUE;
 }
 
-void os_timer_reset(timer_t timer)
+void os_timer_reset(os_timer_t timer)
 {
     timers[timer].value = os_millis();
 }
 
-void os_timer_stop(timer_t timer)
+void os_timer_stop(os_timer_t timer)
 {
     timers[timer].value = os_millis() - timers[timer].value;
     timers[timer].running = FALSE;
 }
 
-void os_timer_resume(timer_t timer)
+void os_timer_resume(os_timer_t timer)
 {
     timers[timer].value = os_millis() - timers[timer].value;
     timers[timer].running = TRUE;
 }
 
-time_t os_timer_value(timer_t timer)
+time_t os_timer_value(os_timer_t timer)
 {
     if (timers[timer].running) return os_millis() - timers[timer].value;
     else return timers[timer].value;
 }
 
-void os_task_setup(task_t task, time_t interval, callback_t callback, void* param)
+void os_task_setup(os_task_t task, time_t interval, callback_t callback, void* param)
 {
     tasks[task].interval = interval;
     tasks[task].callback = callback;
@@ -108,7 +101,7 @@ void os_task_setup(task_t task, time_t interval, callback_t callback, void* para
 
 static void os_cyclic_tasks()
 {
-    for(int i = 0; i < NUMBER_OF_TASKS; i++)
+    for(int i = 0; i < NUMBER_OF_OS_TASKS; i++)
     {
         if(tasks[i].interval <= 0 || tasks[i].callback == NULL_PTR) continue;
 
