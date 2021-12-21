@@ -88,7 +88,7 @@ void os_init()
     // Configure Timer 2 as 1ms system timer
     timer_config_t timer_cfg = {
         .mode = TIMER_MODE_CTC,
-        .interrupts = BIT(TIMER_INTERRUPT_OCM_A),
+        .imask = BIT(TIMER_INTERRUPT_OCM_A),
         .prescaler = TIMER_PRESCALER_128,
         .ocra = 125
     };

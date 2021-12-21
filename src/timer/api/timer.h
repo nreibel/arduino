@@ -62,7 +62,7 @@ typedef struct {
     timer_output_mode_t output_mode;
     timer_prescaler_t prescaler;
     timer_oca_mode_t oca_mode;
-    timer_interrupt_t interrupts;
+    timer_interrupt_t imask;
     uint8_t ocra;
     uint8_t ocrb;
 } timer_config_t;

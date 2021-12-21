@@ -50,14 +50,14 @@ int timer_init(timer_t self, timer_config_t * config)
 
     tccra_t tccra = { .byte = 0 };
     tccrb_t tccrb = { .byte = 0 };
-    uint8_t ddr = 0;
+    uint8_t ddra = 0;
+    uint8_t ddrb = 0;
 
     switch(self)
     {
         case TIMER_0:
         {
-            ddr = DDRD;
-
+            // Check prescaler
             switch(config->prescaler)
             {
                 case TIMER_PRESCALER_0:    timer_cfg[self].prescaler = 0x1; break;
@@ -67,14 +67,12 @@ int timer_init(timer_t self, timer_config_t * config)
                 case TIMER_PRESCALER_1024: timer_cfg[self].prescaler = 0x5; break;
                 default: return -TIMER_ERROR_PRESCALER;
             }
-
             break;
         }
 
         case TIMER_2:
         {
-            // TODO : read DDR
-
+            // Check prescaler
             switch(config->prescaler)
             {
                 case TIMER_PRESCALER_0:    timer_cfg[self].prescaler = 0x1; break;
@@ -86,7 +84,6 @@ int timer_init(timer_t self, timer_config_t * config)
                 case TIMER_PRESCALER_1024: timer_cfg[self].prescaler = 0x7; break;
                 default: return -TIMER_ERROR_PRESCALER;
             }
-
             break;
         }
 
@@ -137,17 +134,14 @@ int timer_init(timer_t self, timer_config_t * config)
             switch(self)
             {
                 case TIMER_0:
-                {
-                    SET_BIT(ddr, 5);
-                    SET_BIT(ddr, 6);
+                    SET_BIT(ddra, 6); // OC0A
+                    SET_BIT(ddrb, 5); // OC0B
                     break;
-                }
 
                 case TIMER_2:
-                {
-                    // TODO
+                    SET_BIT(ddra, 3); // OC2A
+                    SET_BIT(ddrb, 3); // OC2B
                     break;
-                }
 
                 default:
                     return -TIMER_ERROR_INSTANCE;
@@ -159,6 +153,7 @@ int timer_init(timer_t self, timer_config_t * config)
             return -TIMER_ERROR_OUTPUT_MODE;
     }
 
+    // Set WGM02
     switch(config->oca_mode)
     {
         case TIMER_OCA_MODE_PWM:
@@ -176,20 +171,21 @@ int timer_init(timer_t self, timer_config_t * config)
             RESET_BIT(PRR, PRTIM0);
             OCR0A = config->ocra;
             OCR0B = config->ocrb;
-            TIMSK0 = config->interrupts & 0x3;
+            TIMSK0 = MASK(config->imask, 0x3);
             TCCR0A = tccra.byte;
             TCCR0B = tccrb.byte;
-            DDRD = ddr;
+            SET_MASK(DDRD, ddra|ddrb);
             break;
 
         case TIMER_2:
             RESET_BIT(PRR, PRTIM2);
             OCR2A = config->ocra;
             OCR2B = config->ocrb;
-            TIMSK2 = config->interrupts & 0x3;
+            TIMSK2 = MASK(config->imask, 0x3);
             TCCR2A = tccra.byte;
             TCCR2B = tccrb.byte;
-            // TODO : write DDR
+            SET_MASK(DDRB, ddra);
+            SET_MASK(DDRD, ddrb);
             break;
 
         default:
