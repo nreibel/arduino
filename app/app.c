@@ -1,10 +1,20 @@
 #include "stdio.h"
 #include "os.h"
-#include "bits.h"
 #include "app.h"
 #include "timer.h"
 #include "icp.h"
 #include "serial.h"
+
+/*
+ * Timer demo :
+ * - Timer 0 : Output 244Hz PWM at 50% duty cycle on OC0A (D6)
+ * - Timer 1 : Input Capture mode on ICP1 (D8)
+ * - Timer 2 : OS Timer (1ms counter)
+ *
+ * Link OC0A (D6) and ICP1 (D8) together to read PWM
+ * Result is displayed on serial output
+ * Shoud read 244Hz and 0.5 duty cycle
+ */
 
 #define BUFFER_SZ 64
 char buffer[BUFFER_SZ];
@@ -17,12 +27,8 @@ void app_init()
     timer_config_t timer_cfg = {
         .mode = TIMER_MODE_FAST_PWM,
         .output_mode_a = TIMER_OUTPUT_MODE_DEFAULT,
-        .output_mode_b = TIMER_OUTPUT_MODE_DEFAULT,
-        .prescaler = TIMER_PRESCALER_8,
-        .oca_mode = TIMER_OCA_MODE_TOP,
-        // .interrupts = BIT(TIMER_INTERRUPT_OCM_A)|BIT(TIMER_INTERRUPT_OCM_B),
-        .ocra = 79,
-        .ocrb = 39
+        .prescaler = TIMER_PRESCALER_256,
+        .ocra = 127,
     };
 
     if (timer_init(TIMER_0, &timer_cfg) < 0)
@@ -34,7 +40,7 @@ void app_init()
         serial_println(SERIAL_BUS_0, "START TIMER FAILED");
     }
 
-    icp_init(ICP1, ICP_PRESCALER_1);
+    icp_init(ICP1, ICP_PRESCALER_8);
 
     // Init tasks
     os_task_setup(TASK_MAIN, 1000, task_main, NULL_PTR);
@@ -50,11 +56,12 @@ int task_main(void* data)
 {
     UNUSED(data);
 
+    int ret = 0;
+    float dutyCycle = 0;
+    uint16_t freq = 0;
+
     os_watchdog_trigger();
 
-    int ret = 0;
-
-    float dutyCycle = 0;
     ret = icp_get_duty_cycle(ICP1, &dutyCycle);
     switch(ret)
     {
@@ -73,7 +80,6 @@ int task_main(void* data)
             break;
     }
 
-    uint16_t freq = 0;
     ret = icp_get_frequency(ICP1, &freq);
     switch(ret)
     {
