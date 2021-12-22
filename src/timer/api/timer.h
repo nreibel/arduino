@@ -30,7 +30,7 @@ typedef enum {
 
 typedef enum {
     TIMER_PRESCALER_STOPPED,
-    TIMER_PRESCALER_0,
+    TIMER_PRESCALER_1,
     TIMER_PRESCALER_8,
     TIMER_PRESCALER_32, // Timer 2 only
     TIMER_PRESCALER_64,

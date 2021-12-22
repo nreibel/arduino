@@ -60,7 +60,7 @@ int timer_init(timer_t self, timer_config_t * config)
             // Check prescaler
             switch(config->prescaler)
             {
-                case TIMER_PRESCALER_0:    timer_cfg[self].prescaler = 0x1; break;
+                case TIMER_PRESCALER_1:    timer_cfg[self].prescaler = 0x1; break;
                 case TIMER_PRESCALER_8:    timer_cfg[self].prescaler = 0x2; break;
                 case TIMER_PRESCALER_64:   timer_cfg[self].prescaler = 0x3; break;
                 case TIMER_PRESCALER_256:  timer_cfg[self].prescaler = 0x4; break;
@@ -75,7 +75,7 @@ int timer_init(timer_t self, timer_config_t * config)
             // Check prescaler
             switch(config->prescaler)
             {
-                case TIMER_PRESCALER_0:    timer_cfg[self].prescaler = 0x1; break;
+                case TIMER_PRESCALER_1:    timer_cfg[self].prescaler = 0x1; break;
                 case TIMER_PRESCALER_8:    timer_cfg[self].prescaler = 0x2; break;
                 case TIMER_PRESCALER_32:   timer_cfg[self].prescaler = 0x3; break;
                 case TIMER_PRESCALER_64:   timer_cfg[self].prescaler = 0x4; break;

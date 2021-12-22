@@ -1,0 +1,5 @@
+INCLUDES += \
+	$(SRC_DIR)/icp/api \
+
+SOURCES += \
+	$(SRC_DIR)/icp/src/icp.c \
