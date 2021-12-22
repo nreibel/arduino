@@ -1,3 +1,4 @@
+#include "os.h"
 #include "timer.h"
 #include "bits.h"
 #include "avr/io.h"
@@ -175,6 +176,7 @@ int timer_init(timer_t self, timer_config_t * config)
     switch(self)
     {
         case TIMER_0:
+            os_interrupts_disable();
             RESET_BIT(PRR, PRTIM0);
             OCR0A = config->ocra;
             OCR0B = config->ocrb;
@@ -182,9 +184,11 @@ int timer_init(timer_t self, timer_config_t * config)
             TCCR0A = tccra.byte;
             TCCR0B = tccrb.byte;
             SET_MASK(DDRD, ddra|ddrb);
+            os_interrupts_enable();
             break;
 
         case TIMER_2:
+            os_interrupts_disable();
             RESET_BIT(PRR, PRTIM2);
             OCR2A = config->ocra;
             OCR2B = config->ocrb;
@@ -193,6 +197,7 @@ int timer_init(timer_t self, timer_config_t * config)
             TCCR2B = tccrb.byte;
             SET_MASK(DDRB, ddra);
             SET_MASK(DDRD, ddrb);
+            os_interrupts_enable();
             break;
 
         default:
