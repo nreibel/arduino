@@ -14,7 +14,8 @@ static struct {
 
 ISR(TIMER1_CAPT_vect)
 {
-    if ( IS_SET_BIT(TCCR1B, ICES1) ) cfg[ICP1].tl = ICR1;
+    cfg[ICP1].ovf = FALSE;
+    if (IS_SET_BIT(TCCR1B, ICES1)) cfg[ICP1].tl = ICR1;
     else cfg[ICP1].th = ICR1;
     TOGGLE_BIT(TCCR1B, ICES1);
     TCNT1 = 0;
@@ -54,10 +55,10 @@ int icp_init(icp_t self, icp_prescaler_t prescaler)
             break;
 
         default:
-            return -1;
+            return -ICP_ERROR_INSTANCE;
     }
 
-    return 0;
+    return ICP_OK;
 }
 
 int icp_get_duty_cycle(icp_t self, float * duty_cycle)
@@ -66,11 +67,14 @@ int icp_get_duty_cycle(icp_t self, float * duty_cycle)
     {
         case ICP1:
         {
+            if (cfg[self].ovf)
+                return -ICP_ERROR_OVERFLOW;
+
             if (cfg[self].th == 0)
             {
                 *duty_cycle = 0.0;
             }
-            if (cfg[self].tl == 0)
+            else if (cfg[self].tl == 0)
             {
                 *duty_cycle = 1.0;
             }
@@ -79,28 +83,12 @@ int icp_get_duty_cycle(icp_t self, float * duty_cycle)
                 float period = cfg[self].th + cfg[self].tl;
                 *duty_cycle = cfg[self].th/period;
             }
-
-            return 0;
+            break;
         }
 
         default:
-            return -1;
+            return -ICP_ERROR_INSTANCE;
     }
 
-    return 0;
-}
-
-int icp_is_overflow(icp_t self, bool * overflow)
-{
-    switch(self)
-    {
-        case ICP1:
-            *overflow = cfg[self].ovf;
-            return 0;
-
-        default:
-            return -1;
-    }
-
-    return 0;
+    return ICP_OK;
 }
