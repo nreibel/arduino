@@ -8,17 +8,18 @@ static struct {
     volatile bool ovf;    // Timer has overflown
     volatile uint16_t th; // High duration
     volatile uint16_t tl; // Low duration
+    uint8_t factor;       // Prescaler factor
 } cfg[NUMBER_OF_ICP] = {
-    [ICP1] = { FALSE, 0, 0 }
+    [ICP1] = { FALSE, 0, 0, 0 }
 };
 
 ISR(TIMER1_CAPT_vect)
 {
-    cfg[ICP1].ovf = FALSE;
+    TCNT1 = 0;
     if (IS_SET_BIT(TCCR1B, ICES1)) cfg[ICP1].tl = ICR1;
     else cfg[ICP1].th = ICR1;
     TOGGLE_BIT(TCCR1B, ICES1);
-    TCNT1 = 0;
+    cfg[ICP1].ovf = FALSE;
 }
 
 ISR(TIMER1_OVF_vect)
@@ -32,12 +33,33 @@ int icp_init(icp_t self, icp_prescaler_t prescaler)
 
     switch(prescaler)
     {
-        case ICP_PRESCALER_1:    pscl = 0x1; break;
-        case ICP_PRESCALER_8:    pscl = 0x2; break;
-        case ICP_PRESCALER_64:   pscl = 0x3; break;
-        case ICP_PRESCALER_256:  pscl = 0x4; break;
-        case ICP_PRESCALER_1024: pscl = 0x5; break;
-        default: return -1;
+        case ICP_PRESCALER_1: // 2^0
+            cfg[self].factor = 0;
+            pscl = 0x1;
+            break;
+
+        case ICP_PRESCALER_8: // 2^3
+            cfg[self].factor = 3;
+            pscl = 0x2;
+            break;
+
+        case ICP_PRESCALER_64: // 2^6
+            cfg[self].factor = 6;
+            pscl = 0x3;
+            break;
+
+        case ICP_PRESCALER_256: // 2^8
+            cfg[self].factor = 8;
+            pscl = 0x4;
+            break;
+
+        case ICP_PRESCALER_1024: // 2^10
+            cfg[self].factor = 10;
+            pscl = 0x5;
+            break;
+
+        default:
+            return -ICP_ERROR_PARAM;
     }
 
     switch(self)
@@ -61,6 +83,25 @@ int icp_init(icp_t self, icp_prescaler_t prescaler)
     return ICP_OK;
 }
 
+int icp_get_frequency(icp_t self, uint16_t * frequency)
+{
+    switch(self)
+    {
+        case ICP1:
+        {
+            if (cfg[self].ovf)
+                return -ICP_ERROR_OVERFLOW;
+
+            *frequency = (F_CPU >> cfg[self].factor)/(cfg[self].tl + cfg[self].th);
+            break;
+        }
+
+        default:
+            return -ICP_ERROR_INSTANCE;
+    }
+    return ICP_OK;
+}
+
 int icp_get_duty_cycle(icp_t self, float * duty_cycle)
 {
     switch(self)
@@ -81,7 +122,8 @@ int icp_get_duty_cycle(icp_t self, float * duty_cycle)
             else
             {
                 float period = cfg[self].th + cfg[self].tl;
-                *duty_cycle = cfg[self].th/period;
+                float dc = cfg[self].th/period;
+                *duty_cycle = LIMIT(dc, 0.0, 1.0);
             }
             break;
         }

@@ -53,9 +53,9 @@ int task_main(void* data)
     os_watchdog_trigger();
 
     int ret = 0;
+
     float dutyCycle = 0;
     ret = icp_get_duty_cycle(ICP1, &dutyCycle);
-
     switch(ret)
     {
         case ICP_OK:
@@ -71,7 +71,25 @@ int task_main(void* data)
             snprintf(buffer, BUFFER_SZ, "icp_get_duty_cycle : err %d", ret);
             serial_println(SERIAL_BUS_0, buffer);
             break;
+    }
 
+    uint16_t freq = 0;
+    ret = icp_get_frequency(ICP1, &freq);
+    switch(ret)
+    {
+        case ICP_OK:
+            snprintf(buffer, BUFFER_SZ, "frequency = %uHz", freq);
+            serial_println(SERIAL_BUS_0, buffer);
+            break;
+
+        case -ICP_ERROR_OVERFLOW:
+            serial_println(SERIAL_BUS_0, "No input");
+            break;
+
+        default:
+            snprintf(buffer, BUFFER_SZ, "icp_get_frequency : err %d", ret);
+            serial_println(SERIAL_BUS_0, buffer);
+            break;
     }
 
     return 0;

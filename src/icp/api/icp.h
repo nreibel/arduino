@@ -7,6 +7,7 @@ typedef enum {
     ICP_OK,
     ICP_ERROR,
     ICP_ERROR_INSTANCE,
+    ICP_ERROR_PARAM,
     ICP_ERROR_OVERFLOW
 } icp_error_t;
 
@@ -25,5 +26,6 @@ typedef enum {
 
 int icp_init(icp_t self, icp_prescaler_t prescaler);
 int icp_get_duty_cycle(icp_t self, float * duty_cycle);
+int icp_get_frequency(icp_t self, uint16_t * frequency);
 
 #endif /* __ICP_API_H__ */
