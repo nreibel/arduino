@@ -14,6 +14,7 @@
 // (re)set bit b in r, with mask m
 #define SET_BIT(r, b)        (r |= BIT(b))
 #define RESET_BIT(r, b)      (r &= ~BIT(b))
+#define TOGGLE_BIT(r, b)     (r ^= BIT(b))
 #define SET_BITS(r, b, m)    (r = MASK(r, ~(m)) | MASK(b, m))
 
 // Split byte into half bytes
@@ -28,6 +29,7 @@
 // (re)set bitmask in r
 #define SET_MASK(r, m)       (r |= (m))
 #define RESET_MASK(r, m)     (r &= ~(m))
+#define TOGGLE_MASK(r, m)    (r ^= (m))
 
 // Test bit of value r at index x
 #define IS_SET_BIT(r, x)     (MASK((r), BIT(x)))

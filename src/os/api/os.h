@@ -24,6 +24,10 @@ extern background_task background_tasks_list[NUMBER_OF_BACKGROUND_TASKS];
 // App entry point
 extern void app_init(void);
 
+// Enable/disable interrupts
+void os_interrupts_enable();
+void os_interrupts_disable();
+
 // OS Timers
 void os_wait(time_t ms);
 void os_timer_start(os_timer_t timer);

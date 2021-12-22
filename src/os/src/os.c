@@ -10,8 +10,6 @@
 
 void os_init();
 void os_sleep();
-void os_interrupts_enable();
-void os_interrupts_disable();
 
 /*
  * Private functions prototypes
