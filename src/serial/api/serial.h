@@ -27,8 +27,11 @@ int serial_read_bytes(serial_bus_t bus, void *buffer, int length);
 int serial_write_byte(serial_bus_t bus, uint8_t chr);
 int serial_write_bytes(serial_bus_t bus, void *buffer, int length);
 
-int serial_print(serial_bus_t bus, const void* string);
-int serial_println(serial_bus_t bus, const void* string);
+int serial_print(serial_bus_t bus, const char * string);
+int serial_println(serial_bus_t bus, const char * string);
 int serial_new_line(serial_bus_t bus);
+
+int serial_print_p(serial_bus_t bus, const __flash char * string);
+int serial_println_p(serial_bus_t bus, const __flash char * string);
 
 #endif /* __SERIAL_API_H__ */

@@ -184,21 +184,28 @@ int serial_new_line(serial_bus_t bus)
     return serial_write_bytes(bus, "\r\n", 2);
 }
 
-int serial_print(serial_bus_t bus, const void* string)
+int serial_print(serial_bus_t bus, const char * string)
 {
     int written = 0;
-
-    for(uint8_t *b = UINT8_PTR(string) ; *b != 0 ; b++)
-    {
-        written += serial_write_byte(bus, *b);
-    }
-
+    while(*string != 0) written += serial_write_byte(bus, *string++);
     return written;
 }
 
-int serial_println(serial_bus_t bus, const void* string)
+int serial_println(serial_bus_t bus, const char * string)
 {
     return serial_print(bus, string) + serial_new_line(bus);
+}
+
+int serial_print_p(serial_bus_t bus, const __flash char * string)
+{
+    int written = 0;
+    while(*string != 0) written += serial_write_byte(bus, *string++);
+    return written;
+}
+
+int serial_println_p(serial_bus_t bus, const __flash char * string)
+{
+    return serial_print_p(bus, string) + serial_new_line(bus);
 }
 
 int serial_read_byte(serial_bus_t bus, uint8_t *byte)
