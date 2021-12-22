@@ -8,6 +8,16 @@ typedef enum {
     NUMBER_OF_ICP
 } icp_t;
 
-int icp_init(icp_t self);
+typedef enum {
+    ICP_PRESCALER_1,
+    ICP_PRESCALER_8,
+    ICP_PRESCALER_64,
+    ICP_PRESCALER_256,
+    ICP_PRESCALER_1024
+} icp_prescaler_t;
+
+int icp_init(icp_t self, icp_prescaler_t prescaler);
+int icp_is_overflow(icp_t self, bool * overflow);
+int icp_get_duty_cycle(icp_t self, float * duty_cycle);
 
 #endif /* __ICP_API_H__ */
