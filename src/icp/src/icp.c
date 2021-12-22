@@ -90,15 +90,25 @@ int icp_get_frequency(icp_t self, uint16_t * frequency)
         case ICP1:
         {
             if (cfg[self].ovf)
+            {
                 return -ICP_ERROR_OVERFLOW;
+            }
+            else if (cfg[self].tl == 0 && cfg[self].th == 0)
+            {
+                return -ICP_ERROR_NO_DATA;
+            }
+            else
+            {
+                *frequency = (F_CPU >> cfg[self].factor)/(cfg[self].tl + cfg[self].th);
+            }
 
-            *frequency = (F_CPU >> cfg[self].factor)/(cfg[self].tl + cfg[self].th);
             break;
         }
 
         default:
             return -ICP_ERROR_INSTANCE;
     }
+
     return ICP_OK;
 }
 
@@ -109,9 +119,14 @@ int icp_get_duty_cycle(icp_t self, float * duty_cycle)
         case ICP1:
         {
             if (cfg[self].ovf)
+            {
                 return -ICP_ERROR_OVERFLOW;
-
-            if (cfg[self].th == 0)
+            }
+            else if (cfg[self].tl == 0 && cfg[self].th == 0)
+            {
+                return -ICP_ERROR_NO_DATA;
+            }
+            else if (cfg[self].th == 0)
             {
                 *duty_cycle = 0.0;
             }

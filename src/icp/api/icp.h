@@ -8,6 +8,7 @@ typedef enum {
     ICP_ERROR,
     ICP_ERROR_INSTANCE,
     ICP_ERROR_PARAM,
+    ICP_ERROR_NO_DATA,
     ICP_ERROR_OVERFLOW
 } icp_error_t;
 
