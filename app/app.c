@@ -19,6 +19,14 @@
 #define BUFFER_SZ 64
 char buffer[BUFFER_SZ];
 
+const __flash char STR_READY[] = "Ready!";
+const __flash char STR_ERROR[] = "Error %d";
+const __flash char STR_NO_INPUT[] = "No input";
+const __flash char STR_FREQUENCY[] = "Frequency = %uHz";
+const __flash char STR_DUTY_CYCLE[] = "Duty cycle = %.03f";
+const __flash char STR_ERROR_TIMER_INIT[] = "INIT TIMER FAILED";
+const __flash char STR_ERROR_TIMER_START[] = "START TIMER FAILED";
+
 // App entry point
 void app_init()
 {
@@ -33,14 +41,14 @@ void app_init()
 
     if (timer_init(TIMER_0, &timer_cfg) < 0)
     {
-        serial_println(SERIAL_BUS_0, "INIT TIMER FAILED");
+        serial_println_p(SERIAL_BUS_0, STR_ERROR_TIMER_INIT);
     }
     else if (timer_start(TIMER_0) < 0)
     {
-        serial_println(SERIAL_BUS_0, "START TIMER FAILED");
+        serial_println_p(SERIAL_BUS_0, STR_ERROR_TIMER_START);
     }
 
-    icp_init(ICP1, ICP_PRESCALER_8);
+    icp_init(ICP1, ICP_PRESCALER_64);
 
     // Init tasks
     os_task_setup(TASK_MAIN, 1000, task_main, NULL_PTR);
@@ -48,7 +56,7 @@ void app_init()
 
     os_watchdog_enable(OS_WATCHDOG_2S);
 
-    serial_println(SERIAL_BUS_0, "READY");
+    serial_println_p(SERIAL_BUS_0, STR_READY);
 }
 
 // Main task
@@ -66,17 +74,17 @@ int task_main(void* data)
     switch(ret)
     {
         case ICP_OK:
-            snprintf(buffer, BUFFER_SZ, "duty cycle = %.03f", dutyCycle);
+            snprintf_P(buffer, BUFFER_SZ, STR_DUTY_CYCLE, dutyCycle);
             serial_println(SERIAL_BUS_0, buffer);
             break;
 
         case -ICP_ERROR_NO_DATA:
         case -ICP_ERROR_OVERFLOW:
-            serial_println(SERIAL_BUS_0, "No input");
+            serial_println_p(SERIAL_BUS_0, STR_NO_INPUT);
             break;
 
         default:
-            snprintf(buffer, BUFFER_SZ, "icp_get_duty_cycle : err %d", ret);
+            snprintf_P(buffer, BUFFER_SZ, STR_ERROR, ret);
             serial_println(SERIAL_BUS_0, buffer);
             break;
     }
@@ -85,17 +93,17 @@ int task_main(void* data)
     switch(ret)
     {
         case ICP_OK:
-            snprintf(buffer, BUFFER_SZ, "frequency = %uHz", freq);
+            snprintf_P(buffer, BUFFER_SZ, STR_FREQUENCY, freq);
             serial_println(SERIAL_BUS_0, buffer);
             break;
 
         case -ICP_ERROR_NO_DATA:
         case -ICP_ERROR_OVERFLOW:
-            serial_println(SERIAL_BUS_0, "No input");
+            serial_println_p(SERIAL_BUS_0, STR_NO_INPUT);
             break;
 
         default:
-            snprintf(buffer, BUFFER_SZ, "icp_get_frequency : err %d", ret);
+            snprintf_P(buffer, BUFFER_SZ, STR_ERROR, ret);
             serial_println(SERIAL_BUS_0, buffer);
             break;
     }
