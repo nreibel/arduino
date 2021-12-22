@@ -70,6 +70,7 @@ int task_main(void* data)
             serial_println(SERIAL_BUS_0, buffer);
             break;
 
+        case -ICP_ERROR_NO_DATA:
         case -ICP_ERROR_OVERFLOW:
             serial_println(SERIAL_BUS_0, "No input");
             break;
@@ -88,6 +89,7 @@ int task_main(void* data)
             serial_println(SERIAL_BUS_0, buffer);
             break;
 
+        case -ICP_ERROR_NO_DATA:
         case -ICP_ERROR_OVERFLOW:
             serial_println(SERIAL_BUS_0, "No input");
             break;
