@@ -11,7 +11,7 @@ typedef enum {
 } icp_error_t;
 
 typedef enum {
-    ICP1,
+    ICP1, // PB0
     NUMBER_OF_ICP
 } icp_t;
 

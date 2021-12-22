@@ -22,6 +22,6 @@ LDFLAGS := -u,vfprintf
 LIBS := printf_flt m
 
 # Enable selected modules
-MODULES := os gpio serial timer
+MODULES := os gpio serial timer icp
 
 include $(ARDUINO_LIBS)/makefile.include
