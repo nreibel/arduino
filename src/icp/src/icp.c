@@ -11,7 +11,7 @@
 static struct {
     volatile bool ovf;    // Timer has overflown
     volatile uint16_t th; // High duration
-    volatile uint16_t tl; // Low duration
+    volatile uint16_t p;  // Period
     uint8_t factor;       // Prescaler factor
     bool interrupts;      // Use interrupts
 } cfg[NUMBER_OF_ICP] = {
@@ -33,10 +33,20 @@ static void icp_ll_clear_ovf_int();
 
 ISR(TIMER1_CAPT_vect)
 {
-    TCNT1 = 0;
-    if (IS_SET_BIT(TCCR1B, ICES1)) cfg[ICP1].tl = ICR1;
-    else cfg[ICP1].th = ICR1;
+    if ( IS_SET_BIT(TCCR1B, ICES1) != FALSE )
+    {
+        // Rising edge
+        TCNT1 = 0;
+        cfg[ICP1].p = ICR1;
+    }
+    else
+    {
+        // Falling edge
+        cfg[ICP1].th = ICR1;
+    }
+
     TOGGLE_BIT(TCCR1B, ICES1);
+
     cfg[ICP1].ovf = FALSE;
 }
 
@@ -115,13 +125,13 @@ int icp_init(icp_t self, icp_prescaler_t prescaler, bool useInterrupts)
 
 int icp_get_frequency(icp_t self, uint16_t * frequency)
 {
+    uint16_t p = 0;
+
     if (self != ICP1)
         return -ICP_ERROR_INSTANCE;
 
     if (!cfg[self].interrupts)
     {
-        uint16_t p = 0;
-
         icp_ll_clear_ovf_int();
         icp_ll_capture_edge(TRUE);
         icp_ll_reset_counter();
@@ -129,32 +139,32 @@ int icp_get_frequency(icp_t self, uint16_t * frequency)
 
         if (icp_ll_is_ovf() != FALSE)
             return -ICP_ERROR_OVERFLOW;
-
-        *frequency = (F_CPU >> cfg[self].factor)/p;
     }
     else
     {
         if (cfg[self].ovf)
             return -ICP_ERROR_OVERFLOW;
 
-        else if (cfg[self].tl == 0 && cfg[self].th == 0)
+        if (cfg[self].p == 0)
             return -ICP_ERROR_NO_DATA;
 
-        *frequency = (F_CPU >> cfg[self].factor)/(cfg[self].tl + cfg[self].th);
+        p = cfg[self].p;
     }
+
+    *frequency = (F_CPU >> cfg[self].factor)/p;
 
     return ICP_OK;
 }
 
-int icp_get_duty_cycle(icp_t self, float * duty_cycle)
+int icp_get_duty_cycle(icp_t self, uint8_t * duty_cycle)
 {
+    uint16_t th, p;
+
     if (self != ICP1)
         return -ICP_ERROR_INSTANCE;
 
     if (!cfg[self].interrupts)
     {
-        uint16_t th, p;
-
         icp_ll_clear_ovf_int();
         icp_ll_capture_edge(TRUE);
         icp_ll_reset_counter();
@@ -163,33 +173,20 @@ int icp_get_duty_cycle(icp_t self, float * duty_cycle)
 
         if (icp_ll_is_ovf() != FALSE)
             return -ICP_ERROR_OVERFLOW;
-
-        float dc = th/TYPECAST(p, float);
-        *duty_cycle = LIMIT(dc, 0.0, 1.0);
     }
     else
     {
         if (cfg[self].ovf)
             return -ICP_ERROR_OVERFLOW;
 
-        if (cfg[self].tl == 0 && cfg[self].th == 0)
+        if (cfg[self].p == 0)
             return -ICP_ERROR_NO_DATA;
 
-        if (cfg[self].th == 0)
-        {
-            *duty_cycle = 0.0;
-        }
-        else if (cfg[self].tl == 0)
-        {
-            *duty_cycle = 1.0;
-        }
-        else
-        {
-            float period = cfg[self].th + cfg[self].tl;
-            float dc = cfg[self].th/period;
-            *duty_cycle = LIMIT(dc, 0.0, 1.0);
-        }
+        th = cfg[self].th;
+        p = cfg[self].p;
     }
+
+    *duty_cycle = 255UL * th / p;
 
     return ICP_OK;
 }

@@ -1,6 +1,15 @@
 #ifndef __ICP_API_H__
 #define __ICP_API_H__
 
+/*
+ * Make use of Timer 1 Input Capture Mode to measure frequency and duty cycle on pin ICP1
+ *
+ * Readings with interrupts can be accurate up to ~2kHz, depending on CPU load
+ * Readings in blocking mode can be accurate (+/-5%) up to 50kHz BUT will hang if there are no events on ICP1
+ *
+ * TODO : implement timeout on blocking calls
+ */
+
 #include "types.h"
 
 typedef enum {
@@ -26,7 +35,7 @@ typedef enum {
 } icp_prescaler_t;
 
 int icp_init(icp_t self, icp_prescaler_t prescaler, bool useInterrupts);
-int icp_get_duty_cycle(icp_t self, float * duty_cycle);
+int icp_get_duty_cycle(icp_t self, uint8_t * duty_cycle);
 int icp_get_frequency(icp_t self, uint16_t * frequency);
 
 #endif /* __ICP_API_H__ */
