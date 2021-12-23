@@ -260,3 +260,33 @@ int timer_stop(timer_t self)
 
     return TIMER_OK;
 }
+
+int timer_set_ocra(timer_t self, uint8_t val)
+{
+    if (self < NUMBER_OF_TIMERS && !timer_cfg[self].is_init)
+        return -TIMER_ERROR_NOT_INIT;
+
+    switch(self)
+    {
+        case TIMER_0: OCR0A = val; break;
+        case TIMER_2: OCR2A = val; break;
+        default: return -TIMER_ERROR_INSTANCE;
+    }
+
+    return TIMER_OK;
+}
+
+int timer_set_ocrb(timer_t self, uint8_t val)
+{
+    if (self < NUMBER_OF_TIMERS && !timer_cfg[self].is_init)
+        return -TIMER_ERROR_NOT_INIT;
+
+    switch(self)
+    {
+        case TIMER_0: OCR0B = val; break;
+        case TIMER_2: OCR2B = val; break;
+        default: return -TIMER_ERROR_INSTANCE;
+    }
+
+    return TIMER_OK;
+}

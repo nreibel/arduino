@@ -71,5 +71,7 @@ typedef struct {
 int timer_init(timer_t self, timer_config_t * config);
 int timer_start(timer_t self);
 int timer_stop(timer_t self);
+int timer_set_ocra(timer_t self, uint8_t val);
+int timer_set_ocrb(timer_t self, uint8_t val);
 
 #endif /* __TIMER_API_H__ */
