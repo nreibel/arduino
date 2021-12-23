@@ -48,7 +48,7 @@ void app_init()
         serial_println_p(SERIAL_BUS_0, STR_ERROR_TIMER_START);
     }
 
-    icp_init(ICP1, ICP_PRESCALER_64);
+    icp_init(ICP1, ICP_PRESCALER_64, TRUE);
 
     // Init tasks
     os_task_setup(TASK_MAIN, 1000, task_main, NULL_PTR);

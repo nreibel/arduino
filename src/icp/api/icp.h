@@ -25,7 +25,7 @@ typedef enum {
     ICP_PRESCALER_1024
 } icp_prescaler_t;
 
-int icp_init(icp_t self, icp_prescaler_t prescaler);
+int icp_init(icp_t self, icp_prescaler_t prescaler, bool useInterrupts);
 int icp_get_duty_cycle(icp_t self, float * duty_cycle);
 int icp_get_frequency(icp_t self, uint16_t * frequency);
 
