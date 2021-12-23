@@ -84,41 +84,41 @@ const gpio_t SCL  = &_PC5;
 
 ISR(INT0_vect)
 {
-    if (extint_cbk[0] != NULL_PTR)
+    if (extint_cbk[GPIO_INT_0] != NULL_PTR)
     {
-        (*extint_cbk[0])(GPIO_INT_0, extint_data[0]);
+        (*extint_cbk[GPIO_INT_0])(GPIO_INT_0, extint_data[GPIO_INT_0]);
     }
 }
 
 ISR(INT1_vect)
 {
-    if (extint_cbk[1] != NULL_PTR)
+    if (extint_cbk[GPIO_INT_1] != NULL_PTR)
     {
-        (*extint_cbk[1])(GPIO_INT_1, extint_data[1]);
+        (*extint_cbk[GPIO_INT_1])(GPIO_INT_1, extint_data[GPIO_INT_1]);
     }
 }
 
 ISR(PCINT0_vect)
 {
-    if (pcint_cbk[0] != NULL_PTR)
+    if (pcint_cbk[GPIO_PORT_B] != NULL_PTR)
     {
-        (*pcint_cbk[0])(GPIO_PORT_B, PINB, pcint_data[0]);
+        (*pcint_cbk[GPIO_PORT_B])(GPIO_PORT_B, PINB, pcint_data[GPIO_PORT_B]);
     }
 }
 
 ISR(PCINT1_vect)
 {
-    if (pcint_cbk[1] != NULL_PTR)
+    if (pcint_cbk[GPIO_PORT_C] != NULL_PTR)
     {
-        (*pcint_cbk[1])(GPIO_PORT_C, PINC, pcint_data[1]);
+        (*pcint_cbk[GPIO_PORT_C])(GPIO_PORT_C, PINC, pcint_data[GPIO_PORT_C]);
     }
 }
 
 ISR(PCINT2_vect)
 {
-    if (pcint_cbk[2] != NULL_PTR)
+    if (pcint_cbk[GPIO_PORT_D] != NULL_PTR)
     {
-        (*pcint_cbk[2])(GPIO_PORT_D, PIND, pcint_data[2]);
+        (*pcint_cbk[GPIO_PORT_D])(GPIO_PORT_D, PIND, pcint_data[GPIO_PORT_D]);
     }
 }
 
@@ -132,9 +132,6 @@ int gpio_enable_pcint(gpio_port_t port, uint8_t mask, gpio_pcint_cbk_t cbk, vola
     {
         case GPIO_PORT_B: // PCINT0..7:
         {
-            pcint_cbk[0] = cbk;
-            pcint_data[0] = data;
-
             PCMSK0 = mask;
             SET_BIT(PCICR, PCIE0);
             break;
@@ -142,9 +139,6 @@ int gpio_enable_pcint(gpio_port_t port, uint8_t mask, gpio_pcint_cbk_t cbk, vola
 
         case GPIO_PORT_C: // PCINT8..14
         {
-            pcint_cbk[1] = cbk;
-            pcint_data[1] = data;
-
             PCMSK1 = mask;
             SET_BIT(PCICR, PCIE1);
             break;
@@ -152,9 +146,6 @@ int gpio_enable_pcint(gpio_port_t port, uint8_t mask, gpio_pcint_cbk_t cbk, vola
 
         case GPIO_PORT_D: // PCINT16..23
         {
-            pcint_cbk[2] = cbk;
-            pcint_data[2] = data;
-
             PCMSK2 = mask;
             SET_BIT(PCICR, PCIE2);
             break;
@@ -162,6 +153,9 @@ int gpio_enable_pcint(gpio_port_t port, uint8_t mask, gpio_pcint_cbk_t cbk, vola
 
         default: return -GPIO_INVALID_PORT;
     }
+
+    pcint_cbk[port] = cbk;
+    pcint_data[port] = data;
 
     return GPIO_OK;
 }
@@ -203,9 +197,6 @@ int gpio_enable_extint(gpio_int_t pin, gpio_edge_t edge, gpio_extint_cbk_t cbk, 
 
             SET_BIT(eimsk, INT0);
 
-            extint_data[0] = data;
-            extint_cbk[0] = cbk;
-
             break;
         }
 
@@ -239,9 +230,6 @@ int gpio_enable_extint(gpio_int_t pin, gpio_edge_t edge, gpio_extint_cbk_t cbk, 
 
             SET_BIT(eimsk, INT1);
 
-            extint_data[1] = data;
-            extint_cbk[1] = cbk;
-
             break;
         }
 
@@ -250,6 +238,10 @@ int gpio_enable_extint(gpio_int_t pin, gpio_edge_t edge, gpio_extint_cbk_t cbk, 
             return -GPIO_INVALID_INT;
         }
     }
+
+
+    extint_data[pin] = data;
+    extint_cbk[pin] = cbk;
 
     EICRA = eicra;
     EIMSK = eimsk;
