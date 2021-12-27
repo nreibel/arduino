@@ -4,5 +4,6 @@ INCLUDES += \
 
 SOURCES += \
 	$(SRC_DIR)/os/src/os.c \
+	$(SRC_DIR)/os/src/os_mem.c \
 	$(SRC_DIR)/os/src/os_$(ARCH).c \
 	$(CFG_DIR)/os/os_cfg.c \

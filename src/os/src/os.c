@@ -37,11 +37,6 @@ static struct {
     void* param;
 } tasks[NUMBER_OF_OS_TASKS] = {0};
 
-#if OS_MALLOC
-static uint8_t malloc_heap[OS_HEAP_SIZE];
-static uint8_t malloc_idx = 0;
-#endif // OS_MALLOC
-
 /*
  * Public functions
  */
@@ -159,51 +154,3 @@ int main(void)
 
     return 1;
 }
-
-#if OS_MALLOC
-
-/*
- * Really basic implementation, will fail once heap is used
- */
-
-unsigned int os_get_used_heap()
-{
-    return malloc_idx;
-}
-
-unsigned int os_get_free_heap()
-{
-    return OS_HEAP_SIZE-malloc_idx;
-}
-
-void* os_calloc(unsigned int sz)
-{
-    void *ptr = os_malloc(sz);
-    if (ptr != NULL_PTR) memset(ptr, 0, sz);
-    return ptr;
-}
-
-void* os_malloc(unsigned int sz)
-{
-    void *ptr = NULL_PTR;
-
-    if (malloc_idx + sz <= OS_HEAP_SIZE)
-    {
-        ptr = &malloc_heap[malloc_idx];
-        malloc_idx += sz;
-    }
-    else
-    {
-        os_heap_full(NULL_PTR);
-    }
-
-    return ptr;
-}
-
-void os_free(void *ptr)
-{
-    UNUSED(ptr);
-    // TODO
-}
-
-#endif // OS_MALLOC

@@ -1,5 +1,6 @@
 #include "stdio.h"
 #include "os.h"
+#include "os_mem.h"
 #include "app.h"
 #include "timer.h"
 #include "icp.h"
@@ -65,6 +66,12 @@ void app_init()
     os_timer_start(TIMER_INTERVAL);
 
     os_watchdog_enable(OS_WATCHDOG_2S);
+
+#if OS_MALLOC == ON
+    char *buf = os_malloc(64);
+    snprintf(buf, 64, "Heap usage : %u/%u", os_get_used_heap(), os_get_total_heap());
+    serial_println(SERIAL_BUS_0, buf);
+#endif
 
     serial_println_p(SERIAL_BUS_0, STR_READY);
 }

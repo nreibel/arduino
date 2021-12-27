@@ -12,12 +12,14 @@ typedef uint16_t time_t;
 // In Hz
 #define F_CPU 16000000UL
 
-// Enable malloc and free (not recommended)
 #define OS_MALLOC ON
 
-#if OS_MALLOC
-#define OS_HEAP_SIZE 64
-#endif // OS_MALLOC
+// Total heap space, in bytes
+#define OS_HEAP_SIZE 512
+
+// Smallest allocatable size, in bytes
+// Increasing value saves on RAM usage but increases heap fragmentation
+#define OS_HEAP_CHUNK_SIZE 32
 
 #define OS_SLEEP_MODE SLEEP_MODE_IDLE
 
