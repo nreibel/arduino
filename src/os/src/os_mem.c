@@ -40,7 +40,7 @@ void * os_malloc(unsigned int sz)
         // Chunk is not free
         if (chunks[i].ptr != NULL_PTR) continue;
 
-        int chunks_needed = 0;
+        unsigned int chunks_needed = 0;
         int remaining = sz;
 
         // Look for contiguous space
@@ -69,7 +69,7 @@ void * os_malloc(unsigned int sz)
         }
     }
 
-    return 0;
+    return NULL_PTR;
 }
 
 unsigned int os_get_used_heap()
