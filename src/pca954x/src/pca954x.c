@@ -3,6 +3,7 @@
 #include "bits.h"
 #include "types.h"
 #include "os.h"
+#include "os_mem.h"
 
 /*
  * Private constants

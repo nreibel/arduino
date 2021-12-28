@@ -1,4 +1,5 @@
 #include "os.h"
+#include "os_mem.h"
 #include "tc74.h"
 #include "i2c.h"
 #include "types.h"

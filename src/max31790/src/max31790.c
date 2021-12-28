@@ -3,6 +3,7 @@
 #include "bits.h"
 #include "i2c.h"
 #include "os.h"
+#include "os_mem.h"
 
 /*
  * Private constants
