@@ -1,3 +1,5 @@
+#include "os_cfg.h"
+#include "os_mem.h"
 #include "i2c.h"
 #include "types.h"
 
@@ -54,6 +56,29 @@ int i2c_bus_read(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned
 /*
  * I2C Device
  */
+
+#if OS_MALLOC == ON
+i2c_device_t i2c_device_create(i2c_bus_t bus, uint8_t addr)
+{
+    i2c_device_t self = os_malloc(sizeof(*self));
+
+    if (self != NULL_PTR)
+    {
+        self->bus = bus;
+        self->addr = addr;
+    }
+
+    return self;
+}
+
+void i2c_device_destroy(i2c_device_t self)
+{
+    if (self != NULL_PTR)
+    {
+        os_free(self);
+    }
+}
+#endif // OS_MALLOC == ON
 
 int i2c_device_init(i2c_device_t dev, i2c_bus_t bus, uint8_t addr)
 {
