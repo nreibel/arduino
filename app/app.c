@@ -45,19 +45,19 @@ void app_init()
 
     if (timer_init(TIMER_0, &timer_cfg) < 0)
     {
-        serial_println_p(SERIAL_BUS_0, STR_ERROR_TIMER_INIT);
+        serial_println_P(SERIAL_BUS_0, STR_ERROR_TIMER_INIT);
         HALT;
     }
 
     if (timer_start(TIMER_0) < 0)
     {
-        serial_println_p(SERIAL_BUS_0, STR_ERROR_TIMER_START);
+        serial_println_P(SERIAL_BUS_0, STR_ERROR_TIMER_START);
         HALT;
     }
 
-    if (icp_init(ICP1, ICP_PRESCALER_256, FALSE) < 0)
+    if (icp_init(ICP1, ICP_PRESCALER_256, TRUE) < 0)
     {
-        serial_println_p(SERIAL_BUS_0, STR_ERROR_ICP_INIT);
+        serial_println_P(SERIAL_BUS_0, STR_ERROR_ICP_INIT);
         HALT;
     }
 
@@ -73,7 +73,7 @@ void app_init()
     serial_println(SERIAL_BUS_0, buf);
 #endif
 
-    serial_println_p(SERIAL_BUS_0, STR_READY);
+    serial_println_P(SERIAL_BUS_0, STR_READY);
 }
 
 // Main task
@@ -97,7 +97,7 @@ int task_main(void* data)
 
         case -ICP_ERROR_NO_DATA:
         case -ICP_ERROR_OVERFLOW:
-            serial_println_p(SERIAL_BUS_0, STR_NO_INPUT);
+            serial_println_P(SERIAL_BUS_0, STR_NO_INPUT);
             break;
 
         default:
@@ -116,7 +116,7 @@ int task_main(void* data)
 
         case -ICP_ERROR_NO_DATA:
         case -ICP_ERROR_OVERFLOW:
-            serial_println_p(SERIAL_BUS_0, STR_NO_INPUT);
+            serial_println_P(SERIAL_BUS_0, STR_NO_INPUT);
             break;
 
         default:
