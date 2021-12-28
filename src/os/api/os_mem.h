@@ -14,6 +14,10 @@ unsigned int os_get_used_heap();
 unsigned int os_get_free_heap();
 unsigned int os_get_total_heap();
 
+unsigned int os_get_used_chunks();
+unsigned int os_get_free_chunks();
+unsigned int os_get_total_chunks();
+
 #endif // OS_MALLOC
 
 #endif /* __OS_MALLOC_API_H__ */

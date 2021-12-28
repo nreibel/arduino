@@ -61,7 +61,7 @@ void * os_malloc(unsigned int sz)
                 void * ptr = &heap[i];
 
                 // Mark chunks
-                for (int j = 0 ; j < chunks_needed ; j++)
+                for (unsigned int j = 0 ; j < chunks_needed ; j++)
                     chunks[i+j].ptr = ptr;
 
                 return ptr;
@@ -104,6 +104,33 @@ void os_free(void * ptr)
     for (unsigned int i = 0 ; i < OS_HEAP_CHUNK_COUNT ; i++)
         if ( chunks[i].ptr == ptr)
             chunks[i].ptr = NULL_PTR;
+}
+
+unsigned int os_get_used_chunks()
+{
+    unsigned int used_chunks = 0;
+
+    for (int i = 0 ; i < OS_HEAP_CHUNK_COUNT ; i++)
+        if (chunks[i].ptr != NULL_PTR)
+            used_chunks++;
+
+    return used_chunks;
+}
+
+unsigned int os_get_free_chunks()
+{
+    unsigned int free_chunks = 0;
+
+    for (int i = 0 ; i < OS_HEAP_CHUNK_COUNT ; i++)
+        if (chunks[i].ptr == NULL_PTR)
+            free_chunks++;
+
+    return free_chunks;
+}
+
+unsigned int os_get_total_chunks()
+{
+    return OS_HEAP_CHUNK_COUNT;
 }
 
 #endif // OS_MALLOC
