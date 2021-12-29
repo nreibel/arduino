@@ -2,24 +2,27 @@
 #include "os_mem.h"
 #include "i2c.h"
 #include "types.h"
+#include "lists.h"
 
-#define MAX_I2C_BUS_COUNT 16
-
-static unsigned int current_i2c_bus_count = 0;
-static i2c_bus_t registered_bus[MAX_I2C_BUS_COUNT];
+static linked_list_t i2c_bus_list = NULL_PTR;
 
 int i2c_register_bus(i2c_bus_t bus)
 {
-    if (bus == NULL_PTR) return -I2C_FAIL;
-    if (current_i2c_bus_count >= MAX_I2C_BUS_COUNT) return -I2C_FAIL;
-    registered_bus[current_i2c_bus_count++] = bus;
+    if (i2c_bus_list == NULL_PTR)
+        i2c_bus_list = linked_list_create();
+
+    if (i2c_bus_list == NULL_PTR)
+        return -I2C_FAIL;
+
+    if (linked_list_append(i2c_bus_list, bus) == NULL_PTR)
+        return -I2C_FAIL;
+
     return I2C_OK;
 }
 
-i2c_bus_t i2c_get_bus(unsigned int id)
+i2c_bus_t i2c_get_bus(unsigned int idx)
 {
-    if (id >= current_i2c_bus_count) return NULL_PTR;
-    else return registered_bus[id];
+    return linked_list_get(i2c_bus_list, idx);
 }
 
 /*
