@@ -67,7 +67,7 @@ void app_init()
 
     os_watchdog_enable(OS_WATCHDOG_2S);
 
-#if OS_MALLOC == ON
+#if OS_MALLOC
     char *buf = os_malloc(64);
     snprintf(buf, 64, "Heap usage : %u/%u", os_get_used_heap(), os_get_total_heap());
     serial_println(SERIAL_BUS_0, buf);

@@ -12,14 +12,16 @@ typedef uint16_t time_t;
 // In Hz
 #define F_CPU 16000000UL
 
-#define OS_MALLOC ON
+// Enable malloc and free
+#define OS_MALLOC_NONE   0 // No malloc
+#define OS_MALLOC_SIMPLE 1 // Almost no overhead, but can't free memory
+#define OS_MALLOC_CHUNKS 2 // Separate heap into chunks that can be freed, but uses more RAM to manage chunks
+#define OS_MALLOC OS_MALLOC_SIMPLE
 
-// Total heap space, in bytes
-#define OS_HEAP_SIZE 512
+#define OS_HEAP_SIZE 256
 
-// Smallest allocatable size, in bytes
-// Increasing value saves on RAM usage but increases heap fragmentation
-#define OS_HEAP_CHUNK_SIZE 32
+// Increasing size of malloc chunks decreases RAM usage, but increases fragmentation
+// #define OS_HEAP_CHUNK_SIZE 8
 
 #define OS_SLEEP_MODE SLEEP_MODE_IDLE
 
