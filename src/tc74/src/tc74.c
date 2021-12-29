@@ -19,16 +19,29 @@
 #if OS_MALLOC
 tc74_t tc74_create(i2c_bus_t bus, uint8_t addr)
 {
-    tc74_t instance = os_malloc(sizeof(*instance));
-    if (instance != NULL_PTR && tc74_init(instance, bus, addr) >= 0)
-        return instance;
-    else
+    tc74_t self = os_malloc(sizeof(*self));
+
+    if (self == NULL_PTR)
+        goto exit;
+
+    if (tc74_init(self, bus, addr) < 0)
+        goto cleanup;
+
+    return self;
+
+    cleanup:
+        os_free(self);
+
+    exit:
         return NULL_PTR;
 }
 
 void tc74_destroy(tc74_t self)
 {
-    os_free(self);
+    if (self != NULL_PTR)
+    {
+        os_free(self);
+    }
 }
 #endif // OS_MALLOC
 
