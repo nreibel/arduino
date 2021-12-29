@@ -7,5 +7,6 @@ SOURCES += \
 	$(SRC_DIR)/os/src/os_mem.c \
 	$(SRC_DIR)/os/src/mem/chunks_alloc.c \
 	$(SRC_DIR)/os/src/mem/simple_alloc.c \
+	$(SRC_DIR)/os/src/lists.c \
 	$(SRC_DIR)/os/src/os_$(ARCH).c \
 	$(CFG_DIR)/os/os_cfg.c \
