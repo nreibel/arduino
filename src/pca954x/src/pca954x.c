@@ -9,8 +9,8 @@
  * Private constants
  */
 
-#define BIT_ENABLE 2
-#define MSK_CH_SEL 0x3
+#define PCA9544_BIT_EN     2
+#define PCA9544_MSK_CH_SEL 0x3
 
 /*
  * Private functions prototypes
@@ -18,7 +18,7 @@
 
 static int read(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length);
 static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, unsigned int length);
-static int select_channel(pca954x_t self, pca954x_bus_t bus);
+static int select_channel(pca9544_t self, pca954x_bus_t bus);
 
 /*
  * Private data
@@ -37,14 +37,14 @@ static struct i2c_driver_prv_s pca954x_i2c_drv = {
 
 #if OS_MALLOC
 
-pca954x_t pca954x_create(i2c_bus_t parent, uint8_t addr, unsigned int nbr_of_channels)
+pca9544_t pca9544_create(i2c_bus_t parent, uint8_t addr)
 {
-    pca954x_t self = os_malloc(sizeof(*self));
+    pca9544_t self = os_malloc(sizeof(*self));
 
     if (self == NULL_PTR)
         goto exit;
 
-    if (pca954x_init(self, parent, addr, nbr_of_channels) < 0)
+    if (pca9544_init(self, parent, addr) < 0)
         goto cleanup;
 
     return self;
@@ -56,12 +56,7 @@ pca954x_t pca954x_create(i2c_bus_t parent, uint8_t addr, unsigned int nbr_of_cha
         return NULL_PTR;
 }
 
-pca954x_t pca9544_create(i2c_bus_t parent, uint8_t addr)
-{
-    return pca954x_create(parent, addr, 4);
-}
-
-void pca954x_destroy(pca954x_t self)
+void pca9544_destroy(pca9544_t self)
 {
     if (self != NULL_PTR)
     {
@@ -71,21 +66,15 @@ void pca954x_destroy(pca954x_t self)
 
 #endif // OS_MALLOC
 
-int pca9544_init(pca954x_t self, i2c_bus_t parent, uint8_t addr)
-{
-    return pca954x_init(self, parent, addr, 4);
-}
-
-int pca954x_init(pca954x_t self, i2c_bus_t parent, uint8_t addr, unsigned int nbr_of_channels)
+int pca9544_init(pca9544_t self, i2c_bus_t parent, uint8_t addr)
 {
     // Call superclass constructor
     int ret = i2c_device_init(&self->super, parent, addr);
     if (ret < 0) return ret;
 
-    self->nbr_of_channels = nbr_of_channels;
     self->current = NULL_PTR;
 
-    for (unsigned int i = 0 ; i < nbr_of_channels ; i++)
+    for (uint8_t i = 0 ; i < PCA9544_NBR_OF_CHANNELS ; i++)
     {
         // Init and register each mux channel
         i2c_bus_init(&self->bus[i].super, &pca954x_i2c_drv);
@@ -97,10 +86,12 @@ int pca954x_init(pca954x_t self, i2c_bus_t parent, uint8_t addr, unsigned int nb
     return I2C_OK;
 }
 
-i2c_bus_t pca954x_get_bus(pca954x_t self, unsigned int bus)
+i2c_bus_t pca9544_get_bus(pca9544_t self, unsigned int bus)
 {
-    if (bus >= self->nbr_of_channels) return NULL_PTR;
-    else return (i2c_bus_t) &self->bus[bus];
+    if (bus >= PCA9544_NBR_OF_CHANNELS)
+        return NULL_PTR;
+
+    return (i2c_bus_t) &self->bus[bus];
 }
 
 /*
@@ -110,7 +101,7 @@ i2c_bus_t pca954x_get_bus(pca954x_t self, unsigned int bus)
 static int read(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length)
 {
     pca954x_bus_t ch = (pca954x_bus_t) self;
-    pca954x_t dev = ch->dev;
+    pca9544_t dev = ch->dev;
     i2c_bus_t bus = dev->super.bus;
 
     if (dev->current != ch)
@@ -125,7 +116,7 @@ static int read(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned 
 static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, unsigned int length)
 {
     pca954x_bus_t ch = (pca954x_bus_t) self;
-    pca954x_t dev = ch->dev;
+    pca9544_t dev = ch->dev;
     i2c_bus_t bus = dev->super.bus;
 
     if (dev->current != ch)
@@ -137,9 +128,9 @@ static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, un
     return i2c_bus_write(bus, addr, reg, data, length);
 }
 
-static int select_channel(pca954x_t self, pca954x_bus_t bus)
+static int select_channel(pca9544_t self, pca954x_bus_t bus)
 {
-    uint8_t reg = BIT(BIT_ENABLE) | MASK(bus->channel_id, MSK_CH_SEL);
+    uint8_t reg = BIT(PCA9544_BIT_EN) | MASK(bus->channel_id, PCA9544_MSK_CH_SEL);
     int retval = i2c_device_write_bytes(&self->super, reg, NULL_PTR, 0);
     if (retval < 0)
     {

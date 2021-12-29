@@ -11,7 +11,7 @@ extern const malloc_drv_t malloc_drv;
  * Public functions
  */
 
-void * os_calloc(unsigned int sz)
+void* os_calloc(unsigned int sz)
 {
     void *ptr = malloc_drv->malloc(sz);
     if (ptr != NULL_PTR) memset(ptr, 0, sz);
