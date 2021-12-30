@@ -10,7 +10,6 @@
  */
 
 static void* my_malloc(unsigned int sz);
-static void my_free(void *ptr);
 static unsigned int my_get_total();
 static unsigned int my_get_free();
 static unsigned int my_get_used();
@@ -21,7 +20,7 @@ static unsigned int my_get_used();
 
 static struct malloc_drv_s drv = {
     .malloc = my_malloc,
-    .free = my_free,
+    .free = NULL_PTR,
     .get_free = my_get_free,
     .get_used = my_get_used,
     .get_total = my_get_total
@@ -48,11 +47,6 @@ static void* my_malloc(unsigned int sz)
     void *ptr = &heap[idx];
     idx += sz;
     return ptr;
-}
-
-static void my_free(void * ptr)
-{
-    UNUSED(ptr);
 }
 
 static unsigned int my_get_used()
