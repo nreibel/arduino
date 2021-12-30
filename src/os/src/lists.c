@@ -13,15 +13,7 @@ struct linked_list_prv_s {
 
 linked_list_t linked_list_create()
 {
-    linked_list_t self = os_malloc(sizeof(*self));
-
-    if (self != NULL_PTR)
-    {
-        self->data = NULL_PTR;
-        self->next = NULL_PTR;
-    }
-
-    return self;
+    return os_calloc(sizeof(struct linked_list_prv_s));
 }
 
 linked_list_t linked_list_append(linked_list_t self, void *data)
