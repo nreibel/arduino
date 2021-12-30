@@ -8,6 +8,7 @@
 
 typedef struct malloc_drv_s {
     void*        (*malloc)    (unsigned int sz);
+    void*        (*calloc)    (unsigned int sz);
     void         (*free)      (void *ptr);
     unsigned int (*get_free)  (void);
     unsigned int (*get_used)  (void);

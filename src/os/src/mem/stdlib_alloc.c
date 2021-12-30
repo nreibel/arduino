@@ -11,6 +11,7 @@
  */
 
 static void* my_malloc(unsigned int sz);
+static void* my_calloc(unsigned int sz);
 static void my_free(void *ptr);
 
 /*
@@ -19,6 +20,7 @@ static void my_free(void *ptr);
 
 static struct malloc_drv_s drv = {
     .malloc = my_malloc,
+    .calloc = my_calloc,
     .free = my_free,
     .get_free = NULL_PTR,
     .get_used = NULL_PTR,
@@ -38,6 +40,11 @@ const malloc_drv_t malloc_drv = &drv;
 static void* my_malloc(unsigned int sz)
 {
     return malloc(sz);
+}
+
+static void* my_calloc(unsigned int sz)
+{
+    return calloc(sz, 1);
 }
 
 static void my_free(void * ptr)

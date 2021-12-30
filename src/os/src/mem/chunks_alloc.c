@@ -27,6 +27,7 @@ static unsigned int my_get_used();
 
 static struct malloc_drv_s drv = {
     .malloc = my_malloc,
+    .calloc = NULL_PTR,
     .free = my_free,
     .get_free = my_get_free,
     .get_used = my_get_used,

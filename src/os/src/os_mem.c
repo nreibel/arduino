@@ -13,8 +13,20 @@ extern const malloc_drv_t malloc_drv;
 
 void* os_calloc(unsigned int sz)
 {
-    void *ptr = malloc_drv->malloc(sz);
-    if (ptr != NULL_PTR) memset(ptr, 0, sz);
+    void *ptr = NULL_PTR;
+
+    if (malloc_drv->calloc != NULL_PTR)
+    {
+        // Driver implementation
+        ptr = malloc_drv->calloc(sz);
+    }
+    else if (malloc_drv->malloc != NULL_PTR)
+    {
+        // Fallback to malloc + memset
+        ptr = malloc_drv->malloc(sz);
+        if (ptr != NULL_PTR) memset(ptr, 0, sz);
+    }
+
     return ptr;
 }
 
