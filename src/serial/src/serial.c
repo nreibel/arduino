@@ -39,14 +39,18 @@ static int serial_ll_read_byte(serial_bus_t bus, uint8_t *byte);
  * Private data
  */
 
+#if SERIAL_ASYNC_RX != OFF || SERIAL_ASYNC_TX != OFF
 static struct serial_prv_s instances[NUMBER_OF_SERIAL_BUSES];
+#endif // SERIAL_ASYNC_RX != OFF || SERIAL_ASYNC_TX != OFF
 
 /*
  * Public functions
  */
 
-void serial_bus_init(serial_bus_t bus, uint32_t baudrate)
+int serial_bus_init(serial_bus_t bus, uint32_t baudrate)
 {
+    if (bus != SERIAL_BUS_0)
+        return -1;
 
 #if SERIAL_ASYNC_RX != OFF
     instances[bus].rx_cbk = NULL_PTR;
@@ -80,6 +84,8 @@ void serial_bus_init(serial_bus_t bus, uint32_t baudrate)
 #endif
 
     UCSR0B = ucsrb;
+
+    return 0;
 }
 
 #if SERIAL_ASYNC_RX != OFF
