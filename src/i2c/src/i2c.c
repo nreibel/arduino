@@ -25,6 +25,11 @@ i2c_bus_t i2c_get_bus(unsigned int idx)
     return linked_list_get(i2c_bus_list, idx);
 }
 
+unsigned int i2c_get_bus_count()
+{
+    return linked_list_size(i2c_bus_list);
+}
+
 /*
  * I2C Bus
  */

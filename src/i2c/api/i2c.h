@@ -34,6 +34,7 @@ char* i2c_get_error_string(i2c_error_t errcode);
 
 int i2c_register_bus(i2c_bus_t bus);
 i2c_bus_t i2c_get_bus(unsigned int id);
+unsigned int i2c_get_bus_count();
 
 int i2c_bus_init(i2c_bus_t self, i2c_driver_t drv);
 int i2c_bus_read(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length);
