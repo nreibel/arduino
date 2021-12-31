@@ -3,6 +3,7 @@
 #if OS_MALLOC == OS_MALLOC_STDLIB
 
 #include "os_mem.h"
+#include "types.h"
 #include "string.h"
 #include "stdlib.h"
 
@@ -37,6 +38,13 @@ static struct malloc_drv_s drv = {
 const malloc_drv_t malloc_drv = &drv;
 
 /*
+ * Linker variables
+ */
+
+extern const int __heap_start;
+extern const int *__brkval;
+
+/*
  * Private functions
  */
 
@@ -57,23 +65,20 @@ static void my_free(void * ptr)
 
 static unsigned int my_get_used()
 {
-    extern int __heap_start, *__brkval;
-    return (unsigned int) __brkval - (unsigned int) &__heap_start;
+    return ADDR(*__brkval) - ADDR(__heap_start);
 }
 
 static unsigned int my_get_free()
 {
-    extern int __heap_start, *__brkval;
     uint8_t v, *stack_end = &v;
-    int *heap_end = __brkval == 0 ? &__heap_start : __brkval;
-    return (unsigned int) stack_end - (unsigned int) heap_end;
+    unsigned int heap_end = __brkval == NULL_PTR ? ADDR(__heap_start) : ADDR(*__brkval);
+    return (unsigned int) stack_end - heap_end;
 }
 
 static unsigned int my_get_total()
 {
-    extern int __heap_start;
     uint8_t v, *stack_end = &v;
-    return (unsigned int) stack_end - (unsigned int) &__heap_start;
+    return (unsigned int) stack_end - ADDR(__heap_start);
 }
 
 #endif // OS_MALLOC == OS_MALLOC_GCC

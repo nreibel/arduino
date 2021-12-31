@@ -39,6 +39,7 @@ typedef const __flash char flstr_t[];
 
 #define TYPECAST(var, type) ((type) (var))
 #define PTR(addr, type)     TYPECAST(addr, type*)
+#define ADDR(var)           TYPECAST(&var, unsigned int)
 #define UINT8_PTR(var)      PTR(var, uint8_t)
 #define UINT16_PTR(var)     PTR(var, uint16_t)
 #define UINT32_PTR(var)     PTR(var, uint32_t)
