@@ -29,10 +29,17 @@ const __flash char STR_ERROR_ICP_INIT[] = "INIT ICP FAILED";
 const __flash char STR_ERROR_TIMER_INIT[] = "INIT TIMER FAILED";
 const __flash char STR_ERROR_TIMER_START[] = "START TIMER FAILED";
 
+void serial_rx_cbk(serial_bus_t bus, const char *buffer, int length)
+{
+    UNUSED(length);
+    serial_println(bus, buffer);
+}
+
 // App entry point
 void app_init()
 {
     serial_bus_init(SERIAL_BUS_0, 19200);
+    serial_set_rx_callback(SERIAL_BUS_0, serial_rx_cbk);
 
     timer_config_t timer_cfg = {
         .mode = TIMER_MODE_FAST_PWM,
@@ -69,7 +76,7 @@ void app_init()
 
 #if OS_MALLOC
     char *buf = os_malloc(64);
-    snprintf(buf, 64, "Heap usage : %u/%u", os_get_used_heap(), os_get_total_heap());
+    snprintf(buf, 64, "Heap usage : %u used, %u free, %u total", os_get_used_heap(), os_get_free_heap(), os_get_total_heap());
     serial_println(SERIAL_BUS_0, buf);
 #endif
 
