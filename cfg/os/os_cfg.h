@@ -31,6 +31,8 @@ typedef uint16_t time_t;
 
 #define NUMBER_OF_BACKGROUND_TASKS 0
 
+#define OS_ENABLE_PRINTF 1
+
 typedef enum {
     TIMER_INTERVAL,
     NUMBER_OF_OS_TIMERS

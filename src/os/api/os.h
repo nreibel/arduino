@@ -4,6 +4,10 @@
 #include "types.h"
 #include "os_cfg.h"
 
+#if OS_ENABLE_PRINTF == 1
+#include "stdio.h"
+#endif // OS_ENABLE_PRINTF == 1
+
 typedef enum {
     OS_WATCHDOG_15MS,
     OS_WATCHDOG_30MS,
@@ -46,5 +50,10 @@ void os_watchdog_trigger();
 
 // OS Functions
 void os_reset();
+
+#if OS_ENABLE_PRINTF == 1
+int os_putc(char character, FILE *stream);
+int os_getc(FILE *stream);
+#endif // OS_ENABLE_PRINTF == 1
 
 #endif /* __OS_API_H__ */

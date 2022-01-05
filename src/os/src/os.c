@@ -4,6 +4,10 @@
 #include "types.h"
 #include "string.h"
 
+#if OS_ENABLE_PRINTF == 1
+#include "stdio.h"
+#endif // OS_ENABLE_PRINTF == 1
+
 /*
  * Extern functions prototypes
  */
@@ -126,10 +130,32 @@ static int os_background_tasks()
 }
 #endif
 
+#if OS_ENABLE_PRINTF == 1
+__attribute__((weak)) int os_putc(char character, FILE *stream)
+{
+    UNUSED(stream);
+    UNUSED(character);
+    return EOF;
+}
+
+__attribute__((weak)) int os_getc(FILE *stream)
+{
+    UNUSED(stream);
+    return EOF;
+}
+
+static FILE os_stdout = FDEV_SETUP_STREAM(os_putc, os_getc, _FDEV_SETUP_RW);
+#endif // OS_ENABLE_PRINTF == 1
+
+
 int main(void)
 {
     /* Perform project-specific initialization */
     os_init();
+
+#if OS_ENABLE_PRINTF == 1
+    stdout = &os_stdout;
+#endif // OS_ENABLE_PRINTF == 1
 
     // Enable interrupts
     os_interrupts_enable();
