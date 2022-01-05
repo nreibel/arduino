@@ -158,9 +158,8 @@ void serial_write_async(serial_bus_t bus, const void *buffer, int length)
 
 int serial_write_byte(serial_bus_t bus, uint8_t chr)
 {
-    int ret = serial_ll_write_byte(bus, chr);
     serial_ll_wait_for_tx_ready(bus);
-    return ret;
+    return serial_ll_write_byte(bus, chr);
 }
 
 int serial_write_bytes(serial_bus_t bus, const void *buffer, int length)
