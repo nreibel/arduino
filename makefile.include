@@ -59,6 +59,7 @@ MAP = $(OUT)/$(APP).map
 
 # Compilation options and flags
 WARNINGS += all extra undef
+DEFINES +=
 CFLAGS += -O2 -g0 -mmcu=$(ARCH) -ffunction-sections -fdata-sections
 LDFLAGS += -gc-sections --relax -Map,$(MAP)
 
@@ -68,6 +69,7 @@ w=-Wl,
 l=-l
 I=-I
 W=-W
+D=-D
 
 .PHONY: clean prepare all upload monitor
 
@@ -103,4 +105,4 @@ $(ELF): prepare $(OBJECTS)
 $(OBJ)/%.o: %.c
 	@echo "Building $<"
 	@mkdir -p "$(@D)"
-	@$(CC) $(addprefix $I,$(INCLUDES)) $(addprefix $W,$(WARNINGS)) $(CFLAGS) -c -o "$@" "$<"
+	@$(CC) $(addprefix $I,$(INCLUDES)) $(addprefix $D,$(DEFINES)) $(addprefix $W,$(WARNINGS)) $(CFLAGS) -c -o "$@" "$<"
