@@ -6,6 +6,8 @@
  * This implementation is for educationnal purposes only
  */
 
+#if OS_MALLOC
+
 struct linked_list_prv_s {
     void *data;
     linked_list_t next;
@@ -61,3 +63,5 @@ unsigned int linked_list_size(linked_list_t self)
     else return 1;
 
 }
+
+#endif // OS_MALLOC

@@ -4,6 +4,8 @@
 #include "types.h"
 #include "lists.h"
 
+#if OS_MALLOC
+
 static linked_list_t i2c_bus_list = NULL_PTR;
 
 int i2c_register_bus(i2c_bus_t bus)
@@ -29,6 +31,37 @@ unsigned int i2c_get_bus_count()
 {
     return linked_list_size(i2c_bus_list);
 }
+
+#else
+
+#define I2C_MAX_BUS_COUNT 8
+
+static i2c_bus_t i2c_bus_list[I2C_MAX_BUS_COUNT];
+static uint8_t i2c_idx = 0;
+
+int i2c_register_bus(i2c_bus_t bus)
+{
+    if (i2c_idx >= I2C_MAX_BUS_COUNT)
+        return -I2C_FAIL;
+
+    i2c_bus_list[i2c_idx++] = bus;
+
+    return I2C_OK;
+}
+
+i2c_bus_t i2c_get_bus(unsigned int idx)
+{
+    if (i2c_idx >= 8)
+        return NULL_PTR;
+
+    return i2c_bus_list[idx];
+}
+
+unsigned int i2c_get_bus_count()
+{
+    return i2c_idx;
+}
+#endif // OS_MALLOC
 
 /*
  * I2C Bus
