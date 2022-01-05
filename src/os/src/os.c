@@ -28,14 +28,14 @@ static int os_background_tasks();
 static struct {
     time_t value;
     bool running;
-} timers[NUMBER_OF_OS_TIMERS] = {0};
+} timers[NUMBER_OF_OS_TIMERS];
 
 static struct {
     time_t interval;
     time_t last;
     callback_t callback;
     void* param;
-} tasks[NUMBER_OF_OS_TASKS] = {0};
+} tasks[NUMBER_OF_OS_TASKS];
 
 /*
  * Public functions
