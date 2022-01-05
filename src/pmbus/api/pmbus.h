@@ -55,6 +55,7 @@ struct blackbox_data_s {
 int pmbus_init(pmbus_t self, i2c_bus_t bus, uint8_t addr);
 int pmbus_read_mfr_model(pmbus_t self, char *buffer);
 int pmbus_read_temperature(pmbus_t self, double *temperature);
+int pmbus_read_fanspeed(pmbus_t self, unsigned int *fanspeed);
 int pmbus_read_vin(pmbus_t self, double *vin);
 int pmbus_read_iin(pmbus_t self, double *vin);
 int pmbus_read_pin(pmbus_t self, double *vin);
@@ -63,6 +64,21 @@ int pmbus_read_iout(pmbus_t self, double *vout);
 int pmbus_read_blackbox(pmbus_t self, struct blackbox_data_s * data);
 int pmbus_vout_decode(pmbus_t self, uint16_t raw, double *value);
 
+int pmbus_read_status_word(pmbus_t self, uint16_t *value);
+int pmbus_read_status_vout(pmbus_t self, uint16_t *value);
+int pmbus_read_status_iout(pmbus_t self, uint8_t *value);
+int pmbus_read_status_input(pmbus_t self, uint8_t *value);
+int pmbus_read_status_temperature(pmbus_t self, uint8_t *value);
+int pmbus_read_status_cml(pmbus_t self, uint8_t *value);
+int pmbus_read_status_fans_1_2(pmbus_t self, uint8_t *value);
+
 double pmbus_linear11_decode(uint16_t data);
+
+// Manufacturer specific
+
+int pmbus_gw_read_page(pmbus_t self, unsigned int *page);
+int pmbus_gw_write_page(pmbus_t self, const unsigned int page);
+int pmbus_gw_read_pos_total(pmbus_t self, long int *pos);
+int pmbus_gw_read_pos_last(pmbus_t self, long int *pos);
 
 #endif /* __PMBUS_API_H__ */

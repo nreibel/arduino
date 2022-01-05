@@ -8,6 +8,16 @@
  */
 
 #define REG_VOUT_MODE           0x20
+
+#define REG_STATUS_WORD         0x79
+#define REG_STATUS_VOUT         0x7A
+#define REG_STATUS_IOUT         0x7B
+#define REG_STATUS_INPUT        0x7C
+#define REG_STATUS_TEMPERATURE  0x7D
+#define REG_STATUS_CML          0x7E
+#define REG_STATUS_MFR_SPEC     0x80
+#define REG_STATUS_FANS_1_2     0x81
+
 #define REG_READ_TEMPERATURE_1  0x8D
 #define REG_READ_TEMPERATURE_2  0x8E
 #define REG_READ_TEMPERATURE_3  0x8F
@@ -15,6 +25,8 @@
 #define REG_READ_IIN            0x89
 #define REG_READ_VOUT           0x8B
 #define REG_READ_IOUT           0x8C
+#define REG_READ_FAN_SPEED_1    0x90
+#define REG_READ_FAN_SPEED_2    0x91
 #define REG_READ_POUT           0x96
 #define REG_READ_PIN            0x97
 #define REG_PMBUS_REVISION      0x98
@@ -22,6 +34,9 @@
 #define REG_MFR_BLACKBOX        0xDC
 #define REG_MFR_BLACKBOX_CONFIG 0xDF
 
+#define MFR_PAGE      0xE4
+#define MFR_POS_TOTAL 0xE5
+#define MFR_POS_LAST  0xE6
 /*
  * Private functions declaration
  */
@@ -34,9 +49,52 @@ static int twos_complement(unsigned int n, unsigned int b);
  * Public methods
  */
 
+int pmbus_gw_read_page(pmbus_t self, unsigned int *page)
+{
+    uint8_t data = 0;
+    int res = i2c_device_read_byte(&self->dev, MFR_PAGE, &data);
+    if (res < 0) return res;
+
+    *page = data;
+    return 0;
+}
+
+int pmbus_gw_write_page(pmbus_t self, const unsigned int page)
+{
+    uint8_t data = page;
+    return i2c_device_write_byte(&self->dev, MFR_PAGE, data);
+}
+
+int pmbus_gw_read_pos_total(pmbus_t self, long int *pos)
+{
+    uint32_t data;
+    int res = i2c_device_read_bytes(&self->dev, MFR_POS_TOTAL, &data, 4);
+    if (res < 0) return res;
+    *pos = data;
+    return 0;
+}
+
+int pmbus_gw_read_pos_last(pmbus_t self, long int *pos)
+{
+    uint32_t data = 0;
+    int res = i2c_device_read_bytes(&self->dev, MFR_POS_LAST, &data, 4);
+    if (res < 0) return res;
+    *pos = data;
+    return 0;
+}
+
 int pmbus_init(pmbus_t self, i2c_bus_t bus, uint8_t addr)
 {
     return i2c_device_init(&self->dev, bus, addr);
+}
+
+int pmbus_read_fanspeed(pmbus_t self, unsigned int *fanspeed)
+{
+    uint16_t data = 0;
+    int res = i2c_device_read_bytes(&self->dev, REG_READ_FAN_SPEED_1, &data, 2);
+    if (res < 0) return res;
+    *fanspeed = data;
+    return 0;
 }
 
 int pmbus_read_mfr_model(pmbus_t self, char *buffer)
@@ -86,6 +144,42 @@ int pmbus_read_vout(pmbus_t self, double *vout)
 int pmbus_read_blackbox(pmbus_t self, struct blackbox_data_s * data)
 {
     return i2c_device_read_bytes(&self->dev, REG_MFR_BLACKBOX, data, sizeof(*data));
+}
+
+
+int pmbus_read_status_word(pmbus_t self, uint16_t *value)
+{
+    return i2c_device_read_bytes(&self->dev, REG_STATUS_WORD, value, 2);
+}
+
+int pmbus_read_status_vout(pmbus_t self, uint16_t *value)
+{
+    return i2c_device_read_bytes(&self->dev, REG_STATUS_VOUT, value, 2);
+}
+
+int pmbus_read_status_iout(pmbus_t self, uint8_t *value)
+{
+    return i2c_device_read_byte(&self->dev, REG_STATUS_IOUT, value);
+}
+
+int pmbus_read_status_input(pmbus_t self, uint8_t *value)
+{
+    return i2c_device_read_byte(&self->dev, REG_STATUS_INPUT, value);
+}
+
+int pmbus_read_status_temperature(pmbus_t self, uint8_t *value)
+{
+    return i2c_device_read_byte(&self->dev, REG_STATUS_TEMPERATURE, value);
+}
+
+int pmbus_read_status_cml(pmbus_t self, uint8_t *value)
+{
+    return i2c_device_read_byte(&self->dev, REG_STATUS_CML, value);
+}
+
+int pmbus_read_status_fans_1_2(pmbus_t self, uint8_t *value)
+{
+    return i2c_device_read_byte(&self->dev, REG_STATUS_FANS_1_2, value);
 }
 
 double pmbus_linear11_decode(uint16_t data)
