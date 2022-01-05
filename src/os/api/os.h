@@ -49,6 +49,7 @@ int os_watchdog_enable(os_watchdog_t wd);
 void os_watchdog_trigger();
 
 // OS Functions
+void HALT();
 void os_reset();
 
 #if OS_ENABLE_PRINTF == 1

@@ -34,9 +34,6 @@ typedef const __flash char flstr_t[];
 #define ON  1
 #define OFF 0
 
-// Debug
-#define HALT while(1)
-
 #define TYPECAST(var, type) ((type) (var))
 #define PTR(addr, type)     TYPECAST(addr, type*)
 #define ADDR(var)           TYPECAST(&var, unsigned int)

@@ -29,11 +29,27 @@ void os_interrupts_enable()
     sei();
 }
 
+void HALT()
+{
+    // Disable interrupts, watchdog, and all peripherals
+    cli();
+    wdt_disable();
+    PRR = 0xFF;
+
+    // Power down
+    for(;;)
+    {
+        set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+        sleep_enable();
+        sleep_cpu();
+    }
+}
+
 void os_reset()
 {
-  cli(); // disable interrupts
+  cli();                 // disable interrupts
   wdt_enable(WDTO_15MS); // enable watchdog
-  HALT; // wait for watchdog to reset processor
+  for(;;){}              // wait for watchdog to reset processor
 }
 
 void os_watchdog_trigger()
@@ -94,8 +110,8 @@ void os_init()
     };
 
     if (timer_init(TIMER_2, &timer_cfg) < 0)
-        HALT;
+        HALT();
 
     if (timer_start(TIMER_2) < 0)
-        HALT;
+        HALT();
 }
