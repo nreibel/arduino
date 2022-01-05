@@ -1,0 +1,5 @@
+INCLUDES += \
+	$(SRC_DIR)/pmbus/api \
+
+SOURCES += \
+	$(SRC_DIR)/pmbus/src/pmbus.c \
