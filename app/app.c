@@ -19,6 +19,7 @@
 
 const __flash char STR_READY[] = "Ready!\r\n";
 const __flash char STR_ERROR[] = "Error %d\r\n";
+const __flash char STR_OVERFLOW[] = "Overflow\r\n";
 const __flash char STR_NO_INPUT[] = "No input\r\n";
 const __flash char STR_FREQUENCY[] = "Frequency = %uHz\r\n";
 const __flash char STR_DUTY_CYCLE[] = "Duty cycle = %u\r\n";
@@ -67,6 +68,7 @@ void app_init()
         HALT();
     }
 
+    /* Use non-blocking mode */
     if (icp_init(ICP1, ICP_PRESCALER_256, TRUE) < 0)
     {
         printf_P(STR_ERROR_ICP_INIT);
@@ -108,8 +110,11 @@ int task_main(void* data)
             break;
 
         case -ICP_ERROR_NO_DATA:
-        case -ICP_ERROR_OVERFLOW:
             printf_P(STR_NO_INPUT);
+            break;
+
+        case -ICP_ERROR_OVERFLOW:
+            printf_P(STR_OVERFLOW);
             break;
 
         default:
@@ -125,8 +130,11 @@ int task_main(void* data)
             break;
 
         case -ICP_ERROR_NO_DATA:
-        case -ICP_ERROR_OVERFLOW:
             printf_P(STR_NO_INPUT);
+            break;
+
+        case -ICP_ERROR_OVERFLOW:
+            printf_P(STR_OVERFLOW);
             break;
 
         default:
