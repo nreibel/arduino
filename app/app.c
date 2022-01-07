@@ -17,22 +17,27 @@
  * Shoud read 200Hz and 127 (50%) duty cycle
  */
 
-#define BUFFER_SZ 64
-char buffer[BUFFER_SZ];
-
-const __flash char STR_READY[] = "Ready!";
-const __flash char STR_ERROR[] = "Error %d";
-const __flash char STR_NO_INPUT[] = "No input";
-const __flash char STR_FREQUENCY[] = "Frequency = %uHz";
-const __flash char STR_DUTY_CYCLE[] = "Duty cycle = %u";
-const __flash char STR_ERROR_ICP_INIT[] = "INIT ICP FAILED";
-const __flash char STR_ERROR_TIMER_INIT[] = "INIT TIMER FAILED";
-const __flash char STR_ERROR_TIMER_START[] = "START TIMER FAILED";
+const __flash char STR_READY[] = "Ready!\r\n";
+const __flash char STR_ERROR[] = "Error %d\r\n";
+const __flash char STR_NO_INPUT[] = "No input\r\n";
+const __flash char STR_FREQUENCY[] = "Frequency = %uHz\r\n";
+const __flash char STR_DUTY_CYCLE[] = "Duty cycle = %u\r\n";
+const __flash char STR_ERROR_ICP_INIT[] = "INIT ICP FAILED\r\n";
+const __flash char STR_ERROR_TIMER_INIT[] = "INIT TIMER FAILED\r\n";
+const __flash char STR_ERROR_TIMER_START[] = "START TIMER FAILED\r\n";
 
 void serial_rx_cbk(serial_bus_t bus, const char *buffer, int length)
 {
+    UNUSED(bus);
     UNUSED(length);
-    serial_println(bus, buffer);
+    printf(buffer);
+}
+
+int os_putc(char chr, FILE *stream)
+{
+    UNUSED(stream);
+    if (serial_write_byte(SERIAL_BUS_0, chr) != 1) return EOF;
+    else return chr;
 }
 
 // App entry point
@@ -52,20 +57,20 @@ void app_init()
 
     if (timer_init(TIMER_0, &timer_cfg) < 0)
     {
-        serial_println_P(SERIAL_BUS_0, STR_ERROR_TIMER_INIT);
-        HALT;
+        printf_P(STR_ERROR_TIMER_INIT);
+        HALT();
     }
 
     if (timer_start(TIMER_0) < 0)
     {
-        serial_println_P(SERIAL_BUS_0, STR_ERROR_TIMER_START);
-        HALT;
+        printf_P(STR_ERROR_TIMER_START);
+        HALT();
     }
 
     if (icp_init(ICP1, ICP_PRESCALER_256, TRUE) < 0)
     {
-        serial_println_P(SERIAL_BUS_0, STR_ERROR_ICP_INIT);
-        HALT;
+        printf_P(STR_ERROR_ICP_INIT);
+        HALT();
     }
 
     // Init tasks
@@ -76,11 +81,12 @@ void app_init()
 
 #if OS_MALLOC
     char *buf = os_malloc(64);
-    snprintf(buf, 64, "Heap usage : %u used, %u free, %u total", os_get_used_heap(), os_get_free_heap(), os_get_total_heap());
-    serial_println(SERIAL_BUS_0, buf);
+    UNUSED(buf);
+
+    printf("Heap usage : %u used, %u free, %u total\r\n", os_get_used_heap(), os_get_free_heap(), os_get_total_heap());
 #endif
 
-    serial_println_P(SERIAL_BUS_0, STR_READY);
+    printf_P(STR_READY);
 }
 
 // Main task
@@ -98,18 +104,16 @@ int task_main(void* data)
     switch(ret)
     {
         case ICP_OK:
-            snprintf_P(buffer, BUFFER_SZ, STR_DUTY_CYCLE, duty_cycle);
-            serial_println(SERIAL_BUS_0, buffer);
+            printf_P(STR_DUTY_CYCLE, duty_cycle);
             break;
 
         case -ICP_ERROR_NO_DATA:
         case -ICP_ERROR_OVERFLOW:
-            serial_println_P(SERIAL_BUS_0, STR_NO_INPUT);
+            printf_P(STR_NO_INPUT);
             break;
 
         default:
-            snprintf_P(buffer, BUFFER_SZ, STR_ERROR, ret);
-            serial_println(SERIAL_BUS_0, buffer);
+            printf_P(STR_ERROR, ret);
             break;
     }
 
@@ -117,18 +121,16 @@ int task_main(void* data)
     switch(ret)
     {
         case ICP_OK:
-            snprintf_P(buffer, BUFFER_SZ, STR_FREQUENCY, freq);
-            serial_println(SERIAL_BUS_0, buffer);
+            printf_P(STR_FREQUENCY, freq);
             break;
 
         case -ICP_ERROR_NO_DATA:
         case -ICP_ERROR_OVERFLOW:
-            serial_println_P(SERIAL_BUS_0, STR_NO_INPUT);
+            printf_P(STR_NO_INPUT);
             break;
 
         default:
-            snprintf_P(buffer, BUFFER_SZ, STR_ERROR, ret);
-            serial_println(SERIAL_BUS_0, buffer);
+            printf_P(STR_ERROR, ret);
             break;
     }
 
