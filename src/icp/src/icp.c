@@ -23,7 +23,6 @@ static struct {
  */
 
 static uint16_t icp_ll_capture_edge(bool rising);
-static void icp_ll_reset_counter();
 static bool icp_ll_is_ovf();
 static void icp_ll_clear_ovf_int();
 
@@ -38,6 +37,7 @@ ISR(TIMER1_CAPT_vect)
         // Rising edge
         TCNT1 = 0;
         cfg[ICP1].p = ICR1;
+        cfg[ICP1].ovf = FALSE;
     }
     else
     {
@@ -46,8 +46,6 @@ ISR(TIMER1_CAPT_vect)
     }
 
     TOGGLE_BIT(TCCR1B, ICES1);
-
-    cfg[ICP1].ovf = FALSE;
 }
 
 ISR(TIMER1_OVF_vect)
@@ -112,7 +110,6 @@ int icp_init(icp_t self, icp_prescaler_t prescaler, bool useInterrupts)
                 cfg[self].interrupts = FALSE;
             }
             TCNT1 = 0;
-            ICR1 = 0;
             os_interrupts_enable();
             break;
 
@@ -125,7 +122,7 @@ int icp_init(icp_t self, icp_prescaler_t prescaler, bool useInterrupts)
 
 int icp_get_frequency(icp_t self, uint16_t * frequency)
 {
-    uint16_t p = 0;
+    uint16_t p;
 
     if (self != ICP1)
         return -ICP_ERROR_INSTANCE;
@@ -133,12 +130,14 @@ int icp_get_frequency(icp_t self, uint16_t * frequency)
     if (!cfg[self].interrupts)
     {
         icp_ll_clear_ovf_int();
-        icp_ll_capture_edge(TRUE);
-        icp_ll_reset_counter();
-        p = icp_ll_capture_edge(TRUE);
+
+        uint16_t p1 = icp_ll_capture_edge(TRUE);
+        uint16_t p2 = icp_ll_capture_edge(TRUE);
 
         if (icp_ll_is_ovf() != FALSE)
             return -ICP_ERROR_OVERFLOW;
+
+        p = p2 - p1;
     }
     else
     {
@@ -166,13 +165,16 @@ int icp_get_duty_cycle(icp_t self, uint8_t * duty_cycle)
     if (!cfg[self].interrupts)
     {
         icp_ll_clear_ovf_int();
-        icp_ll_capture_edge(TRUE);
-        icp_ll_reset_counter();
-        th = icp_ll_capture_edge(FALSE);
-        p = icp_ll_capture_edge(TRUE);
+
+        uint16_t p1 = icp_ll_capture_edge(TRUE);
+        uint16_t p2 = icp_ll_capture_edge(FALSE);
+        uint16_t p3 = icp_ll_capture_edge(TRUE);
 
         if (icp_ll_is_ovf() != FALSE)
             return -ICP_ERROR_OVERFLOW;
+
+        th = p2 - p1;
+        p = p3 - p1;
     }
     else
     {
@@ -202,11 +204,6 @@ static uint16_t icp_ll_capture_edge(bool rising)
     SET_BIT(TIFR1, ICF1);
     while (!IS_SET_BIT(TIFR1, ICF1));
     return ICR1;
-}
-
-static void icp_ll_reset_counter()
-{
-    TCNT1 = 0;
 }
 
 static bool icp_ll_is_ovf()
