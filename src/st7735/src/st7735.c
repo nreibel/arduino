@@ -11,14 +11,18 @@ static void st7735_data(st7735_t *self, uint8_t data);
 static void st7735_color(st7735_t *self, st7735_color_t color);
 static void st7735_set_draw_window(st7735_t *self, int x1, int y1, int x2, int y2);
 
-void st7735_init_device(st7735_t *self, gpio_t *cs, gpio_t *dc, int w, int h)
+void st7735_init_device(st7735_t *self, gpio_t cs, gpio_t dc, int w, int h)
 {
     spi_device_init(&self->spi_device, cs, SPI_CLOCK_DIV_2, SPI_MODE_0);
     spi_set_transaction_mode_enabled(&self->spi_device, TRUE);
     spi_enable_slave(&self->spi_device);
 
+    gpio_set_data_direction(dc, GPIO_OUTPUT_ACTIVE_LOW);
+
     self->width = w;
     self->height = h;
+    self->offset_x = 0;
+    self->offset_y = 0;
     self->dc = dc;
     self->background_color = ST7735_COLOR_BLACK;
 
@@ -34,7 +38,7 @@ void st7735_init_device(st7735_t *self, gpio_t *cs, gpio_t *dc, int w, int h)
 
     // Screen orientation
     st7735_command(self, ST7735_MADCTL);
-    st7735_data(self, 0);
+    st7735_data(self, ST7735_ORIENTATION_PORTRAIT);
 
     st7735_command(self, ST7735_DISPON);
     spi_disable_slave(&self->spi_device);

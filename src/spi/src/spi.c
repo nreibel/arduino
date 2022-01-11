@@ -4,22 +4,22 @@
 
 void spi_init()
 {
-    gpio_t sck, mosi, miso;
-
     // Enable MISO, MOSI, SCK
-    gpio_init(&mosi, GPIO_PORT_B, 3, GPIO_OUTPUT_ACTIVE_HIGH);
-    gpio_init(&miso, GPIO_PORT_B, 4, GPIO_INPUT_HIGH_Z);
-    gpio_init(&sck, GPIO_PORT_B, 5, GPIO_OUTPUT_ACTIVE_HIGH);
+    gpio_set_data_direction(MOSI, GPIO_OUTPUT_ACTIVE_HIGH);
+    gpio_set_data_direction(MISO, GPIO_INPUT_HIGH_Z);
+    gpio_set_data_direction(SCK, GPIO_OUTPUT_ACTIVE_HIGH);
 
     spi_hal_enable();
 }
 
-void spi_device_init(spi_device_t *self, gpio_t *cs, spi_clock_t clk, spi_mode_t mode)
+void spi_device_init(spi_device_t *self, gpio_t cs, spi_clock_t clk, spi_mode_t mode)
 {
     self->cs = cs;
     self->clk = clk;
     self->mode = mode;
     self->transaction_mode = FALSE;
+
+    gpio_set_data_direction(cs, GPIO_OUTPUT_ACTIVE_LOW);
 }
 
 void spi_set_transaction_mode_enabled(spi_device_t *self, bool enabled)

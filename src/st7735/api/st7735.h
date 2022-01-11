@@ -13,7 +13,7 @@ typedef st7735_color_t (*ST7735_Renderer)(int x, int y, int w, int h, void* data
 typedef struct {
     spi_device_t spi_device;
     st7735_color_t background_color;
-    gpio_t *dc;
+    gpio_t dc;
     int width;
     int height;
     int offset_x;
@@ -27,7 +27,7 @@ typedef enum {
     ST7735_ORIENTATION_LANDSCAPE_INV
 } st7735_orientation_t;
 
-void st7735_init_device(st7735_t *self, gpio_t *cs, gpio_t *dc, int w, int h);
+void st7735_init_device(st7735_t *self, gpio_t cs, gpio_t dc, int w, int h);
 void st7735_set_background_color(st7735_t *self, st7735_color_t c);
 void st7735_set_offset(st7735_t *self, int offset_x, int offset_y);
 void st7735_set_orientation(st7735_t *self, st7735_orientation_t orientation);
