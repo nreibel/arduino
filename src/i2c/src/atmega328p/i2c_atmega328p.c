@@ -329,7 +329,7 @@ static int i2c_ll_write(uint8_t data, uint8_t *status)
     if (status != NULL_PTR)
         *status = TW_STATUS;
 
-    return I2C_OK;
+    return 1;
 }
 
 static int i2c_ll_read_ack(uint8_t *data)
