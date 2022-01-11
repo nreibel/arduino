@@ -4,9 +4,9 @@
 #include "types.h"
 #include "string.h"
 
-#if OS_ENABLE_PRINTF == 1
+#if OS_ENABLE_PRINTF
 #include "stdio.h"
-#endif // OS_ENABLE_PRINTF == 1
+#endif // OS_ENABLE_PRINTF
 
 /*
  * Extern functions prototypes
@@ -20,10 +20,7 @@ void os_sleep();
  */
 
 static void os_cyclic_tasks();
-
-#if NUMBER_OF_BACKGROUND_TASKS > 0
 static int os_background_tasks();
-#endif
 
 /*
  * Private data
@@ -112,25 +109,23 @@ static void os_cyclic_tasks()
     }
 }
 
-#if NUMBER_OF_BACKGROUND_TASKS > 0
 static int os_background_tasks()
 {
     int retval = 0;
 
     for ( int i = 0 ; i < NUMBER_OF_BACKGROUND_TASKS ; i++ )
     {
-        if (background_tasks_list[i]() > 0)
+        if (background_tasks_list[i]() < 0)
         {
-            retval = 1;
+            retval = -1;
         }
         // TODO : handle task failed
     }
 
     return retval;
 }
-#endif
 
-#if OS_ENABLE_PRINTF == 1
+#if OS_ENABLE_PRINTF
 __attribute__((weak)) int os_putc(char character, FILE *stream)
 {
     UNUSED(stream);
@@ -145,7 +140,7 @@ __attribute__((weak)) int os_getc(FILE *stream)
 }
 
 static FILE os_stdout = FDEV_SETUP_STREAM(os_putc, os_getc, _FDEV_SETUP_RW);
-#endif // OS_ENABLE_PRINTF == 1
+#endif // OS_ENABLE_PRINTF
 
 
 int main(void)
@@ -153,9 +148,9 @@ int main(void)
     /* Perform project-specific initialization */
     os_init();
 
-#if OS_ENABLE_PRINTF == 1
+#if OS_ENABLE_PRINTF
     stdout = &os_stdout;
-#endif // OS_ENABLE_PRINTF == 1
+#endif // OS_ENABLE_PRINTF
 
     // Enable interrupts
     os_interrupts_enable();
@@ -169,10 +164,8 @@ int main(void)
 
         os_cyclic_tasks();
 
-#if NUMBER_OF_BACKGROUND_TASKS > 0
         // Execute background tasks in the spare time, or sleep until next tick
         if (os_background_tasks() == 0)
-#endif
         {
             os_sleep();
         }
