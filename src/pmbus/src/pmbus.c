@@ -2,6 +2,7 @@
 #include "i2c.h"
 #include "bits.h"
 #include "math.h"
+#include "os_mem.h"
 
 /*
  * Private defines
@@ -71,6 +72,35 @@ static int twos_complement(unsigned int n, unsigned int b);
 /*
  * Public methods
  */
+
+#if OS_MALLOC
+pmbus_t pmbus_create(i2c_bus_t bus, uint8_t addr)
+{
+    pmbus_t self = os_malloc(sizeof(*self));
+
+    if (self == NULL_PTR)
+        goto exit;
+
+    if (i2c_device_init(&self->dev, bus, addr) < 0)
+        goto cleanup;
+
+    self->vout_mode = 0xFF;
+
+    return self;
+
+    cleanup:
+        os_free(self);
+
+    exit:
+        return NULL_PTR;
+}
+
+void pmbus_destroy(pmbus_t self)
+{
+    if (self != NULL_PTR)
+        os_free(self);
+}
+#endif
 
 int pmbus_gw_read_page(pmbus_t self, unsigned int *page)
 {

@@ -191,6 +191,11 @@ typedef union
 // Initializers and constructors
 int pmbus_init(pmbus_t self, i2c_bus_t bus, uint8_t addr);
 
+#if OS_MALLOC
+pmbus_t pmbus_create(i2c_bus_t bus, uint8_t addr);
+void pmbus_destroy(pmbus_t self);
+#endif
+
 // Object methods
 int pmbus_read_mfr_model   (pmbus_t self, char *buffer);
 int pmbus_read_temperature (pmbus_t self, double *temperature);
