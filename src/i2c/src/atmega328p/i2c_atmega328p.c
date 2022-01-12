@@ -140,7 +140,7 @@ static int transaction(i2c_bus_t self, uint8_t addr, void *data, unsigned int wr
     ret = i2c_ll_stop_condition();
     if (ret < 0) return ret;
 
-    return -1;
+    return read;
 }
 
 static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, unsigned int length)
