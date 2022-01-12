@@ -23,16 +23,35 @@
  * Public methods
  */
 
-int tft_shield_init(tft_shield_t self, i2c_bus_t i2c)
+int tft_shield_init(tft_shield_t self, i2c_bus_t i2c, st7735_orientation_t orientation)
 {
+    uint8_t cmd[5], w = 160, h = 128;
+
     // Seesaw chip
     i2c_device_init(&self->seesaw, i2c, I2C_SEESAW);
 
     // TFT
-    st7735_init_device(&self->tft, D10, D8, 160, 128);
+    switch(orientation)
+    {
+        case ST7735_ORIENTATION_LANDSCAPE:
+        case ST7735_ORIENTATION_LANDSCAPE_INV:
+            /* Nothing to do */
+            break;
+
+        case ST7735_ORIENTATION_PORTRAIT:
+        case ST7735_ORIENTATION_PORTRAIT_INV:
+            w = 128;
+            h = 160;
+            break;
+
+        default:
+            return -1;
+    }
+
+    st7735_init_device(&self->tft, D10, D8, w, h);
+    st7735_set_orientation(&self->tft, orientation);
 
     // Write 0xFFFFFFFF to GPIO registers
-    uint8_t cmd[5];
     memset(&cmd, 0xFF, 5);
 
     cmd[0] = FUNCTION_GPIO_DIRCLR;

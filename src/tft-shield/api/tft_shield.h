@@ -23,7 +23,8 @@ typedef enum {
     TFT_SHIELD_NUMBER_OF_KEYS
 } tft_shield_key_t;
 
-int tft_shield_init(tft_shield_t self, i2c_bus_t i2c);
+int tft_shield_init(tft_shield_t self, i2c_bus_t i2c, st7735_orientation_t orientation);
+
 int tft_shield_backlight(tft_shield_t self, uint8_t val);
 int tft_shield_read_keys(tft_shield_t self, tft_shield_key_t *key);
 

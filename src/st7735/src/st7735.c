@@ -83,7 +83,8 @@ void st7735_set_orientation(st7735_t self, st7735_orientation_t orientation)
 {
     uint8_t madctl = 0;
 
-    switch(orientation) {
+    switch(orientation)
+    {
         case ST7735_ORIENTATION_PORTRAIT:
             madctl = 0;
             break;
