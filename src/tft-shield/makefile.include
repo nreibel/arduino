@@ -1,0 +1,5 @@
+INCLUDES += \
+	$(SRC_DIR)/tft-shield/api \
+
+SOURCES +=  \
+	$(SRC_DIR)/tft-shield/src/tft_shield.c \
