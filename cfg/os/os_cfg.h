@@ -29,9 +29,14 @@ typedef uint16_t time_t;
 // SLEEP_MODE_PWR_SAVE only wakes up from I2C and Timer2 interrupts
 #define OS_SLEEP_MODE SLEEP_MODE_IDLE
 
-#define NUMBER_OF_BACKGROUND_TASKS 0
+#define OS_ENABLE_PRINTF ON
 
-#define OS_ENABLE_PRINTF 1
+typedef enum {
+//     BACKGROUND_TASK_SPI,
+//     BACKGROUND_TASK_EEPROM,
+//     BACKGROUND_TASK_I2C,
+    NUMBER_OF_BACKGROUND_TASKS
+} os_background_tasks_t;
 
 typedef enum {
     TIMER_INTERVAL,

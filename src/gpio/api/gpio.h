@@ -53,7 +53,7 @@ typedef void (*gpio_pcint_cbk_t)(gpio_port_t port, uint8_t mask, volatile void*)
 
 extern const gpio_t A0, A1, A2, A3, A4, A5; // Analog inputs
 extern const gpio_t D0, D1, D2, D3, D4, D5, D6, D7, D8, D9, D10, D11, D12, D13; // Digital inputs
-extern const gpio_t RX, TX, CS, MOSI, MISO, SCL, LED, SDA, SCL; // Aliases
+extern const gpio_t RX, TX, CS, MOSI, MISO, SCK, LED, SDA, SCL; // Aliases
 
 int gpio_init(gpio_t self, gpio_port_t port, uint8_t pin);
 int gpio_set_data_direction(gpio_t self, gpio_data_direction_t direction);

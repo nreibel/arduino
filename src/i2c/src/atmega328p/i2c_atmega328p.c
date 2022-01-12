@@ -33,6 +33,7 @@ typedef struct i2c_atmega328p_bus_prv_s {
 
 static int read(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length);
 static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, unsigned int length);
+static int transaction(i2c_bus_t self, uint8_t addr, void *data, unsigned int wr, unsigned int rd);
 static int init(i2c_bus_t self);
 
 static int i2c_ll_wait_tx(unsigned int ms);
@@ -53,7 +54,8 @@ static int i2c_ll_read_nack(uint8_t *data);
 static struct i2c_driver_prv_s atmega328p_i2c_drv = {
     .init = init,
     .read = read,
-    .write = write
+    .write = write,
+    .transaction = transaction
 };
 
 /*
@@ -93,6 +95,52 @@ static int init(i2c_bus_t self)
     TWBR = bus->fast_mode ? 12 : 72;
 
     return I2C_OK;
+}
+
+static int transaction(i2c_bus_t self, uint8_t addr, void *data, unsigned int wr, unsigned int rd)
+{
+    UNUSED(self);
+
+    int ret = I2C_OK;
+    unsigned int read = 0;
+    uint8_t *bytes = data;
+
+    ret = i2c_ll_start_condition();
+    if (ret < 0) return ret;
+
+    ret = i2c_ll_slave_write(addr);
+    if (ret < 0) return ret;
+
+    for (unsigned int i = 0 ; i < wr ; i++ )
+    {
+        ret = i2c_ll_write( bytes[i], NULL_PTR );
+        if (ret < 0) return ret;
+    }
+
+    if (rd > 0)
+    {
+        ret = i2c_ll_restart_condition();
+        if (ret < 0) return ret;
+
+        ret = i2c_ll_slave_read(addr);
+        if (ret < 0) return ret;
+
+        for(unsigned int i = 0 ; i < rd-1 ; i++)
+        {
+            ret = i2c_ll_read_ack(bytes+i);
+            if (ret < 0) return ret;
+            else read += ret;
+        }
+
+        ret = i2c_ll_read_nack(bytes+rd-1);
+        if (ret < 0) return ret;
+        else read += ret;
+    }
+
+    ret = i2c_ll_stop_condition();
+    if (ret < 0) return ret;
+
+    return -1;
 }
 
 static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, unsigned int length)
@@ -329,7 +377,7 @@ static int i2c_ll_write(uint8_t data, uint8_t *status)
     if (status != NULL_PTR)
         *status = TW_STATUS;
 
-    return I2C_OK;
+    return 1;
 }
 
 static int i2c_ll_read_ack(uint8_t *data)

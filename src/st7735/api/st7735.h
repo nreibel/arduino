@@ -10,15 +10,15 @@ typedef const __flash uint8_t st7735_xbm_t;
 // typedef char* st7735_xpm_t;
 typedef st7735_color_t (*ST7735_Renderer)(int x, int y, int w, int h, void* data);
 
-typedef struct {
-    spi_device_t spi_device;
+typedef struct st7735_prv_s {
+    struct spi_device_prv_s dev;
     st7735_color_t background_color;
-    gpio_t *dc;
-    int width;
-    int height;
-    int offset_x;
-    int offset_y;
-} st7735_t;
+    gpio_t dc;
+    uint8_t width;
+    uint8_t height;
+    int8_t offset_x;
+    int8_t offset_y;
+} * st7735_t;
 
 typedef enum {
     ST7735_ORIENTATION_PORTRAIT,
@@ -27,26 +27,26 @@ typedef enum {
     ST7735_ORIENTATION_LANDSCAPE_INV
 } st7735_orientation_t;
 
-void st7735_init_device(st7735_t *self, gpio_t *cs, gpio_t *dc, int w, int h);
-void st7735_set_background_color(st7735_t *self, st7735_color_t c);
-void st7735_set_offset(st7735_t *self, int offset_x, int offset_y);
-void st7735_set_orientation(st7735_t *self, st7735_orientation_t orientation);
+void st7735_init_device(st7735_t self, gpio_t cs, gpio_t dc, unsigned int w, unsigned int h);
+void st7735_set_background_color(st7735_t self, st7735_color_t c);
+void st7735_set_offset(st7735_t self, int offset_x, int offset_y);
+void st7735_set_orientation(st7735_t self, st7735_orientation_t orientation);
 
 // Generic functions
-void st7735_clear_screen(st7735_t *self);
-void st7735_draw_pixel(st7735_t *self, int x, int y, st7735_color_t c);
-void st7735_fill_rectangle(st7735_t *self, int x, int y, int w, int h, st7735_color_t c);
+void st7735_clear_screen(st7735_t self);
+void st7735_draw_pixel(st7735_t self, int x, int y, st7735_color_t c);
+void st7735_fill_rectangle(st7735_t self, int x, int y, int w, int h, st7735_color_t c);
 
 // Strings and characters
-void st7735_draw_char(st7735_t *self, int x, int y, const char chr, st7735_color_t color, int scale);
-void st7735_draw_chars(st7735_t *self, int x, int y, const char* chars, int length, st7735_color_t color, int scale);
-void st7735_draw_string(st7735_t *self, int x, int y, const char* str, st7735_color_t color, int scale);
-void st7735_clear_char(st7735_t *self, int x, int y, int scale);
-void st7735_clear_chars(st7735_t *self, int x, int y, int length, int scale);
+void st7735_draw_char   (st7735_t self, int x, int y, const char chr, st7735_color_t color, int scale);
+void st7735_draw_chars  (st7735_t self, int x, int y, const char* chars, int length, st7735_color_t color, int scale);
+void st7735_draw_string (st7735_t self, int x, int y, const char* str, st7735_color_t color, int scale);
+void st7735_clear_char  (st7735_t self, int x, int y, int scale);
+void st7735_clear_chars (st7735_t self, int x, int y, int length, int scale);
 
 // Graphics
-void st7735_render(st7735_t *self, int x, int y, int w, int h, ST7735_Renderer renderer, void* param, int scale);
-void st7735_draw_xbm(st7735_t *self, st7735_xbm_t *bits, int x, int y, int w, int h, st7735_color_t c, int scale);
+void st7735_render(st7735_t self, int x, int y, int w, int h, ST7735_Renderer renderer, void* param, int scale);
+void st7735_draw_xbm(st7735_t self, st7735_xbm_t *bits, int x, int y, int w, int h, st7735_color_t c, int scale);
 
 // Valid for 16bits 565 mode
 #define ST7735_RED(x)    ((((x) >> 3) & 0x1F) << 11)
