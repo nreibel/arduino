@@ -32,6 +32,10 @@ void st7735_set_background_color(st7735_t self, st7735_color_t c);
 void st7735_set_offset(st7735_t self, int offset_x, int offset_y);
 void st7735_set_orientation(st7735_t self, st7735_orientation_t orientation);
 
+// Getters
+unsigned int st7735_get_width(st7735_t self);
+unsigned int st7735_get_height(st7735_t self);
+
 // Generic functions
 void st7735_clear_screen(st7735_t self);
 void st7735_draw_pixel(st7735_t self, int x, int y, st7735_color_t c);

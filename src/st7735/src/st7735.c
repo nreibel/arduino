@@ -44,6 +44,16 @@ void st7735_init_device(st7735_t self, gpio_t cs, gpio_t dc, unsigned int w, uns
     spi_disable_slave(&self->dev);
 }
 
+unsigned int st7735_get_width(st7735_t self)
+{
+    return self->width;
+}
+
+unsigned int st7735_get_height(st7735_t self)
+{
+    return self->height;
+}
+
 static void st7735_data(st7735_t self, uint8_t data)
 {
     spi_write_byte(&self->dev, data, NULL_PTR);
