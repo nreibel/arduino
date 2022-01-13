@@ -4,7 +4,7 @@
 #include "types.h"
 #include "i2c.h"
 
-#define PMBUS_MFR_MODEL_MAX_LENGTH 0x10
+#define PMBUS_MFR_MODEL_MAX_LENGTH 16
 
 typedef enum
 {

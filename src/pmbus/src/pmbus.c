@@ -320,7 +320,7 @@ static int pmbus_read_word_linear11(pmbus_t self, uint8_t reg, double *value)
 
 static int pmbus_read_string(pmbus_t self, uint8_t reg, char *buf, unsigned int sz)
 {
-    int res = i2c_device_read_bytes(&self->dev, reg, buf, sz);
+    int res = i2c_device_read_bytes(&self->dev, reg, buf, sz+1);
     if (res < 0) return -PMBUS_ERROR_IO;
 
     // First byte is string length
@@ -332,7 +332,7 @@ static int pmbus_read_string(pmbus_t self, uint8_t reg, char *buf, unsigned int 
         buf[i] = buf[i+1];
 
     // Terminate string
-    buf[len] = 0;
+    buf[len] = '\0';
 
     return PMBUS_OK;
 }
@@ -340,6 +340,5 @@ static int pmbus_read_string(pmbus_t self, uint8_t reg, char *buf, unsigned int 
 // TODO : make macro
 static int twos_complement(unsigned int n, unsigned int b)
 {
-    if (n & BIT(b-1)) return (int) n - (int) BIT(b);
-    else return (int) n;
+    return IS_SET_BIT(n, b-1) ? (int) n - (int) BIT(b) : (int) n;
 }
