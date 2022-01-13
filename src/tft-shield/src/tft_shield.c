@@ -17,6 +17,10 @@
 #define GPIO_GPIO      0x04
 #define GPIO_SET       0x05
 #define GPIO_CLR       0x06
+#define GPIO_TOGGLE    0x07
+#define GPIO_INTENSET  0x08
+#define GPIO_INTENCLR  0x09
+#define GPIO_INTFLAG   0x0A
 #define GPIO_PULLENSET 0x0B
 #define GPIO_PULLENCLR 0x0C
 
@@ -81,10 +85,15 @@ int tft_shield_backlight(tft_shield_t self, uint8_t val)
 
 int tft_shield_read_keys(tft_shield_t self, tft_shield_key_t *key)
 {
-    uint8_t buffer[4] = {MODULE_GPIO, GPIO_GPIO, 0, 0};
-    if (i2c_device_transaction(&self->seesaw, buffer, 2, 4) != 4) return -1;
+    int res;
+    uint8_t gpio[4] = {MODULE_GPIO, GPIO_GPIO, 0, 0};
 
-    switch(~buffer[2] & 0x4F)
+    // TODO : Must read twice to avoid false readings ?!?
+    res = i2c_device_transaction(&self->seesaw, gpio, 2, 4, 1);
+    res = i2c_device_transaction(&self->seesaw, gpio, 2, 4, 1);
+    if (res != 4) return -1;
+
+    switch(~gpio[2] & 0x4F)
     {
         case 0: /* No key pressed */ break;
         case BIT(0): *key = TFT_SHIELD_KEY_LEFT; return 0;
@@ -95,7 +104,7 @@ int tft_shield_read_keys(tft_shield_t self, tft_shield_key_t *key)
         default: /* Multiple key press */ break;
     }
 
-    switch(~buffer[3] & 0xE0)
+    switch(~gpio[3] & 0xE0)
     {
         case 0: /* No key pressed */ break;
         case BIT(5): *key = TFT_SHIELD_KEY_RIGHT; return 0;
