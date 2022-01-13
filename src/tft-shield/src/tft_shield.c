@@ -6,18 +6,19 @@
  * Private constants
  */
 
-#define I2C_SEESAW       0x2E
-#define MODULE_PWM       0x08
-#define FUNCTION_PWM_VAL 0x01
+#define I2C_SEESAW     0x2E
 
-#define MODULE_GPIO          0x01
-#define FUNCTION_GPIO_DIRSET 0x02
-#define FUNCTION_GPIO_DIRCLR 0x03
-#define FUNCTION_GPIO_GPIO   0x04
-#define FUNCTION_GPIO_SET    0x05
-#define FUNCTION_GPIO_CLR    0x06
-#define FUNCTION_GPIO_PULSET 0x0B
-#define FUNCTION_GPIO_PULCLR 0x0C
+#define MODULE_PWM     0x08
+#define PWM_VAL        0x01
+
+#define MODULE_GPIO    0x01
+#define GPIO_DIRSET    0x02
+#define GPIO_DIRCLR    0x03
+#define GPIO_GPIO      0x04
+#define GPIO_SET       0x05
+#define GPIO_CLR       0x06
+#define GPIO_PULLENSET 0x0B
+#define GPIO_PULLENCLR 0x0C
 
 /*
  * Public methods
@@ -25,7 +26,7 @@
 
 int tft_shield_init(tft_shield_t self, i2c_bus_t i2c, st7735_orientation_t orientation)
 {
-    uint8_t cmd[5], w = 160, h = 128;
+    uint8_t w = 160, h = 128;
 
     // Seesaw chip
     i2c_device_init(&self->seesaw, i2c, I2C_SEESAW);
@@ -51,17 +52,17 @@ int tft_shield_init(tft_shield_t self, i2c_bus_t i2c, st7735_orientation_t orien
     st7735_init_device(&self->tft, D10, D8, w, h);
     st7735_set_orientation(&self->tft, orientation);
 
-    // Write 0xFFFFFFFF to GPIO registers
-    memset(&cmd, 0xFF, 5);
+    // Enable buttons and joystick as input with pullup
+    uint8_t buf[5] = { 0, 0, 0, 0x4F, 0xE0 };
 
-    cmd[0] = FUNCTION_GPIO_DIRCLR;
-    i2c_device_write_bytes(&self->seesaw, MODULE_GPIO, cmd, 5);
+    buf[0] = GPIO_DIRCLR;
+    i2c_device_write_bytes(&self->seesaw, MODULE_GPIO, buf, 5);
 
-    cmd[0] = FUNCTION_GPIO_PULSET;
-    i2c_device_write_bytes(&self->seesaw, MODULE_GPIO, cmd, 5);
+    buf[0] = GPIO_PULLENSET;
+    i2c_device_write_bytes(&self->seesaw, MODULE_GPIO, buf, 5);
 
-    cmd[0] = FUNCTION_GPIO_SET;
-    i2c_device_write_bytes(&self->seesaw, MODULE_GPIO, cmd, 5);
+    buf[0] = GPIO_SET;
+    i2c_device_write_bytes(&self->seesaw, MODULE_GPIO, buf, 5);
 
     return 0;
 }
@@ -73,18 +74,17 @@ st7735_t tft_shield_get_tft(tft_shield_t self)
 
 int tft_shield_backlight(tft_shield_t self, uint8_t val)
 {
-    const uint8_t cmd[3] = { FUNCTION_PWM_VAL, 0, val };
+    const uint8_t cmd[3] = { PWM_VAL, 0, val };
     if (i2c_device_write_bytes(&self->seesaw, MODULE_PWM, cmd, 3) != 3) return -1;
     return 0;
 }
 
 int tft_shield_read_keys(tft_shield_t self, tft_shield_key_t *key)
 {
-    uint8_t buffer[4] = {MODULE_GPIO, FUNCTION_GPIO_GPIO, 0, 0};
+    uint8_t buffer[4] = {MODULE_GPIO, GPIO_GPIO, 0, 0};
     if (i2c_device_transaction(&self->seesaw, buffer, 2, 4) != 4) return -1;
 
-    // 0xCF is read value when no key is pressed
-    switch( buffer[2] ^ 0xCF )
+    switch(~buffer[2] & 0x4F)
     {
         case 0: /* No key pressed */ break;
         case BIT(0): *key = TFT_SHIELD_KEY_LEFT; return 0;
@@ -95,8 +95,7 @@ int tft_shield_read_keys(tft_shield_t self, tft_shield_key_t *key)
         default: /* Multiple key press */ break;
     }
 
-    // 0xEC is read value when no key is pressed
-    switch( buffer[3] ^ 0xEC )
+    switch(~buffer[3] & 0xE0)
     {
         case 0: /* No key pressed */ break;
         case BIT(5): *key = TFT_SHIELD_KEY_RIGHT; return 0;
@@ -105,5 +104,5 @@ int tft_shield_read_keys(tft_shield_t self, tft_shield_key_t *key)
         default: /* Multiple key press */ break;
     }
 
-    return -2;
+    return 0;
 }

@@ -20,7 +20,7 @@ typedef enum {
     TFT_SHIELD_KEY_DOWN,
     TFT_SHIELD_KEY_LEFT,
     TFT_SHIELD_KEY_RIGHT,
-    TFT_SHIELD_NUMBER_OF_KEYS
+    NUMBER_OF_TFT_SHIELD_KEYS
 } tft_shield_key_t;
 
 int tft_shield_init(tft_shield_t self, i2c_bus_t i2c, st7735_orientation_t orientation);
