@@ -94,10 +94,10 @@ int i2c_bus_read(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned
     else return self->drv->read(self, addr, reg, data, length);
 }
 
-int i2c_bus_transaction(i2c_bus_t self, uint8_t addr, void *data, unsigned int wr, unsigned int rd)
+int i2c_bus_transaction(i2c_bus_t self, uint8_t addr, void *data, unsigned int wr, unsigned int rd, unsigned int delay)
 {
     if (self->drv->transaction == NULL_PTR) return -I2C_NOT_IMPLEMENTED;
-    else return self->drv->transaction(self, addr, data, wr, rd);
+    else return self->drv->transaction(self, addr, data, wr, rd, delay);
 }
 
 /*
@@ -154,9 +154,9 @@ int i2c_device_read_bytes(i2c_device_t self, uint8_t reg, void *data, unsigned i
     return i2c_bus_read(self->bus, self->addr, reg, data, length);
 }
 
-int i2c_device_transaction(i2c_device_t self, void *data, unsigned int wr, unsigned int rd)
+int i2c_device_transaction(i2c_device_t self, void *data, unsigned int wr, unsigned int rd, unsigned int delay)
 {
-    return i2c_bus_transaction(self->bus, self->addr, data, wr, rd);
+    return i2c_bus_transaction(self->bus, self->addr, data, wr, rd, delay);
 }
 
 char* i2c_get_error_string(i2c_error_t errcode)

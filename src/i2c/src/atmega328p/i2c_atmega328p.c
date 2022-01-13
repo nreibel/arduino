@@ -33,7 +33,7 @@ typedef struct i2c_atmega328p_bus_prv_s {
 
 static int read(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length);
 static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, unsigned int length);
-static int transaction(i2c_bus_t self, uint8_t addr, void *data, unsigned int wr, unsigned int rd);
+static int transaction(i2c_bus_t self, uint8_t addr, void *data, unsigned int wr, unsigned int rd, unsigned int delay);
 static int init(i2c_bus_t self);
 
 static int i2c_ll_wait_tx(unsigned int ms);
@@ -97,7 +97,7 @@ static int init(i2c_bus_t self)
     return I2C_OK;
 }
 
-static int transaction(i2c_bus_t self, uint8_t addr, void *data, unsigned int wr, unsigned int rd)
+static int transaction(i2c_bus_t self, uint8_t addr, void *data, unsigned int wr, unsigned int rd, unsigned int delay)
 {
     UNUSED(self);
 
@@ -119,20 +119,22 @@ static int transaction(i2c_bus_t self, uint8_t addr, void *data, unsigned int wr
 
     if (rd > 0)
     {
+        if (delay > 0) os_wait(delay);
+
         ret = i2c_ll_restart_condition();
         if (ret < 0) return ret;
 
         ret = i2c_ll_slave_read(addr);
         if (ret < 0) return ret;
 
-        for(unsigned int i = 0 ; i < rd-1 ; i++)
+        while(read < rd-1)
         {
-            ret = i2c_ll_read_ack(bytes+i);
+            ret = i2c_ll_read_ack(bytes+read);
             if (ret < 0) return ret;
             else read += ret;
         }
 
-        ret = i2c_ll_read_nack(bytes+rd-1);
+        ret = i2c_ll_read_nack(bytes+read);
         if (ret < 0) return ret;
         else read += ret;
     }
@@ -160,9 +162,9 @@ static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, un
     ret = i2c_ll_write(reg, NULL_PTR);
     if (ret < 0) return ret;
 
-    for (unsigned int i = 0 ; i < length ; i++ )
+    while(written < length)
     {
-        ret = i2c_ll_write( bytes[i], NULL_PTR );
+        ret = i2c_ll_write( bytes[written], NULL_PTR );
         if (ret < 0) return ret;
         else written += ret;
     }
@@ -196,14 +198,14 @@ static int read(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned 
     ret = i2c_ll_slave_read(addr);
     if (ret < 0) return ret;
 
-    for(unsigned int i = 0 ; i < length-1 ; i++)
+    while(read < length-1)
     {
-        ret = i2c_ll_read_ack(bytes+i);
+        ret = i2c_ll_read_ack(bytes+read);
         if (ret < 0) return ret;
         else read += ret;
     }
 
-    ret = i2c_ll_read_nack(bytes+length-1);
+    ret = i2c_ll_read_nack(bytes+read);
     if (ret < 0) return ret;
     else read += ret;
 
