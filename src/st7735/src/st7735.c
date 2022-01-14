@@ -1,15 +1,61 @@
 #include "st7735.h"
-#include "st7735_prv.h"
 #include "spi.h"
 #include "gpio.h"
 #include "bits.h"
 #include "charset.h"
 #include "os.h"
 
+/*
+ * Private constants
+ */
+
+#define ST7735_NOP     0x00
+#define ST7735_SWRESET 0x01
+#define ST7735_SLPOUT  0x11
+#define ST7735_INVOFF  0x20
+#define ST7735_INVON   0x21
+#define ST7735_DISPOFF 0x28
+#define ST7735_DISPON  0x29
+#define ST7735_CASET   0x2A
+#define ST7735_RASET   0x2B
+#define ST7735_RAMWR   0x2C
+#define ST7735_RAMRD   0x2E
+#define ST7735_MADCTL  0x36
+#define ST7735_COLMOD  0x3A
+
+#define ST7735_MADCTL_MY BIT(7)
+#define ST7735_MADCTL_MX BIT(6)
+#define ST7735_MADCTL_MV BIT(5)
+
+#define ST7735_COLMOD_12_BPP 3
+#define ST7735_COLMOD_16_BPP 5
+#define ST7735_COLMOD_18_BPP 6
+
+/*
+ * Private functions declaration
+ */
+
 static void st7735_command(st7735_t self, uint8_t command);
 static void st7735_data(st7735_t self, uint8_t data);
 static void st7735_color(st7735_t self, st7735_color_t color);
-static void st7735_set_draw_window(st7735_t self, int x1, int y1, int x2, int y2);
+static void st7735_set_draw_window(st7735_t self, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2);
+
+/*
+ * Renderers
+ */
+
+static st7735_color_t ST7735_RenderXbm(unsigned int x, unsigned int y, unsigned int w, unsigned int h, void *data);
+
+typedef struct {
+    st7735_xbm_t *bits;
+    st7735_color_t fg_color;
+    st7735_color_t bg_color;
+    const int bw;
+} XbmRendererData;
+
+/*
+ * Object mehtods
+ */
 
 void st7735_init_device(st7735_t self, gpio_t cs, gpio_t dc, unsigned int w, unsigned int h)
 {
@@ -25,6 +71,8 @@ void st7735_init_device(st7735_t self, gpio_t cs, gpio_t dc, unsigned int w, uns
     self->offset_y = 0;
     self->dc = dc;
     self->background_color = ST7735_COLOR_BLACK;
+    self->foreground_color = ST7735_COLOR_WHITE;
+    self->scale = 1;
 
     // TFT startup routine
     st7735_command(self, ST7735_SWRESET);
@@ -54,6 +102,12 @@ unsigned int st7735_get_height(st7735_t self)
     return self->height;
 }
 
+
+void st7735_set_scale(st7735_t self, unsigned int scale)
+{
+    self->scale = scale;
+}
+
 static void st7735_data(st7735_t self, uint8_t data)
 {
     spi_write_byte(&self->dev, data, NULL_PTR);
@@ -73,7 +127,7 @@ static void st7735_color(st7735_t self, st7735_color_t color)
     spi_write_bytes(&self->dev, w.bytes, 2);
 }
 
-static void st7735_set_draw_window(st7735_t self, int x1, int y1, int x2, int y2)
+static void st7735_set_draw_window(st7735_t self, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2)
 {
     // Set the column to write to
     uint8_t col[4] = {0, x1+self->offset_x, 0, x2+self->offset_x};
@@ -120,6 +174,11 @@ void st7735_set_background_color(st7735_t self, st7735_color_t c)
     self->background_color = c;
 }
 
+void st7735_set_foreground_color(st7735_t self, st7735_color_t c)
+{
+    self->foreground_color = c;
+}
+
 void st7735_set_offset(st7735_t self, int offset_x, int offset_y)
 {
     self->offset_x = offset_x;
@@ -128,48 +187,51 @@ void st7735_set_offset(st7735_t self, int offset_x, int offset_y)
 
 void st7735_clear_screen(st7735_t self)
 {
-    st7735_fill_rectangle(self, 0, 0, self->width, self->height, self->background_color);
+    st7735_color_t old_color = self->foreground_color;
+    self->foreground_color = self->background_color;
+    st7735_fill_rectangle(self, 0, 0, self->width, self->height);
+    self->foreground_color = old_color;
 }
 
-void st7735_draw_pixel(st7735_t self, int x, int y, st7735_color_t c)
+void st7735_draw_pixel(st7735_t self, unsigned int x, unsigned int y)
 {
-    st7735_fill_rectangle(self, x, y, 1, 1, c);
+    st7735_fill_rectangle(self, x, y, 1, 1);
 }
 
-void st7735_fill_rectangle(st7735_t self, int x, int y, int w, int h, st7735_color_t c)
+void st7735_fill_rectangle(st7735_t self, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 {
     spi_enable_slave(&self->dev);
 
     st7735_set_draw_window(self, x, y, x+w-1, y+h-1);
 
-    for(int x = 0; x < w*h; x++)
+    for(unsigned int x = 0; x < w*h; x++)
     {
-        st7735_color(self, c);
+        st7735_color(self, self->foreground_color);
     }
 
     spi_disable_slave(&self->dev);
 }
 
-void st7735_draw_char(st7735_t self, int x, int y, const char chr, st7735_color_t color, int scale)
+void st7735_draw_char(st7735_t self, unsigned int x, unsigned int y, const char chr)
 {
     if ( ! BETWEEN(chr, 0x20, 0x7E) ) return;
 
-    int w = scale * ST7735_CHARSET_WIDTH;
-    int h = scale * ST7735_CHARSET_HEIGHT;
+    unsigned int w = self->scale * ST7735_CHARSET_WIDTH;
+    unsigned int h = self->scale * ST7735_CHARSET_HEIGHT;
 
     spi_enable_slave(&self->dev);
     st7735_set_draw_window(self, x, y, x+w-1, y+h-1);
 
-    for (int dy = 0 ; dy < ST7735_CHARSET_HEIGHT ; dy++)
+    for (unsigned int dy = 0 ; dy < ST7735_CHARSET_HEIGHT ; dy++)
     {
-        for (int i = 0 ; i < scale ; i++)
+        for (unsigned int i = 0 ; i < self->scale ; i++)
         {
-            for (int dx = 0 ; dx < ST7735_CHARSET_WIDTH ; dx++)
+            for (unsigned int dx = 0 ; dx < ST7735_CHARSET_WIDTH ; dx++)
             {
                 uint8_t b = s_st7735_charset[chr-0x20][dx];
-                st7735_color_t px = IS_SET_BIT(b, dy) ? color : self->background_color;
+                st7735_color_t px = IS_SET_BIT(b, dy) ? self->foreground_color : self->background_color;
 
-                for (int j = 0 ; j < scale ; j++)
+                for (unsigned int j = 0 ; j < self->scale ; j++)
                 {
                     st7735_color(self, px);
                 }
@@ -180,35 +242,35 @@ void st7735_draw_char(st7735_t self, int x, int y, const char chr, st7735_color_
     spi_disable_slave(&self->dev);
 }
 
-void st7735_draw_chars(st7735_t self, int x, int y, const char* chars, int length, st7735_color_t color, int scale)
+void st7735_draw_chars(st7735_t self, unsigned int x, unsigned int y, const char* chars, int length)
 {
     for (int i = 0 ; i < length ; i++)
     {
-        st7735_draw_char(self, x, y, chars[i], color, scale);
-        x += scale * (ST7735_CHARSET_WIDTH + 1);
+        st7735_draw_char(self, x, y, chars[i]);
+        x += self->scale * (ST7735_CHARSET_WIDTH + 1);
     }
 }
 
-void st7735_draw_string(st7735_t self, int x, int y, const char* str, st7735_color_t color, int scale)
+void st7735_draw_string(st7735_t self, unsigned int x, unsigned int y, const char* str)
 {
     for(int i = 0 ; str[i] != 0 ; i++)
     {
-        st7735_draw_char(self, x, y, str[i], color, scale);
-        x += scale * (ST7735_CHARSET_WIDTH + 1);
+        st7735_draw_char(self, x, y, str[i]);
+        x += self->scale * (ST7735_CHARSET_WIDTH + 1);
     }
 }
 
-void st7735_clear_char(st7735_t self, int x, int y, int scale)
+void st7735_clear_char(st7735_t self, unsigned int x, unsigned int y)
 {
-    int w = scale * ST7735_CHARSET_WIDTH;
-    int h = scale * ST7735_CHARSET_HEIGHT;
+    unsigned int w = self->scale * ST7735_CHARSET_WIDTH;
+    unsigned int h = self->scale * ST7735_CHARSET_HEIGHT;
 
     spi_enable_slave(&self->dev);
     st7735_set_draw_window(self, x, y, x+w-1, y+h-1);
 
-    for (int dy = 0 ; dy < h ; dy++)
+    for (unsigned int dy = 0 ; dy < h ; dy++)
     {
-        for (int dx = 0 ; dx < w ; dx++)
+        for (unsigned int dx = 0 ; dx < w ; dx++)
         {
             st7735_color(self, self->background_color);
         }
@@ -217,17 +279,17 @@ void st7735_clear_char(st7735_t self, int x, int y, int scale)
     spi_disable_slave(&self->dev);
 }
 
-void st7735_clear_chars(st7735_t self, int x, int y, int length, int scale)
+void st7735_clear_chars(st7735_t self, unsigned int x, unsigned int y, int length)
 {
     for (int i = 0 ; i < length ; i++)
     {
-        st7735_clear_char(self, x, y, scale);
-        x += scale * (ST7735_CHARSET_WIDTH + 1);
+        st7735_clear_char(self, x, y);
+        x += self->scale * (ST7735_CHARSET_WIDTH + 1);
     }
 }
 
 
-// Std_ReturnType ST7735_DrawXPM(st7735_xpm_t *xpm, int xPos, int yPos, int scale)
+// Std_ReturnType ST7735_DrawXPM(st7735_xpm_t *xpm, int xPos, int yPos)
 // {
 //     int width, height, nbColors, sz;
 //     st7735_color_t colors[16];
@@ -294,7 +356,7 @@ void st7735_clear_chars(st7735_t self, int x, int y, int length, int scale)
 //     return Status_OK;
 // }
 
-static st7735_color_t ST7735_RenderXbm(int x, int y, int w, int h, void *data)
+static st7735_color_t ST7735_RenderXbm(unsigned int x, unsigned int y, unsigned int w, unsigned int h, void *data)
 {
     UNUSED(h);
     UNUSED(w);
@@ -304,29 +366,29 @@ static st7735_color_t ST7735_RenderXbm(int x, int y, int w, int h, void *data)
     return IS_SET_BIT(b, x % 8) ? d->fg_color : d->bg_color;
 }
 
-void st7735_draw_xbm(st7735_t self, st7735_xbm_t *bits, int x, int y, int w, int h, st7735_color_t c, int scale)
+void st7735_draw_xbm(st7735_t self, st7735_xbm_t *bits, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 {
-    XbmRendererData data = { bits, c, self->background_color, (w+7)/8 };
-    st7735_render(self, x, y, w, h, ST7735_RenderXbm, &data, scale);
+    XbmRendererData data = { bits, self->foreground_color, self->background_color, (w+7)/8 };
+    st7735_render(self, x, y, w, h, ST7735_RenderXbm, &data);
 }
 
-void st7735_render(st7735_t self, int x, int y, int w, int h, ST7735_Renderer renderer, void* param, int scale)
+void st7735_render(st7735_t self, unsigned int x, unsigned int y, unsigned int w, unsigned int h, ST7735_Renderer renderer, void* param)
 {
     //Set the drawing region
     spi_enable_slave(&self->dev);
-    st7735_set_draw_window(self, x, y, x+(scale*w)-1, y+(scale*h)-1);
+    st7735_set_draw_window(self, x, y, x+(self->scale*w)-1, y+(self->scale*h)-1);
 
-    for(int y = 0; y < h; y++)
+    for(unsigned int y = 0; y < h; y++)
     {
         // Repeat each line according to scaling
-        for(int _s1 = 0; _s1 < scale; _s1++)
+        for(unsigned int _s1 = 0; _s1 < self->scale; _s1++)
         {
-            for(int x = 0; x < w; x++)
+            for(unsigned int x = 0; x < w; x++)
             {
                 st7735_color_t c = renderer(x, y, w, h, param);
 
                 // Repeat each pixel according to scaling
-                for(int _s2 = 0; _s2 < scale; _s2++)
+                for(unsigned int _s2 = 0; _s2 < self->scale; _s2++)
                 {
                     st7735_color(self, c);
                 }
