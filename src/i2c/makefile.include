@@ -1,6 +1,7 @@
 INCLUDES += \
 	$(SRC_DIR)/i2c/api \
 	$(SRC_DIR)/i2c/api/$(ARCH) \
+	$(CFG_DIR)/i2c \
 
 SOURCES += \
 	$(SRC_DIR)/i2c/src/i2c.c \

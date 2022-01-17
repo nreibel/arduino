@@ -1,5 +1,6 @@
 #include "i2c.h"
 #include "i2c_atmega328p.h"
+#include "i2c_cfg.h"
 #include "bits.h"
 #include "types.h"
 #include "os.h"
@@ -16,7 +17,6 @@
  */
 
 #define I2C_ADDR(addr, rw) (((addr) << 1) | rw)
-#define I2C_POLL_TIMEOUT 100 // in ms
 
 /*
  * Private types definition
