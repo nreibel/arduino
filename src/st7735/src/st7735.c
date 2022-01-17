@@ -169,14 +169,24 @@ void st7735_set_orientation(st7735_t self, st7735_orientation_t orientation)
     spi_disable_slave(&self->dev);
 }
 
-void st7735_set_background_color(st7735_t self, st7735_color_t c)
+void st7735_set_background(st7735_t self, st7735_color_t c)
 {
     self->background_color = c;
 }
 
-void st7735_set_foreground_color(st7735_t self, st7735_color_t c)
+void st7735_set_foreground(st7735_t self, st7735_color_t c)
 {
     self->foreground_color = c;
+}
+
+st7735_color_t st7735_get_foreground(st7735_t self)
+{
+    return self->foreground_color;
+}
+
+st7735_color_t st7735_get_background(st7735_t self)
+{
+    return self->background_color;
 }
 
 void st7735_set_offset(st7735_t self, int offset_x, int offset_y)
@@ -187,10 +197,12 @@ void st7735_set_offset(st7735_t self, int offset_x, int offset_y)
 
 void st7735_clear_screen(st7735_t self)
 {
-    st7735_color_t old_color = self->foreground_color;
-    self->foreground_color = self->background_color;
+    st7735_color_t fg = st7735_get_foreground(self);
+    st7735_color_t bg = st7735_get_background(self);
+
+    st7735_set_foreground(self, bg);
     st7735_fill_rectangle(self, 0, 0, self->width, self->height);
-    self->foreground_color = old_color;
+    st7735_set_foreground(self, fg);
 }
 
 void st7735_draw_pixel(st7735_t self, unsigned int x, unsigned int y)
@@ -262,21 +274,12 @@ void st7735_draw_string(st7735_t self, unsigned int x, unsigned int y, const cha
 
 void st7735_clear_char(st7735_t self, unsigned int x, unsigned int y)
 {
-    unsigned int w = self->scale * ST7735_CHARSET_WIDTH;
-    unsigned int h = self->scale * ST7735_CHARSET_HEIGHT;
+    st7735_color_t fg = st7735_get_foreground(self);
+    st7735_color_t bg = st7735_get_background(self);
 
-    spi_enable_slave(&self->dev);
-    st7735_set_draw_window(self, x, y, x+w-1, y+h-1);
-
-    for (unsigned int dy = 0 ; dy < h ; dy++)
-    {
-        for (unsigned int dx = 0 ; dx < w ; dx++)
-        {
-            st7735_color(self, self->background_color);
-        }
-    }
-
-    spi_disable_slave(&self->dev);
+    st7735_set_foreground(self, bg);
+    st7735_fill_rectangle(self, x, y, self->scale * ST7735_CHARSET_WIDTH, self->scale * ST7735_CHARSET_HEIGHT);
+    st7735_set_foreground(self, fg);
 }
 
 void st7735_clear_chars(st7735_t self, unsigned int x, unsigned int y, int length)

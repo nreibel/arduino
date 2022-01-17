@@ -33,14 +33,16 @@ void st7735_init_device(st7735_t self, gpio_t cs, gpio_t dc, unsigned int w, uns
 
 // Setters
 void st7735_set_scale(st7735_t self, unsigned int scale);
-void st7735_set_foreground_color(st7735_t self, st7735_color_t c);
-void st7735_set_background_color(st7735_t self, st7735_color_t c);
+void st7735_set_foreground(st7735_t self, st7735_color_t c);
+void st7735_set_background(st7735_t self, st7735_color_t c);
 void st7735_set_offset(st7735_t self, int offset_x, int offset_y);
 void st7735_set_orientation(st7735_t self, st7735_orientation_t orientation);
 
 // Getters
 unsigned int st7735_get_width(st7735_t self);
 unsigned int st7735_get_height(st7735_t self);
+st7735_color_t st7735_get_foreground(st7735_t self);
+st7735_color_t st7735_get_background(st7735_t self);
 
 // Generic functions
 void st7735_clear_screen(st7735_t self);
