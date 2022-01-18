@@ -158,10 +158,7 @@ int pmbus_read_fanspeed(pmbus_t self, unsigned int *fanspeed)
 
 int pmbus_read_mfr_model(pmbus_t self, char *buffer)
 {
-    if (pmbus_read_string(self, REG_MFR_MODEL, buffer, PMBUS_MFR_MODEL_MAX_LENGTH) < 0)
-        return -PMBUS_ERROR_IO;
-
-    return PMBUS_OK;
+    return pmbus_read_string(self, REG_MFR_MODEL, buffer, PMBUS_MFR_MODEL_MAX_LENGTH);
 }
 
 int pmbus_read_temperature(pmbus_t self, double *temperature)
@@ -334,7 +331,7 @@ static int pmbus_read_string(pmbus_t self, uint8_t reg, char *buf, unsigned int 
     // Terminate string
     buf[len] = '\0';
 
-    return PMBUS_OK;
+    return len;
 }
 
 // TODO : make macro
