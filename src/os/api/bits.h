@@ -34,15 +34,11 @@
 // Test bit of value r at index x
 #define IS_SET_BIT(r, x)     (MASK((r), BIT(x)) ? TRUE : FALSE)
 
-#define ADD_BOUNDED(var, inc, min, max) (var = (min) + ((var+(min)+(inc)) % (max-min+1)))
-#define SUB_BOUNDED(var, inc, min, max) ADD_BOUNDED(var, -(inc), min, max)
-#define ADD_MODULO(var, inc, max)       ADD_BOUNDED(var, inc, 0, (max)-1)
-#define SUB_MODULO(var, inc, max)       SUB_BOUNDED(var, inc, 0, (max)-1)
-#define INCREMENT_MOD(var, max)         ADD_MODULO(var, 1, max)
-#define DECREMENT_MOD(var, max)         SUB_MODULO(var, 1, max)
+#define INCREMENT_MOD(var, max) (var = (var+1) % (max))
+#define DECREMENT_MOD(var, max) (var = (var+(max)-1) % (max))
 
-// Map a value x range [in1,in2] to range [out1,out2]
-#define MAP(x, in1, in2, out1, out2) (((x)-(in1))*((out2)-(out1))/((in2)-(in1))+(out1))
+// Map a value x range [min1,max1] to range [min2,max2]
+#define MAP(x, min1, max1, min2, max2) (((x)-(min1))*((max2)-(min2))/((max1)-(min1))+(min2))
 
 #define MAX(a, b)          ((a) > (b) ? (a) : (b))
 #define MIN(a, b)          ((a) < (b) ? (a) : (b))
