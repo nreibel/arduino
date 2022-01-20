@@ -125,30 +125,13 @@ static int os_background_tasks()
     return retval;
 }
 
-#if OS_ENABLE_PRINTF
-__attribute__((weak)) int os_putc(char character, FILE *stream)
-{
-    UNUSED(stream);
-    UNUSED(character);
-    return EOF;
-}
-
-__attribute__((weak)) int os_getc(FILE *stream)
-{
-    UNUSED(stream);
-    return EOF;
-}
-
-static FILE os_stdout = FDEV_SETUP_STREAM(os_putc, os_getc, _FDEV_SETUP_RW);
-#endif // OS_ENABLE_PRINTF
-
-
 int main(void)
 {
     /* Perform project-specific initialization */
     os_init();
 
 #if OS_ENABLE_PRINTF
+    static FILE os_stdout = FDEV_SETUP_STREAM(os_putc, NULL_PTR, _FDEV_SETUP_WRITE);
     stdout = &os_stdout;
 #endif // OS_ENABLE_PRINTF
 

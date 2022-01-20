@@ -53,8 +53,7 @@ void HALT();
 void os_reset();
 
 #if OS_ENABLE_PRINTF
-int os_putc(char character, FILE *stream);
-int os_getc(FILE *stream);
+extern int os_putc(char character, FILE *stream);
 #endif // OS_ENABLE_PRINTF
 
 #endif /* __OS_API_H__ */
