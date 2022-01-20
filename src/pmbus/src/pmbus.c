@@ -158,7 +158,9 @@ int pmbus_read_fanspeed(pmbus_t self, unsigned int *fanspeed)
 
 int pmbus_read_mfr_model(pmbus_t self, char *buffer)
 {
-    return pmbus_read_string(self, REG_MFR_MODEL, buffer, PMBUS_MFR_MODEL_MAX_LENGTH);
+    int ret = pmbus_read_string(self, REG_MFR_MODEL, buffer, PMBUS_MFR_MODEL_MAX_LENGTH);
+    if (ret < 0) return -PMBUS_ERROR_IO;
+    return PMBUS_OK;
 }
 
 int pmbus_read_temperature(pmbus_t self, double *temperature)
@@ -199,66 +201,58 @@ int pmbus_read_vout(pmbus_t self, double *vout)
 
 int pmbus_read_blackbox(pmbus_t self, pmbus_blackbox_t * data)
 {
-    if ( i2c_device_read_bytes(&self->dev, REG_MFR_BLACKBOX, data, PMBUS_BLACKBOX_LEN) != PMBUS_BLACKBOX_LEN)
-        return -PMBUS_ERROR_IO;
-
+    int res = i2c_device_read_bytes(&self->dev, REG_MFR_BLACKBOX, data, PMBUS_BLACKBOX_LEN);
+    if (res != PMBUS_BLACKBOX_LEN) return -PMBUS_ERROR_IO;
     return PMBUS_OK;
 }
 
 
 int pmbus_read_status_word(pmbus_t self, pmbus_status_word_t *value)
 {
-    if (i2c_device_read_bytes(&self->dev, REG_STATUS_WORD, &value->raw, 2) != 2)
-        return -PMBUS_ERROR_IO;
-
+    int res = i2c_device_read_bytes(&self->dev, REG_STATUS_WORD, &value->raw, 2);
+    if (res != 2) return -PMBUS_ERROR_IO;
     return PMBUS_OK;
 }
 
 int pmbus_read_status_vout(pmbus_t self, pmbus_status_vout_t *value)
 {
-    if (i2c_device_read_byte(&self->dev, REG_STATUS_VOUT, &value->raw) != 1)
-        return -PMBUS_ERROR_IO;
-
+    int res = i2c_device_read_byte(&self->dev, REG_STATUS_VOUT, &value->raw);
+    if (res != 1) return -PMBUS_ERROR_IO;
     return PMBUS_OK;
 }
 
 int pmbus_read_status_iout(pmbus_t self, pmbus_status_iout_t *value)
 {
-    if (i2c_device_read_byte(&self->dev, REG_STATUS_IOUT, &value->raw) != 1)
-        return -PMBUS_ERROR_IO;
-
+    int res = i2c_device_read_byte(&self->dev, REG_STATUS_IOUT, &value->raw);
+    if (res != 1) return -PMBUS_ERROR_IO;
     return PMBUS_OK;
 }
 
 int pmbus_read_status_input(pmbus_t self, pmbus_status_input_t *value)
 {
-    if (i2c_device_read_byte(&self->dev, REG_STATUS_INPUT, &value->raw) != 1)
-        return -PMBUS_ERROR_IO;
-
+    int res = i2c_device_read_byte(&self->dev, REG_STATUS_INPUT, &value->raw);
+    if (res != 1) return -PMBUS_ERROR_IO;
     return PMBUS_OK;
 }
 
 int pmbus_read_status_temperature(pmbus_t self, pmbus_status_temperature_t *value)
 {
-    if (i2c_device_read_byte(&self->dev, REG_STATUS_TEMPERATURE, &value->raw) != 1)
-        return -PMBUS_ERROR_IO;
-
+    int res = i2c_device_read_byte(&self->dev, REG_STATUS_TEMPERATURE, &value->raw);
+    if (res != 1) return -PMBUS_ERROR_IO;
     return PMBUS_OK;
 }
 
 int pmbus_read_status_cml(pmbus_t self, pmbus_status_cml_t *value)
 {
-    if (i2c_device_read_byte(&self->dev, REG_STATUS_CML, &value->raw) != 1)
-        return -PMBUS_ERROR_IO;
-
+    int res = i2c_device_read_byte(&self->dev, REG_STATUS_CML, &value->raw);
+    if (res != 1) return -PMBUS_ERROR_IO;
     return PMBUS_OK;
 }
 
 int pmbus_read_status_fans_1_2(pmbus_t self, pmbus_status_fans_t *value)
 {
-    if (i2c_device_read_byte(&self->dev, REG_STATUS_FANS_1_2, &value->raw) != 1)
-        return -PMBUS_ERROR_IO;
-
+    int res = i2c_device_read_byte(&self->dev, REG_STATUS_FANS_1_2, &value->raw);
+    if (res != 1) return -PMBUS_ERROR_IO;
     return PMBUS_OK;
 }
 
@@ -275,8 +269,11 @@ double pmbus_linear11_decode(uint16_t data)
 
 int pmbus_vout_decode(pmbus_t self, uint16_t raw, double *value)
 {
-    if (self->vout_mode == 0xFF && i2c_device_read_byte(&self->dev, REG_VOUT_MODE, &self->vout_mode) != 1)
-        return -PMBUS_ERROR_IO;
+    if (self->vout_mode == 0xFF)
+    {
+        int res = i2c_device_read_byte(&self->dev, REG_VOUT_MODE, &self->vout_mode);
+        if (res != 1) return -PMBUS_ERROR_IO;
+    }
 
     vout_mode_t vout_mode = { .raw = self->vout_mode };
 
@@ -300,6 +297,8 @@ int pmbus_vout_decode(pmbus_t self, uint16_t raw, double *value)
             return -PMBUS_ERROR;
         }
     }
+
+    return -PMBUS_ERROR;
 }
 
 /*
