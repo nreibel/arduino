@@ -134,9 +134,9 @@ bool serial_tx_ready(serial_bus_t bus)
     return instances[bus].tx_buf == NULL_PTR && instances[bus].tx_sz == 0;
 }
 
-void serial_write_async(serial_bus_t bus, const void *buffer, int length)
+void serial_write_async(serial_bus_t bus, const void *buffer, unsigned int length)
 {
-    if (length > 0 && buffer != NULL_PTR)
+    if (buffer != NULL_PTR)
     {
         instances[bus].tx_buf = buffer+1;
         instances[bus].tx_sz = length-1;
@@ -154,7 +154,7 @@ int serial_write_byte(serial_bus_t bus, uint8_t chr)
     return serial_ll_write_byte(bus, chr);
 }
 
-int serial_write_bytes(serial_bus_t bus, const void *buffer, int length)
+int serial_write_bytes(serial_bus_t bus, const void *buffer, unsigned int length)
 {
     int written = 0;
     while(length-- > 0) written += serial_write_byte(bus, READ_PU8(buffer++));
@@ -197,11 +197,11 @@ int serial_read_byte(serial_bus_t bus, uint8_t *byte)
     return serial_ll_read_byte(bus, byte);
 }
 
-int serial_read_bytes(serial_bus_t bus, void *buffer, int length)
+int serial_read_bytes(serial_bus_t bus, void *buffer, unsigned int length)
 {
     int received = 0;
 
-    for(int i = 0 ; i < length; i++)
+    for(unsigned int i = 0 ; i < length; i++)
     {
         received += serial_read_byte(bus, UINT8_PTR(buffer+i) );
     }

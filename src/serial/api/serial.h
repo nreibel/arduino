@@ -59,16 +59,16 @@ extern void serial_rx_callback(serial_bus_t bus, const char *buffer, unsigned in
 
 #if SERIAL_ASYNC_TX != OFF
 bool serial_tx_ready(serial_bus_t bus);
-void serial_write_async(serial_bus_t bus, const void * buffer, int len);
+void serial_write_async(serial_bus_t bus, const void * buffer, unsigned int length);
 #endif
 
 int serial_bus_init(serial_bus_t bus, uint32_t baudrate);
 
 int serial_read_byte(serial_bus_t bus, uint8_t *chr);
-int serial_read_bytes(serial_bus_t bus, void * buffer, int length);
+int serial_read_bytes(serial_bus_t bus, void * buffer, unsigned int length);
 
 int serial_write_byte(serial_bus_t bus, uint8_t chr);
-int serial_write_bytes(serial_bus_t bus, const void * buffer, int length);
+int serial_write_bytes(serial_bus_t bus, const void * buffer, unsigned int length);
 
 int serial_print(serial_bus_t bus, const char * string);
 int serial_println(serial_bus_t bus, const char * string);
