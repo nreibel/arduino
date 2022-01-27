@@ -11,14 +11,16 @@ typedef enum {
     SPI_CLOCK_DIV_16,
     SPI_CLOCK_DIV_32,
     SPI_CLOCK_DIV_64,
-    SPI_CLOCK_DIV_128
+    SPI_CLOCK_DIV_128,
+    NUMBER_OF_SPI_CLOCK_DIV
 } spi_clock_t;
 
 typedef enum {
     SPI_MODE_0,
     SPI_MODE_1,
     SPI_MODE_2,
-    SPI_MODE_3
+    SPI_MODE_3,
+    NUMBER_OF_SPI_MODE
 } spi_mode_t;
 
 typedef struct spi_device_prv_s{

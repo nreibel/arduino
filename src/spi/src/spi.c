@@ -118,6 +118,12 @@ static void spi_ll_enable()
 
 static void spi_ll_configure(spi_clock_t clock, spi_mode_t mode)
 {
+    static spi_clock_t _clock = NUMBER_OF_SPI_CLOCK_DIV;
+    static spi_mode_t  _mode  = NUMBER_OF_SPI_MODE;
+
+    // Clock/Mode already set
+    if (clock == _clock && mode == _mode) return;
+
     // Enable SPI, Master Mode
     uint8_t spcr = BIT(MSTR) | BIT(SPE);
     uint8_t spsr = 0;
@@ -146,6 +152,10 @@ static void spi_ll_configure(spi_clock_t clock, spi_mode_t mode)
             SET_BIT(spcr, SPR0);
             SET_BIT(spcr, SPR1);
             break;
+
+        default:
+            // TODO;
+            break;
     }
 
     switch(mode)
@@ -166,10 +176,17 @@ static void spi_ll_configure(spi_clock_t clock, spi_mode_t mode)
             SET_BIT(spcr, CPOL);
             SET_BIT(spcr, CPHA);
             break;
+
+        default:
+            // TODO;
+            break;
     }
 
     SPCR = spcr;
     SPSR = spsr;
+
+    _clock = clock;
+    _mode = mode;
 }
 
 static bool spi_ll_ready(void)
