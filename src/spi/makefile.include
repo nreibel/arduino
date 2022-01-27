@@ -3,4 +3,3 @@ INCLUDES += \
 
 SOURCES += \
 	$(SRC_DIR)/spi/src/spi.c \
-	$(SRC_DIR)/spi/src/spi_$(ARCH).c \
