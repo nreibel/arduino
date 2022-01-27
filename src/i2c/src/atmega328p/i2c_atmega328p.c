@@ -16,6 +16,7 @@
  * Private defines
  */
 
+#define NUMBER_OF_I2C_BUS 1
 #define I2C_ADDR(addr, rw) (((addr) << 1) | rw)
 
 /*
@@ -70,12 +71,20 @@ static struct i2c_atmega328p_bus_prv_s i2c_bus[NUMBER_OF_I2C_BUS];
 
 int i2c_atmega328p_init(bool fast_mode)
 {
-    int ret = i2c_bus_init(&i2c_bus[0].super, &atmega328p_i2c_drv);
-    if (ret < 0) return ret;
+    int ret = 0;
 
-    i2c_bus[0].fast_mode = fast_mode;
+    for (unsigned int i = 0 ; i < NUMBER_OF_I2C_BUS ; i++)
+    {
+        ret = i2c_bus_init(&i2c_bus[i].super, &atmega328p_i2c_drv);
+        if (ret < 0) return ret;
 
-    return i2c_register_bus(&i2c_bus[0].super);
+        i2c_bus[i].fast_mode = fast_mode;
+
+        ret = i2c_register_bus(&i2c_bus[i].super);
+        if (ret < 0) return ret;
+    }
+
+    return I2C_OK;
 }
 
 /*
@@ -84,6 +93,9 @@ int i2c_atmega328p_init(bool fast_mode)
 
 static int init(i2c_bus_t self)
 {
+    if (self->drv != &atmega328p_i2c_drv)
+        return -I2C_FAIL;
+
     i2c_atmega328p_bus_t bus = (i2c_atmega328p_bus_t) self;
 
     RESET_BIT(PRR, PRTWI);
@@ -92,7 +104,7 @@ static int init(i2c_bus_t self)
     TWCR = 0;
 
     // Formula is ((F_CPU/F_I2C)-16)/2;
-    TWBR = bus->fast_mode ? 12 : 72;
+    TWBR = bus->fast_mode ? 12 /* 400kHz */ : 72 /* 100kHz */;
 
     return I2C_OK;
 }
