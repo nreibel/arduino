@@ -28,7 +28,7 @@
  * Public methods
  */
 
-int tft_shield_init(tft_shield_t self, i2c_bus_t i2c, st7735_orientation_t orientation)
+int tft_shield_init(tft_shield_t self, spi_bus_t spi, i2c_bus_t i2c, st7735_orientation_t orientation)
 {
     uint8_t w = 160, h = 128;
 
@@ -53,7 +53,7 @@ int tft_shield_init(tft_shield_t self, i2c_bus_t i2c, st7735_orientation_t orien
             return -1;
     }
 
-    st7735_init_device(&self->tft, D10, D8, w, h);
+    st7735_init_device(&self->tft, spi, D10, D8, w, h);
     st7735_set_orientation(&self->tft, orientation);
 
     // Enable buttons and joystick as input with pullup

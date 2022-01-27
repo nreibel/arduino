@@ -57,9 +57,9 @@ typedef struct {
  * Object mehtods
  */
 
-void st7735_init_device(st7735_t self, gpio_t cs, gpio_t dc, unsigned int w, unsigned int h)
+void st7735_init_device(st7735_t self, spi_bus_t bus, gpio_t cs, gpio_t dc, unsigned int w, unsigned int h)
 {
-    spi_device_init(&self->dev, cs, SPI_CLOCK_DIV_2, SPI_MODE_0);
+    spi_device_init(&self->dev, bus, cs, SPI_CLOCK_DIV_2, SPI_MODE_0);
     spi_set_transaction_mode_enabled(&self->dev, TRUE);
     spi_enable_slave(&self->dev);
 

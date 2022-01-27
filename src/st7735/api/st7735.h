@@ -29,7 +29,7 @@ typedef enum {
     ST7735_ORIENTATION_LANDSCAPE_INV
 } st7735_orientation_t;
 
-void st7735_init_device(st7735_t self, gpio_t cs, gpio_t dc, unsigned int w, unsigned int h);
+void st7735_init_device(st7735_t self, spi_bus_t bus, gpio_t cs, gpio_t dc, unsigned int w, unsigned int h);
 
 // Setters
 void st7735_set_scale(st7735_t self, unsigned int scale);

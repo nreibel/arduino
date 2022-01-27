@@ -17,8 +17,10 @@ static uint8_t spi_ll_read_byte();
  * Exported functions
  */
 
-void spi_init()
+void spi_init(spi_bus_t bus)
 {
+    UNUSED(bus);
+
     // Enable MISO, MOSI, SCK
     gpio_set_data_direction(MOSI, GPIO_OUTPUT_ACTIVE_HIGH);
     gpio_set_data_direction(MISO, GPIO_INPUT_HIGH_Z);
@@ -27,8 +29,10 @@ void spi_init()
     spi_ll_enable();
 }
 
-void spi_device_init(spi_device_t self, gpio_t cs, spi_clock_t clk, spi_mode_t mode)
+void spi_device_init(spi_device_t self, spi_bus_t bus, gpio_t cs, spi_clock_t clk, spi_mode_t mode)
 {
+    UNUSED(bus);
+
     self->cs = cs;
     self->clk = clk;
     self->mode = mode;

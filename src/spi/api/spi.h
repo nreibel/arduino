@@ -23,6 +23,11 @@ typedef enum {
     NUMBER_OF_SPI_MODE
 } spi_mode_t;
 
+typedef enum {
+    SPI_BUS_0,
+    NUMBER_OF_SPI_BUS
+} spi_bus_t;
+
 typedef struct spi_device_prv_s{
     gpio_t cs;
     spi_clock_t clk;
@@ -30,8 +35,9 @@ typedef struct spi_device_prv_s{
     bool transaction_mode;
 } * spi_device_t;
 
-void spi_init();
-void spi_device_init(spi_device_t self, gpio_t cs, spi_clock_t clk, spi_mode_t mode);
+void spi_init(spi_bus_t bus);
+void spi_device_init(spi_device_t self, spi_bus_t bus, gpio_t cs, spi_clock_t clk, spi_mode_t mode);
+
 void spi_set_transaction_mode_enabled(spi_device_t self, bool enabled);
 void spi_disable_slave(spi_device_t self);
 void spi_enable_slave(spi_device_t self);
