@@ -17,7 +17,6 @@
  * Shoud read 200Hz and 127 (50%) duty cycle
  */
 
-const __flash char STR_READY[] = "Ready!\r\n";
 const __flash char STR_ERROR[] = "Error %d\r\n";
 const __flash char STR_OVERFLOW[] = "Overflow\r\n";
 const __flash char STR_NO_INPUT[] = "No input\r\n";
@@ -27,11 +26,10 @@ const __flash char STR_ERROR_ICP_INIT[] = "INIT ICP FAILED\r\n";
 const __flash char STR_ERROR_TIMER_INIT[] = "INIT TIMER FAILED\r\n";
 const __flash char STR_ERROR_TIMER_START[] = "START TIMER FAILED\r\n";
 
-void serial_rx_cbk(serial_bus_t bus, const char *buffer, int length)
+void serial_rx_callback(serial_bus_t bus, const char *buffer, unsigned int length)
 {
     UNUSED(bus);
-    UNUSED(length);
-    printf(buffer);
+    printf("Received %u bytes : %s\r\n", length, buffer);
 }
 
 int os_putc(char chr, FILE *stream)
@@ -41,11 +39,11 @@ int os_putc(char chr, FILE *stream)
     else return chr;
 }
 
+
 // App entry point
 void app_init()
 {
     serial_bus_init(SERIAL_BUS_0, 19200);
-    serial_set_rx_callback(SERIAL_BUS_0, serial_rx_cbk);
 
     timer_config_t timer_cfg = {
         .mode = TIMER_MODE_FAST_PWM,
@@ -87,8 +85,6 @@ void app_init()
 
     printf("Heap usage : %u used, %u free, %u total\r\n", os_get_used_heap(), os_get_free_heap(), os_get_total_heap());
 #endif
-
-    printf_P(STR_READY);
 }
 
 // Main task

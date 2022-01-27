@@ -35,10 +35,10 @@ typedef struct {
     uint8_t address;
     uint8_t data_len;
     uint8_t data[];
-} serial_tp_request;
+} serial_tp_request_t;
 
-typedef uint8_t (*serial_tp_callback)(serial_tp_request *req, void *rsp_data, uint8_t *rsp_length);
+extern uint8_t serial_tp_callback(serial_bus_t bus, const serial_tp_request_t * req, void *data, uint8_t *length);
 
-void serial_tp_init(serial_bus_t bus, serial_tp_callback cbk);
+void serial_tp_init(serial_bus_t bus);
 
 #endif /* __SERIAL_TP_API_H__ */

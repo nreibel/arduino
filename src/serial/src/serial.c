@@ -14,14 +14,13 @@
 struct serial_prv_s {
 
 #if SERIAL_ASYNC_RX != OFF
-    serial_rx_callback rx_cbk;
-    char  rx_buf[SERIAL_RECEIVE_BUFFER_LENGTH];
-    int   rx_sz;
+    char         rx_buf[SERIAL_RECEIVE_BUFFER_LENGTH];
+    unsigned int rx_sz;
 #endif
 
 #if SERIAL_ASYNC_TX != OFF
-    volatile const void *tx_buf;
-    volatile int   tx_sz;
+    volatile const void  *tx_buf;
+    volatile unsigned int tx_sz;
 #endif
 
 };
@@ -53,7 +52,6 @@ int serial_bus_init(serial_bus_t bus, uint32_t baudrate)
         return -1;
 
 #if SERIAL_ASYNC_RX != OFF
-    instances[bus].rx_cbk = NULL_PTR;
     instances[bus].rx_sz = 0;
 #endif
 
@@ -100,8 +98,7 @@ ISR(USART_RX_vect)
         ser->rx_buf[ser->rx_sz++] = 0;
 
         // Call user callback
-        if (ser->rx_cbk != NULL_PTR)
-            ser->rx_cbk(SERIAL_BUS_0, ser->rx_buf, ser->rx_sz);
+        serial_rx_callback(SERIAL_BUS_0, ser->rx_buf, ser->rx_sz);
 
         // Reset buffer
         ser->rx_sz = 0;
@@ -111,11 +108,6 @@ ISR(USART_RX_vect)
         // TODO : handle buffer full
         ser->rx_buf[ser->rx_sz++] = data;
     }
-}
-
-void serial_set_rx_callback(serial_bus_t bus, serial_rx_callback cbk)
-{
-    instances[bus].rx_cbk = cbk;
 }
 #endif
 

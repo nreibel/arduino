@@ -7,26 +7,27 @@
  * Private types
  */
 
-typedef struct {
-    uint8_t status;
-    uint8_t length;
-    uint8_t data[SERIAL_TP_RESPONSE_BUFFER_LEN+1];
-} serial_tp_response;
+struct rsp_s {
+    uint8_t status;                              /* Status code                                */
+    uint8_t length;                              /* Data length, in bytes                      */
+    uint8_t data[SERIAL_TP_RESPONSE_BUFFER_LEN]; /* Data buffer                                */
+    uint8_t terminator;                          /* One extra byte in case data buffer is full */
+};
 
 /*
  * Private data
  */
 
-static serial_tp_callback callbacks[NUMBER_OF_SERIAL_BUSES] =  {0};
+static struct rsp_s rsp;
+static const __flash char STR_READY[] = "READY";
 
 /*
  * Public functions
  */
 
-static void serial_rx_cbk(serial_bus_t bus, const char *rx_buffer, int rx_length)
+void serial_rx_callback(serial_bus_t bus, const char *data, unsigned int len)
 {
-    static serial_tp_response rsp;
-    serial_tp_request *req = TYPECAST(rx_buffer, serial_tp_request*);
+    serial_tp_request_t * req = TYPECAST(data, serial_tp_request_t*);
 
     rsp.length = 0;
 
@@ -34,14 +35,13 @@ static void serial_rx_cbk(serial_bus_t bus, const char *rx_buffer, int rx_length
     {
         rsp.status = SERIAL_TP_RETCODE_INVALID_HEADER;
     }
-    else if ( req->data_len != rx_length - sizeof(serial_tp_request) - 1 )
+    else if ( req->data_len != len - sizeof(serial_tp_request_t) - 1 )
     {
         rsp.status = SERIAL_TP_RETCODE_INVALID_DATA_LEN;
     }
     else
     {
-        // User callback
-        rsp.status = callbacks[bus](req, rsp.data, &rsp.length);
+        rsp.status = serial_tp_callback(bus, req, rsp.data, &rsp.length);
     }
 
     rsp.data[rsp.length] = SERIAL_TP_FRAME_TERMINATOR;
@@ -53,8 +53,7 @@ static void serial_rx_cbk(serial_bus_t bus, const char *rx_buffer, int rx_length
     #endif // SERIAL_ASYNC_TX
 }
 
-void serial_tp_init(serial_bus_t bus, serial_tp_callback cbk)
+void serial_tp_init(serial_bus_t bus)
 {
-    serial_set_rx_callback(bus, serial_rx_cbk);
-    callbacks[bus] = cbk;
+    serial_print_P(bus, STR_READY);
 }
