@@ -1,6 +1,7 @@
 #include "os_cfg.h"
 #include "os_mem.h"
 #include "i2c.h"
+#include "i2c_cfg.h"
 #include "types.h"
 #include "lists.h"
 
@@ -33,8 +34,6 @@ unsigned int i2c_get_bus_count()
 }
 
 #else
-
-#define I2C_MAX_BUS_COUNT 8
 
 static i2c_bus_t i2c_bus_list[I2C_MAX_BUS_COUNT];
 static uint8_t i2c_idx = 0;
