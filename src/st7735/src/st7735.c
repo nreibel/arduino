@@ -135,8 +135,18 @@ static void st7735_command(st7735_t self, uint8_t command)
 static void st7735_color(st7735_t self, st7735_color_t color)
 {
     // Swap bytes
-    word w = { (color << 8) | (color >> 8) };
-    spi_write_bytes(&self->dev, w.bytes, 2);
+    word w = {
+        .value = color
+    };
+
+    word s = {
+        .bytes = {
+            [0] = w.bytes[1],
+            [1] = w.bytes[0],
+        }
+    };
+
+    spi_write_fast(&self->dev, UINT8_PTR(&s), 2);
 }
 
 static void st7735_set_draw_window(st7735_t self, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2)
@@ -144,12 +154,12 @@ static void st7735_set_draw_window(st7735_t self, unsigned int x1, unsigned int 
     // Set the column to write to
     uint8_t col[4] = {0, x1+self->offset_x, 0, x2+self->offset_x};
     st7735_command(self, ST7735_CASET);
-    spi_write_bytes(&self->dev, col, 4);
+    spi_write_fast(&self->dev, col, 4);
 
     // Set the row range to write to
     uint8_t row[4] = {0, y1+self->offset_y, 0, y2+self->offset_y};
     st7735_command(self, ST7735_RASET);
-    spi_write_bytes(&self->dev, row, 4);
+    spi_write_fast(&self->dev, row, 4);
 
     // Write to RAM
     st7735_command(self, ST7735_RAMWR);
