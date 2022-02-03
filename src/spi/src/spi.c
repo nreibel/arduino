@@ -99,6 +99,19 @@ void spi_write_bytes(spi_device_t self, uint8_t *buffer, int len)
     if (!self->transaction_mode) spi_disable_slave(self);
 }
 
+void spi_write_fast(spi_device_t self, const uint8_t *buffer, int len)
+{
+    if (!self->transaction_mode) spi_enable_slave(self);
+
+    while(len-- > 0)
+    {
+        while( !spi_ll_ready() );
+        spi_ll_write_byte(*buffer++);
+    }
+
+    if (!self->transaction_mode) spi_disable_slave(self);
+}
+
 void spi_write_byte(spi_device_t self, uint8_t byte, uint8_t *read)
 {
     if (!self->transaction_mode) spi_enable_slave(self);

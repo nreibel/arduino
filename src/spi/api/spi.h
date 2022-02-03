@@ -45,5 +45,6 @@ void spi_read_byte(spi_device_t self, uint8_t *byte);
 void spi_read_bytes(spi_device_t self, uint8_t *buffer, int len);
 void spi_write_byte(spi_device_t self, uint8_t byte, uint8_t *read);
 void spi_write_bytes(spi_device_t self, uint8_t *buffer, int len);
+void spi_write_fast(spi_device_t self, const uint8_t *buffer, int len);
 
 #endif // SRC_SPI_API_SPI_H_
