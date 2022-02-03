@@ -135,18 +135,9 @@ static void st7735_command(st7735_t self, uint8_t command)
 static void st7735_color(st7735_t self, st7735_color_t color)
 {
     // Swap bytes
-    word w = {
-        .value = color
-    };
-
-    word s = {
-        .bytes = {
-            [0] = w.bytes[1],
-            [1] = w.bytes[0],
-        }
-    };
-
-    spi_write_fast(&self->dev, UINT8_PTR(&s), 2);
+    word w = { .value = color };
+    uint8_t b[2] = { w.bytes[1], w.bytes[0] };
+    spi_write_fast(&self->dev, b, 2);
 }
 
 static void st7735_set_draw_window(st7735_t self, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2)
