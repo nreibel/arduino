@@ -1,5 +1,6 @@
 INCLUDES += \
 	$(SRC_DIR)/st7735/api \
+	$(CFG_DIR)/st7735 \
 
 SOURCES += \
 	$(SRC_DIR)/st7735/src/st7735.c \

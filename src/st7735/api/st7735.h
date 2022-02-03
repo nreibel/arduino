@@ -1,6 +1,7 @@
 #ifndef SRC_ST7735_API_ST7735_H_
 #define SRC_ST7735_API_ST7735_H_
 
+#include "st7735_cfg.h"
 #include "types.h"
 #include "spi.h"
 #include "gpio.h"
@@ -14,7 +15,9 @@ typedef struct st7735_prv_s {
     struct spi_device_prv_s dev;
     st7735_color_t background_color;
     st7735_color_t foreground_color;
+#if ST7735_SCALING_ENABLED
     unsigned int scale;
+#endif // ST7735_SCALING_ENABLED
     gpio_t dc;
     uint8_t width;
     uint8_t height;
@@ -32,11 +35,14 @@ typedef enum {
 void st7735_init_device(st7735_t self, spi_bus_t bus, gpio_t cs, gpio_t dc, unsigned int w, unsigned int h);
 
 // Setters
-void st7735_set_scale(st7735_t self, unsigned int scale);
 void st7735_set_foreground(st7735_t self, st7735_color_t c);
 void st7735_set_background(st7735_t self, st7735_color_t c);
 void st7735_set_offset(st7735_t self, int offset_x, int offset_y);
 void st7735_set_orientation(st7735_t self, st7735_orientation_t orientation);
+
+#if ST7735_SCALING_ENABLED
+void st7735_set_scale(st7735_t self, unsigned int scale);
+#endif // ST7735_SCALING_ENABLED
 
 // Getters
 unsigned int st7735_get_width(st7735_t self);
