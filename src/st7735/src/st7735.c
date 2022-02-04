@@ -242,7 +242,19 @@ void st7735_fill_rectangle(st7735_t self, unsigned int x, unsigned int y, unsign
 
 void st7735_draw_char(st7735_t self, unsigned int x, unsigned int y, const char chr)
 {
-    if ( ! BETWEEN(chr, 0x20, 0x7E) ) return;
+    const __flash uint8_t *raw = NULL_PTR;
+
+    if ( BETWEEN(chr, ' ', '~') )
+    {
+        raw = s_st7735_charset[chr-0x20];
+    }
+#if ST7735_EXTENDED_ASCII
+    else if ( (uint8_t) chr >= 0x80 )
+    {
+        raw = s_st7735_charset_ext[ (uint8_t) chr - ST7735_EXT_ASCII_START_IDX ];
+    }
+#endif // ST7735_EXTENDED_ASCII
+    else return;
 
     unsigned int w = SCALE * ST7735_CHARSET_WIDTH;
     unsigned int h = SCALE * ST7735_CHARSET_HEIGHT;
@@ -258,7 +270,7 @@ void st7735_draw_char(st7735_t self, unsigned int x, unsigned int y, const char 
         {
             for (unsigned int dx = 0 ; dx < ST7735_CHARSET_WIDTH ; dx++)
             {
-                uint8_t b = s_st7735_charset[chr-0x20][dx];
+                uint8_t b = raw[dx];
                 st7735_color_t px = IS_SET_BIT(b, dy) ? self->foreground_color : self->background_color;
 
 #if ST7735_SCALING_ENABLED
