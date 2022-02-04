@@ -60,7 +60,7 @@ MAP = $(OUT)/$(APP).map
 # Compilation options and flags
 WARNINGS += all extra undef
 DEFINES +=
-CFLAGS += -O2 -g0 -mmcu=$(ARCH) -ffunction-sections -fdata-sections
+CFLAGS += -O2 -flto -g0 -mmcu=$(ARCH)
 LDFLAGS += -gc-sections --relax -Map,$(MAP)
 
 OBJECTS = $(SOURCES:%.c=$(OBJ)/%.o)
