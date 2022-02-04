@@ -1,6 +1,7 @@
 #include "st7735.h"
 #include "st7735_cfg.h"
 #include "spi.h"
+#include "spi_ll.h"
 #include "gpio.h"
 #include "bits.h"
 #include "charset.h"
@@ -134,10 +135,12 @@ static void st7735_command(st7735_t self, uint8_t command)
 
 static void st7735_color(st7735_t self, st7735_color_t color)
 {
-    // Swap bytes
-    word w = { .value = color };
-    uint8_t b[2] = { w.bytes[1], w.bytes[0] };
-    spi_write_fast(&self->dev, b, 2);
+    UNUSED(self);
+
+    while(!spi_ll_ready());
+    spi_ll_write_byte(color >> 8);
+    while(!spi_ll_ready());
+    spi_ll_write_byte(color);
 }
 
 static void st7735_set_draw_window(st7735_t self, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2)

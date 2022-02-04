@@ -1,5 +1,5 @@
-#ifndef SRC_ST7735_API_ST7735_H_
-#define SRC_ST7735_API_ST7735_H_
+#ifndef __ST7735_API_H
+#define __ST7735_API_H
 
 #include "st7735_cfg.h"
 #include "types.h"
@@ -92,4 +92,4 @@ void st7735_draw_xbm(st7735_t self, st7735_xbm_t *bits, unsigned int x, unsigned
 #define ST7735_COLOR_ORANGE   (ST7735_RED(0xFFU) | ST7735_GREEN(0x80U))
 #define ST7735_COLOR_SPRING   (ST7735_GREEN(0xFFU) | ST7735_BLUE(0x80U))
 
-#endif // SRC_ST7735_API_ST7735_H_
+#endif // __ST7735_API_H
