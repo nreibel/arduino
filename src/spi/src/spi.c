@@ -1,21 +1,7 @@
 #include "spi.h"
+#include "spi_ll.h"
 #include "gpio.h"
 #include "bits.h"
-#include <avr/io.h>
-
-/*
- * Private functions declaration
- */
-
-static void spi_ll_enable();
-static void spi_ll_configure(spi_clock_t clock, spi_mode_t mode);
-static bool spi_ll_ready();
-static void spi_ll_write_byte(uint8_t write);
-static uint8_t spi_ll_read_byte();
-
-/*
- * Exported functions
- */
 
 void spi_init(spi_bus_t bus)
 {
@@ -121,102 +107,4 @@ void spi_write_byte(spi_device_t self, uint8_t byte, uint8_t *read)
     if (read != NULL_PTR) *read = spi_ll_read_byte();
 
     if (!self->transaction_mode) spi_disable_slave(self);
-}
-
-/*
- * Private functions
- */
-
-static void spi_ll_enable()
-{
-    // Enable peripheral
-    RESET_BIT(PRR, PRSPI);
-}
-
-static void spi_ll_configure(spi_clock_t clock, spi_mode_t mode)
-{
-    static spi_clock_t _clock = NUMBER_OF_SPI_CLOCK_DIV;
-    static spi_mode_t  _mode  = NUMBER_OF_SPI_MODE;
-
-    // Clock/Mode already set
-    if (clock == _clock && mode == _mode) return;
-
-    // Enable SPI, Master Mode
-    uint8_t spcr = BIT(MSTR) | BIT(SPE);
-    uint8_t spsr = 0;
-
-    switch(clock)
-    {
-        case SPI_CLOCK_DIV_2:
-            SET_BIT(spsr, SPI2X);
-        case SPI_CLOCK_DIV_4:
-            // Do nothing
-            break;
-
-        case SPI_CLOCK_DIV_8:
-            SET_BIT(spsr, SPI2X);
-        case SPI_CLOCK_DIV_16:
-            SET_BIT(spcr, SPR0);
-            break;
-
-        case SPI_CLOCK_DIV_32:
-            SET_BIT(spsr, SPI2X);
-        case SPI_CLOCK_DIV_64:
-            SET_BIT(spcr, SPR1);
-            break;
-
-        case SPI_CLOCK_DIV_128:
-            SET_BIT(spcr, SPR0);
-            SET_BIT(spcr, SPR1);
-            break;
-
-        default:
-            // TODO;
-            break;
-    }
-
-    switch(mode)
-    {
-        case SPI_MODE_0:
-            // Do nothing
-            break;
-
-        case SPI_MODE_1:
-            SET_BIT(spcr, CPHA);
-            break;
-
-        case SPI_MODE_2:
-            SET_BIT(spcr, CPOL);
-            break;
-
-        case SPI_MODE_3:
-            SET_BIT(spcr, CPOL);
-            SET_BIT(spcr, CPHA);
-            break;
-
-        default:
-            // TODO;
-            break;
-    }
-
-    SPCR = spcr;
-    SPSR = spsr;
-
-    _clock = clock;
-    _mode = mode;
-}
-
-static bool spi_ll_ready(void)
-{
-    return IS_SET_BIT(SPSR, SPIF);
-}
-
-static void spi_ll_write_byte(const uint8_t write)
-{
-    SPDR = write;
-}
-
-static uint8_t spi_ll_read_byte(void)
-{
-    return SPDR;
 }
