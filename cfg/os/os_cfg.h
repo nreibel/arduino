@@ -39,7 +39,6 @@ typedef enum {
 } os_background_tasks_t;
 
 typedef enum {
-    TIMER_INTERVAL,
     NUMBER_OF_OS_TIMERS
 } os_timer_t;
 

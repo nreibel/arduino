@@ -4,10 +4,26 @@
 #include "types.h"
 #include "serial_cfg.h"
 
-typedef enum {
-    SERIAL_BUS_0,
-    NUMBER_OF_SERIAL_BUSES
-} serial_bus_t;
+typedef volatile uint8_t * reg8_t;
+typedef volatile uint16_t * reg16_t;
+
+typedef struct serial_bus_s {
+    reg8_t PRRx;
+    reg8_t UCSRxA;
+    reg8_t UCSRxB;
+    reg8_t UCSRxC;
+    reg8_t UDRx;
+    reg16_t UBRRx;
+    uint8_t PRUSARTx;
+    uint8_t RXCx;
+    uint8_t UDREx;
+    uint8_t TXCIEx;
+    uint8_t RXCIEx;
+    uint8_t RXENx;
+    uint8_t TXENx;
+} const * serial_bus_t;
+
+extern serial_bus_t SERIAL_BUS_0;
 
 #define C_END       "\33[0m"
 #define C_BOLD      "\33[1m"

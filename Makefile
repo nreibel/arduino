@@ -1,10 +1,10 @@
 # Serial
-SERIAL_TTY := /dev/ttyUSB0
+SERIAL_TTY := /dev/ttyACM0
 SERIAL_BAUDRATE := 19200
 
 ARDUINO_LIBS := .
 
-TARGET := $(ARDUINO_LIBS)/targets/uno.mk
+TARGET := $(ARDUINO_LIBS)/targets/leonardo.mk
 
 APP := out
 
@@ -22,6 +22,6 @@ LDFLAGS := -u,vfprintf
 LIBS := printf_flt m
 
 # Enable selected modules
-MODULES := os gpio serial timer icp
+MODULES := os serial
 
 include $(ARDUINO_LIBS)/makefile.include
