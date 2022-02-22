@@ -2,140 +2,166 @@
 #include "os_cfg.h"
 #include "bits.h"
 #include "types.h"
-#include "string.h"
+#include "timer.h"
+
+#include <avr/io.h>
+#include <avr/power.h>
+#include <avr/interrupt.h>
+#include <avr/sleep.h>
+#include <avr/wdt.h>
 
 #if OS_ENABLE_PRINTF
 #include "stdio.h"
 #endif // OS_ENABLE_PRINTF
 
 /*
- * Extern functions prototypes
+ * Private variables
  */
 
-void os_init();
-void os_sleep();
+static volatile time_t os_timer = 0;
 
 /*
- * Private functions prototypes
+ * External functions
  */
 
-static void os_cyclic_tasks();
-static int os_background_tasks();
+void os_cyclic_tasks();
+int os_background_tasks();
 
 /*
- * Private data
+ * System Timer interrupt
  */
 
-static struct {
-    time_t value;
-    bool running;
-} timers[NUMBER_OF_OS_TIMERS];
-
-static struct {
-    time_t interval;
-    time_t last;
-    callback_t callback;
-    void* param;
-} tasks[NUMBER_OF_OS_TASKS];
+ISR(TIMER0_COMPA_vect)
+{
+    os_timer++;
+}
 
 /*
  * Public functions
  */
 
+void HALT()
+{
+    // Disable interrupts, watchdog, and all peripherals
+    cli();
+    wdt_disable();
+    power_all_disable();
+
+    // Power down
+    for(;;)
+    {
+        set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+        sleep_enable();
+        sleep_cpu();
+    }
+}
+
+void os_interrupts_disable()
+{
+    cli();
+}
+
+void os_interrupts_enable()
+{
+    sei();
+}
+
+void os_reset()
+{
+  cli();                 // disable interrupts
+  wdt_enable(WDTO_15MS); // enable watchdog
+  for(;;){}              // wait for watchdog to reset processor
+}
+
+int os_watchdog_enable(os_watchdog_t wd)
+{
+    switch(wd)
+    {
+        case OS_WATCHDOG_15MS:  wdt_enable(WDTO_15MS);  return 0;
+        case OS_WATCHDOG_30MS:  wdt_enable(WDTO_30MS);  return 0;
+        case OS_WATCHDOG_60MS:  wdt_enable(WDTO_60MS);  return 0;
+        case OS_WATCHDOG_120MS: wdt_enable(WDTO_120MS); return 0;
+        case OS_WATCHDOG_250MS: wdt_enable(WDTO_250MS); return 0;
+        case OS_WATCHDOG_500MS: wdt_enable(WDTO_500MS); return 0;
+        case OS_WATCHDOG_1S:    wdt_enable(WDTO_1S);    return 0;
+        case OS_WATCHDOG_2S:    wdt_enable(WDTO_2S);    return 0;
+        case OS_WATCHDOG_4S:    wdt_enable(WDTO_4S);    return 0;
+        case OS_WATCHDOG_8S:    wdt_enable(WDTO_8S);    return 0;
+        default: return -1;
+    }
+}
+
+void os_watchdog_trigger()
+{
+    wdt_reset();
+}
+
+time_t os_millis()
+{
+    return os_timer;
+}
+
+void os_sleep()
+{
+    set_sleep_mode(OS_SLEEP_MODE);
+    sleep_enable();
+    sleep_cpu();
+
+    /*
+    * CPU is sleeping...
+    */
+
+    sleep_disable();
+}
+
 void os_wait(time_t ms)
 {
     if (ms <= 0) return;
 
-    const time_t start = os_millis();
+    const time_t start = os_timer;
 
     while(1)
     {
-        time_t elapsed = os_millis() - start;
+        time_t elapsed = os_timer - start;
         if (elapsed >= ms ) return;
         else os_sleep();
     }
 }
 
-void os_timer_start(os_timer_t timer)
-{
-    timers[timer].value = os_millis();
-    timers[timer].running = TRUE;
-}
-
-void os_timer_reset(os_timer_t timer)
-{
-    timers[timer].value = os_millis();
-}
-
-void os_timer_stop(os_timer_t timer)
-{
-    timers[timer].value = os_millis() - timers[timer].value;
-    timers[timer].running = FALSE;
-}
-
-void os_timer_resume(os_timer_t timer)
-{
-    timers[timer].value = os_millis() - timers[timer].value;
-    timers[timer].running = TRUE;
-}
-
-time_t os_timer_value(os_timer_t timer)
-{
-    if (timers[timer].running) return os_millis() - timers[timer].value;
-    else return timers[timer].value;
-}
-
-void os_task_setup(os_task_t task, time_t interval, callback_t callback, void* param)
-{
-    tasks[task].interval = interval;
-    tasks[task].callback = callback;
-    tasks[task].param = param;
-    tasks[task].last = os_millis() - interval;
-}
-
-static void os_cyclic_tasks()
-{
-    for(int i = 0; i < NUMBER_OF_OS_TASKS; i++)
-    {
-        if(tasks[i].interval <= 0 || tasks[i].callback == NULL_PTR) continue;
-
-        time_t elapsed = os_millis() - tasks[i].last;
-
-        if(elapsed >= tasks[i].interval)
-        {
-            tasks[i].callback(tasks[i].param);
-            tasks[i].last += tasks[i].interval;
-        }
-    }
-}
-
-static int os_background_tasks()
-{
-    int retval = 0;
-
-    for ( int i = 0 ; i < NUMBER_OF_BACKGROUND_TASKS ; i++ )
-    {
-        if (background_tasks_list[i]() < 0)
-        {
-            retval = -1;
-        }
-        // TODO : handle task failed
-    }
-
-    return retval;
-}
-
 int main(void)
 {
-    /* Perform project-specific initialization */
-    os_init();
+    /* Disable all peripherals */
+    os_interrupts_disable();
+    power_all_disable();
+
+    /* Enable pullup resistor on all inputs */
+    DDRB = 0;
+    DDRC = 0;
+    DDRD = 0;
+    PORTB = 0xFF;
+    PORTC = 0xFF;
+    PORTD = 0xFF;
+
+    // Configure 1ms system timer
+    timer_config_t timer_cfg = {
+        .mode = TIMER_MODE_CTC,
+        .imask = BIT(TIMER_INTERRUPT_OCM_A),
+        .prescaler = TIMER_PRESCALER_64,
+        .ocra = 250
+    };
+
+    if (timer_init(TIMER[0], &timer_cfg) < 0)
+        HALT();
+
+    if (timer_start(TIMER[0]) < 0)
+        HALT();
 
 #if OS_ENABLE_PRINTF
     static FILE os_stdout = FDEV_SETUP_STREAM(os_putc, NULL_PTR, _FDEV_SETUP_WRITE);
     stdout = &os_stdout;
 #endif // OS_ENABLE_PRINTF
 
-    // Enable interrupts
+    /* Enable interrupts */
     os_interrupts_enable();
 
     /* Initialization of the application */

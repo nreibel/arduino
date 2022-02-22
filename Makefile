@@ -22,6 +22,6 @@ LDFLAGS := -u,vfprintf
 LIBS := printf_flt m
 
 # Enable selected modules
-MODULES := os serial
+MODULES := os timer serial
 
 include $(ARDUINO_LIBS)/makefile.include

@@ -1,25 +1,19 @@
-#ifndef __TIMER_API_H__
-#define __TIMER_API_H__
+#ifndef TIMER_API_H__
+#define TIMER_API_H__
 
 #include "types.h"
+#include "timer_ll.h"
 
 typedef enum {
     TIMER_OK,
     TIMER_ERROR,
     TIMER_ERROR_INSTANCE,
-    TIMER_ERROR_NOT_INIT,
+    TIMER_ERROR_INIT,
     TIMER_ERROR_MODE,
     TIMER_ERROR_OCA_MODE,
     TIMER_ERROR_OUTPUT_MODE,
     TIMER_ERROR_PRESCALER,
 } timer_error_t;
-
-typedef enum {
-    TIMER_0,
-    // TIMER_1, // TODO
-    TIMER_2,
-    NUMBER_OF_TIMERS
-} timer_t;
 
 typedef enum {
     TIMER_MODE_NORMAL,
@@ -32,11 +26,12 @@ typedef enum {
     TIMER_PRESCALER_STOPPED,
     TIMER_PRESCALER_1,
     TIMER_PRESCALER_8,
-    TIMER_PRESCALER_32, // Timer 2 only
+    TIMER_PRESCALER_32,
     TIMER_PRESCALER_64,
-    TIMER_PRESCALER_128, // Timer 2 only
+    TIMER_PRESCALER_128,
     TIMER_PRESCALER_256,
-    TIMER_PRESCALER_1024
+    TIMER_PRESCALER_1024,
+    NUMBER_OF_TIMER_PRESCALERS
 } timer_prescaler_t;
 
 typedef enum {
@@ -57,6 +52,12 @@ typedef enum {
     TIMER_INTERRUPT_OCM_B,
 } timer_interrupt_t;
 
+typedef struct timer_s {
+    ll_timer_t instance;
+    timer_prescaler_t prescaler;
+    bool init;
+} * timer_t;
+
 typedef struct {
     timer_mode_t mode;
     timer_output_mode_t output_mode_a;
@@ -68,10 +69,12 @@ typedef struct {
     uint8_t ocrb;
 } timer_config_t;
 
+extern const timer_t TIMER[NUMBER_OF_TIMERS];
+
 int timer_init(timer_t self, timer_config_t * config);
 int timer_start(timer_t self);
 int timer_stop(timer_t self);
 int timer_set_ocra(timer_t self, uint8_t val);
 int timer_set_ocrb(timer_t self, uint8_t val);
 
-#endif /* __TIMER_API_H__ */
+#endif /* TIMER_API_H__ */

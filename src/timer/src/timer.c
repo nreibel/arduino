@@ -1,45 +1,15 @@
 #include "os.h"
 #include "timer.h"
+#include "timer_ll.h"
 #include "bits.h"
-#include "avr/io.h"
-#include "avr/power.h"
 
 /*
- * Private types
+ * External data
  */
 
-typedef union {
-    struct {
-        uint8_t WGM      : 2;
-        uint8_t reserved : 2;
-        uint8_t COMB     : 2;
-        uint8_t COMA     : 2;
-    } bits;
-    uint8_t byte;
-} tccra_t;
-
-typedef union {
-    struct {
-        uint8_t CS       : 3;
-        uint8_t WGM      : 1;
-        uint8_t reserved : 2;
-        uint8_t FOCB     : 1;
-        uint8_t FOCA     : 1;
-    } bits;
-    uint8_t byte;
-} tccrb_t;
-
-/*
- * Private data
- */
-
-struct {
-    bool init;
-    uint8_t prescaler;
-} timer_cfg[NUMBER_OF_TIMERS] = {
-    [TIMER_0] = { FALSE, TIMER_PRESCALER_STOPPED },
-    [TIMER_2] = { FALSE, TIMER_PRESCALER_STOPPED },
-};
+extern void timer_ll_power_enable(ll_timer_t timer);
+extern void timer_ll_set_imask(ll_timer_t timer, uint8_t imask);
+extern int timer_ll_set_prescaler(ll_timer_t timer, uint8_t prescaler);
 
 /*
  * Public methods
@@ -47,247 +17,124 @@ struct {
 
 int timer_init(timer_t self, timer_config_t * config)
 {
-    if (self >= NUMBER_OF_TIMERS)
+    if (self == NULL_PTR)
         return -TIMER_ERROR_INSTANCE;
 
-    tccra_t tccra = { .byte = 0 };
-    tccrb_t tccrb = { .byte = 0 };
-    uint8_t ddra = 0;
-    uint8_t ddrb = 0;
+    // Reset device
+    self->instance->TCCRA.reg = 0;
+    self->instance->TCCRB.reg = 0;
 
-    switch(self)
-    {
-        case TIMER_0:
-        {
-            // Check prescaler
-            switch(config->prescaler)
-            {
-                case TIMER_PRESCALER_1:    timer_cfg[self].prescaler = 0x1; break;
-                case TIMER_PRESCALER_8:    timer_cfg[self].prescaler = 0x2; break;
-                case TIMER_PRESCALER_64:   timer_cfg[self].prescaler = 0x3; break;
-                case TIMER_PRESCALER_256:  timer_cfg[self].prescaler = 0x4; break;
-                case TIMER_PRESCALER_1024: timer_cfg[self].prescaler = 0x5; break;
-                default: return -TIMER_ERROR_PRESCALER;
-            }
-            break;
-        }
-
-        case TIMER_2:
-        {
-            // Check prescaler
-            switch(config->prescaler)
-            {
-                case TIMER_PRESCALER_1:    timer_cfg[self].prescaler = 0x1; break;
-                case TIMER_PRESCALER_8:    timer_cfg[self].prescaler = 0x2; break;
-                case TIMER_PRESCALER_32:   timer_cfg[self].prescaler = 0x3; break;
-                case TIMER_PRESCALER_64:   timer_cfg[self].prescaler = 0x4; break;
-                case TIMER_PRESCALER_128:  timer_cfg[self].prescaler = 0x5; break;
-                case TIMER_PRESCALER_256:  timer_cfg[self].prescaler = 0x6; break;
-                case TIMER_PRESCALER_1024: timer_cfg[self].prescaler = 0x7; break;
-                default: return -TIMER_ERROR_PRESCALER;
-            }
-            break;
-        }
-
-        default:
-            return -TIMER_ERROR_INSTANCE;
-    }
+    // Enable device
+    timer_ll_power_enable(self->instance);
 
     // Set Waveform Generation Mode
-    switch(config->mode)
-    {
-        case TIMER_MODE_NORMAL:            tccra.bits.WGM = 0x0; break;
-        case TIMER_MODE_PHASE_CORRECT_PWM: tccra.bits.WGM = 0x1; break;
-        case TIMER_MODE_CTC:               tccra.bits.WGM = 0x2; break;
-        case TIMER_MODE_FAST_PWM:          tccra.bits.WGM = 0x3; break;
-        default: return -TIMER_ERROR_MODE;
-    }
+    self->instance->TCCRA.bits.WGM = config->mode;
+    self->instance->TCCRB.bits.WGM = config->oca_mode;
 
-    // Set Compare Outpout Mode A
-    switch(config->output_mode_a)
-    {
-        case TIMER_OUTPUT_MODE_DISABLED: tccra.bits.COMA = 0x0; break;
-        case TIMER_OUTPUT_MODE_TOGGLE:   tccra.bits.COMA = 0x1; break;
-        case TIMER_OUTPUT_MODE_DEFAULT:  tccra.bits.COMA = 0x2; break;
-        case TIMER_OUTPUT_MODE_INVERTED: tccra.bits.COMA = 0x3; break;
-        default: return -TIMER_ERROR_OUTPUT_MODE;
-    }
+    // Set Compare Outpout Mode A/B
+    self->instance->TCCRA.bits.COMA = config->output_mode_a;
+    self->instance->TCCRA.bits.COMB = config->output_mode_b;
 
-    // Set Compare Outpout Mode B
-    switch(config->output_mode_b)
-    {
-        case TIMER_OUTPUT_MODE_DISABLED: tccra.bits.COMB = 0x0; break;
-        case TIMER_OUTPUT_MODE_TOGGLE:   tccra.bits.COMB = 0x1; break;
-        case TIMER_OUTPUT_MODE_DEFAULT:  tccra.bits.COMB = 0x2; break;
-        case TIMER_OUTPUT_MODE_INVERTED: tccra.bits.COMB = 0x3; break;
-        default: return -TIMER_ERROR_OUTPUT_MODE;
-    }
+    // Set Output Compare Register A/B
+    self->instance->OCRA = config->ocra;
+    self->instance->OCRB = config->ocrb;
 
-    // Set DDR A
-    switch(config->output_mode_a)
-    {
-        case TIMER_OUTPUT_MODE_TOGGLE:
-        case TIMER_OUTPUT_MODE_DEFAULT:
-        case TIMER_OUTPUT_MODE_INVERTED:
-        {
-            switch(self)
-            {
-                case TIMER_0: SET_BIT(ddra, 6); break;
-                case TIMER_2: SET_BIT(ddra, 3); break;
-                default: return -TIMER_ERROR_INSTANCE;
-            }
-            break;
-        }
+    // Enable interrupts
+    timer_ll_set_imask(self->instance, config->imask);
 
-        default:
-            // Do nothing
-            break;
-    }
+    self->prescaler = config->prescaler;
+    self->init = TRUE;
 
-    // Set DDR B
-    switch(config->output_mode_b)
-    {
-        case TIMER_OUTPUT_MODE_TOGGLE:
-        case TIMER_OUTPUT_MODE_DEFAULT:
-        case TIMER_OUTPUT_MODE_INVERTED:
-        {
-            switch(self)
-            {
-                case TIMER_0: SET_BIT(ddrb, 5); break;
-                case TIMER_2: SET_BIT(ddrb, 3); break;
-                default: return -TIMER_ERROR_INSTANCE;
-            }
-            break;
-        }
-
-        default:
-            // Do nothing
-            break;
-    }
-
-    // Set WGM02
-    switch(config->oca_mode)
-    {
-        case TIMER_OCA_MODE_PWM: tccrb.bits.WGM = 0x0; break;
-        case TIMER_OCA_MODE_TOP: tccrb.bits.WGM = 0x1; break;
-        default: return -TIMER_ERROR_OCA_MODE;
-    }
-
-    // Write registers
-    switch(self)
-    {
-        case TIMER_0:
-            os_interrupts_disable();
-            power_timer0_enable();
-            OCR0A = config->ocra;
-            OCR0B = config->ocrb;
-            TIMSK0 = MASK(config->imask, 0x3);
-            TCCR0A = tccra.byte;
-            TCCR0B = tccrb.byte;
-            SET_MASK(DDRD, ddra|ddrb);
-            os_interrupts_enable();
-            break;
-
-        case TIMER_2:
-            os_interrupts_disable();
-            power_timer2_enable();
-            OCR2A = config->ocra;
-            OCR2B = config->ocrb;
-            TIMSK2 = MASK(config->imask, 0x3);
-            TCCR2A = tccra.byte;
-            TCCR2B = tccrb.byte;
-            SET_MASK(DDRB, ddra);
-            SET_MASK(DDRD, ddrb);
-            os_interrupts_enable();
-            break;
-
-        default:
-            return -TIMER_ERROR_INSTANCE;
-    }
-
-    timer_cfg[self].init = TRUE;
+    // TODO
+//     // Set DDR A
+//     switch(config->output_mode_a)
+//     {
+//         case TIMER_OUTPUT_MODE_TOGGLE:
+//         case TIMER_OUTPUT_MODE_DEFAULT:
+//         case TIMER_OUTPUT_MODE_INVERTED:
+//         {
+//             switch(self)
+//             {
+//                 case TIMER_0: SET_BIT(ddra, 6); break;
+//                 case TIMER_2: SET_BIT(ddra, 3); break;
+//                 default: return -TIMER_ERROR_INSTANCE;
+//             }
+//             break;
+//         }
+//
+//         default:
+//             // Do nothing
+//             break;
+//     }
+//
+//     // Set DDR B
+//     switch(config->output_mode_b)
+//     {
+//         case TIMER_OUTPUT_MODE_TOGGLE:
+//         case TIMER_OUTPUT_MODE_DEFAULT:
+//         case TIMER_OUTPUT_MODE_INVERTED:
+//         {
+//             switch(self)
+//             {
+//                 case TIMER_0: SET_BIT(ddrb, 5); break;
+//                 case TIMER_2: SET_BIT(ddrb, 3); break;
+//                 default: return -TIMER_ERROR_INSTANCE;
+//             }
+//             break;
+//         }
+//
+//         default:
+//             // Do nothing
+//             break;
+//     }
 
     return TIMER_OK;
 }
 
 int timer_start(timer_t self)
 {
-    if (self < NUMBER_OF_TIMERS && !timer_cfg[self].init)
-        return -TIMER_ERROR_NOT_INIT;
+    if (self == NULL_PTR)
+        return -TIMER_ERROR_INSTANCE;
 
-    tccrb_t tccrb = { .byte = 0 };
+    if (!self->init)
+        return -TIMER_ERROR_INIT;
 
-    switch(self)
-    {
-        case TIMER_0: tccrb.byte = TCCR0B; break;
-        case TIMER_2: tccrb.byte = TCCR2B; break;
-        default: return -TIMER_ERROR_INSTANCE;
-    }
-
-    tccrb.bits.CS = timer_cfg[self].prescaler;
-
-    switch(self)
-    {
-        case TIMER_0: TCCR0B = tccrb.byte; break;
-        case TIMER_2: TCCR2B = tccrb.byte; break;
-        default: return -TIMER_ERROR_INSTANCE;
-    }
+    if ( timer_ll_set_prescaler(self->instance, self->prescaler) < 0 )
+        return -TIMER_ERROR_PRESCALER;
 
     return TIMER_OK;
 }
 
 int timer_stop(timer_t self)
 {
-    if (self < NUMBER_OF_TIMERS && !timer_cfg[self].init)
-        return -TIMER_ERROR_NOT_INIT;
+    if (self == NULL_PTR)
+        return -TIMER_ERROR_INSTANCE;
 
-    tccrb_t tccrb = { .byte = 0 };
+    if (!self->init)
+        return -TIMER_ERROR_INIT;
 
-    switch(self)
-    {
-        case TIMER_0: tccrb.byte = TCCR0B; break;
-        case TIMER_2: tccrb.byte = TCCR2B; break;
-        default: return -TIMER_ERROR_INSTANCE;
-    }
-
-    tccrb.bits.CS = TIMER_PRESCALER_STOPPED;
-
-    switch(self)
-    {
-        case TIMER_0: TCCR0B = tccrb.byte; break;
-        case TIMER_2: TCCR2B = tccrb.byte; break;
-        default: return -TIMER_ERROR_INSTANCE;
-    }
+    if ( timer_ll_set_prescaler(self->instance, TIMER_PRESCALER_STOPPED) < 0 )
+        return -TIMER_ERROR_PRESCALER;
 
     return TIMER_OK;
 }
 
 int timer_set_ocra(timer_t self, uint8_t val)
 {
-    if (self < NUMBER_OF_TIMERS && !timer_cfg[self].init)
-        return -TIMER_ERROR_NOT_INIT;
+    if (self == NULL_PTR)
+        return -TIMER_ERROR_INSTANCE;
 
-    switch(self)
-    {
-        case TIMER_0: OCR0A = val; break;
-        case TIMER_2: OCR2A = val; break;
-        default: return -TIMER_ERROR_INSTANCE;
-    }
+    self->instance->OCRA = val;
 
     return TIMER_OK;
 }
 
 int timer_set_ocrb(timer_t self, uint8_t val)
 {
-    if (self < NUMBER_OF_TIMERS && !timer_cfg[self].init)
-        return -TIMER_ERROR_NOT_INIT;
+    if (self == NULL_PTR)
+        return -TIMER_ERROR_INSTANCE;
 
-    switch(self)
-    {
-        case TIMER_0: OCR0B = val; break;
-        case TIMER_2: OCR2B = val; break;
-        default: return -TIMER_ERROR_INSTANCE;
-    }
+    self->instance->OCRB = val;
 
     return TIMER_OK;
 }
