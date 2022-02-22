@@ -2,20 +2,21 @@
 #include "os_cfg.h"
 #include "bits.h"
 #include <avr/io.h>
+#include <avr/power.h>
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
 #include <avr/wdt.h>
 
-static volatile time_t currentTimeMs = 0;
+static volatile time_t os_timer = 0;
 
 ISR(TIMER0_COMPA_vect)
 {
-    currentTimeMs++;
+    os_timer++;
 }
 
 time_t os_millis()
 {
-    return currentTimeMs;
+    return os_timer;
 }
 
 void os_interrupts_disable()
@@ -74,8 +75,7 @@ void os_sleep()
 void os_init()
 {
     // Disable all peripherals
-    PRR0 = 0xFF;
-    PRR1 = 0xFF;
+    power_all_disable();
 
     // Enable pullup resistor on all inputs
     DDRB = 0;
@@ -85,8 +85,22 @@ void os_init()
     PORTC = 0xFF;
     PORTD = 0xFF;
 
+//     // Configure Timer0 as 1ms system timer
+//     timer_config_t timer_cfg = {
+//         .mode = TIMER_MODE_CTC,
+//         .imask = BIT(TIMER_INTERRUPT_OCM_A),
+//         .prescaler = TIMER_PRESCALER_64,
+//         .ocra = 250
+//     };
+//
+//     if (timer_init(TIMER_0, &timer_cfg) < 0)
+//         HALT();
+//
+//     if (timer_start(TIMER_0) < 0)
+//         HALT();
+
     // Init Timer0 as 1ms counter with interrupts
-    RESET_BIT(PRR0, PRTIM0); // Enable peripheral
+    power_timer0_enable();
     SET_BIT(TIMSK0, OCIE0A); // Enable interrupt on Compare Match A
     TCNT0 =  0;              // Reset timer value
     OCR0A  = 250;            // Count 1000ms (works with prescaler)

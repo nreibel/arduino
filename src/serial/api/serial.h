@@ -2,28 +2,25 @@
 #define __SERIAL_API_H__
 
 #include "types.h"
+#include "serial_ll.h"
 #include "serial_cfg.h"
 
-typedef volatile uint8_t * reg8_t;
-typedef volatile uint16_t * reg16_t;
-
 typedef struct serial_bus_s {
-    reg8_t PRRx;
-    reg8_t UCSRxA;
-    reg8_t UCSRxB;
-    reg8_t UCSRxC;
-    reg8_t UDRx;
-    reg16_t UBRRx;
-    uint8_t PRUSARTx;
-    uint8_t RXCx;
-    uint8_t UDREx;
-    uint8_t TXCIEx;
-    uint8_t RXCIEx;
-    uint8_t RXENx;
-    uint8_t TXENx;
-} const * serial_bus_t;
+    const usart_t instance;
 
-extern serial_bus_t SERIAL_BUS_0;
+    #if SERIAL_ASYNC_TX
+    volatile const void  *tx_buf;
+    volatile unsigned int tx_sz;
+    #endif
+
+    #if SERIAL_ASYNC_TX
+    char rx_buf[SERIAL_RECEIVE_BUFFER_LENGTH];
+    unsigned int rx_sz;
+    #endif
+
+} * serial_bus_t;
+
+extern const serial_bus_t SERIAL_BUS[NUMBER_OF_USART];
 
 #define C_END       "\33[0m"
 #define C_BOLD      "\33[1m"
@@ -69,13 +66,13 @@ extern serial_bus_t SERIAL_BUS_0;
 #define C_BEIGEBG2  "\33[106m"
 #define C_WHITEBG2  "\33[107m"
 
-#if SERIAL_ASYNC_RX != OFF
+#if SERIAL_ASYNC_RX
 extern void serial_rx_callback(serial_bus_t bus, const char *buffer, unsigned int length);
 #endif
 
-#if SERIAL_ASYNC_TX != OFF
+#if SERIAL_ASYNC_TX
 bool serial_tx_ready(serial_bus_t bus);
-void serial_write_async(serial_bus_t bus, const void * buffer, unsigned int length);
+int serial_write_async(serial_bus_t bus, const void * buffer, unsigned int length);
 #endif
 
 int serial_bus_init(serial_bus_t bus, uint32_t baudrate);

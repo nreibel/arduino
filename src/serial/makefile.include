@@ -1,7 +1,8 @@
 INCLUDES += \
 	$(SRC_DIR)/serial/api \
+	$(SRC_DIR)/serial/api/$(ARCH) \
 	$(CFG_DIR)/serial \
 
 SOURCES += \
 	$(SRC_DIR)/serial/src/serial.c \
-	$(SRC_DIR)/serial/src/arch/serial_$(ARCH).c \
+	$(SRC_DIR)/serial/src/$(ARCH)/serial_ll.c \

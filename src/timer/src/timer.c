@@ -2,6 +2,7 @@
 #include "timer.h"
 #include "bits.h"
 #include "avr/io.h"
+#include "avr/power.h"
 
 /*
  * Private types
@@ -33,7 +34,7 @@ typedef union {
  */
 
 struct {
-    bool is_init;
+    bool init;
     uint8_t prescaler;
 } timer_cfg[NUMBER_OF_TIMERS] = {
     [TIMER_0] = { FALSE, TIMER_PRESCALER_STOPPED },
@@ -177,7 +178,7 @@ int timer_init(timer_t self, timer_config_t * config)
     {
         case TIMER_0:
             os_interrupts_disable();
-            RESET_BIT(PRR, PRTIM0);
+            power_timer0_enable();
             OCR0A = config->ocra;
             OCR0B = config->ocrb;
             TIMSK0 = MASK(config->imask, 0x3);
@@ -189,7 +190,7 @@ int timer_init(timer_t self, timer_config_t * config)
 
         case TIMER_2:
             os_interrupts_disable();
-            RESET_BIT(PRR, PRTIM2);
+            power_timer2_enable();
             OCR2A = config->ocra;
             OCR2B = config->ocrb;
             TIMSK2 = MASK(config->imask, 0x3);
@@ -204,14 +205,14 @@ int timer_init(timer_t self, timer_config_t * config)
             return -TIMER_ERROR_INSTANCE;
     }
 
-    timer_cfg[self].is_init = TRUE;
+    timer_cfg[self].init = TRUE;
 
     return TIMER_OK;
 }
 
 int timer_start(timer_t self)
 {
-    if (self < NUMBER_OF_TIMERS && !timer_cfg[self].is_init)
+    if (self < NUMBER_OF_TIMERS && !timer_cfg[self].init)
         return -TIMER_ERROR_NOT_INIT;
 
     tccrb_t tccrb = { .byte = 0 };
@@ -237,7 +238,7 @@ int timer_start(timer_t self)
 
 int timer_stop(timer_t self)
 {
-    if (self < NUMBER_OF_TIMERS && !timer_cfg[self].is_init)
+    if (self < NUMBER_OF_TIMERS && !timer_cfg[self].init)
         return -TIMER_ERROR_NOT_INIT;
 
     tccrb_t tccrb = { .byte = 0 };
@@ -263,7 +264,7 @@ int timer_stop(timer_t self)
 
 int timer_set_ocra(timer_t self, uint8_t val)
 {
-    if (self < NUMBER_OF_TIMERS && !timer_cfg[self].is_init)
+    if (self < NUMBER_OF_TIMERS && !timer_cfg[self].init)
         return -TIMER_ERROR_NOT_INIT;
 
     switch(self)
@@ -278,7 +279,7 @@ int timer_set_ocra(timer_t self, uint8_t val)
 
 int timer_set_ocrb(timer_t self, uint8_t val)
 {
-    if (self < NUMBER_OF_TIMERS && !timer_cfg[self].is_init)
+    if (self < NUMBER_OF_TIMERS && !timer_cfg[self].init)
         return -TIMER_ERROR_NOT_INIT;
 
     switch(self)

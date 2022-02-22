@@ -3,6 +3,7 @@
 #include "bits.h"
 #include "timer.h"
 #include <avr/io.h>
+#include <avr/power.h>
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
 #include <avr/wdt.h>
@@ -91,7 +92,7 @@ void os_sleep()
 void os_init()
 {
     // Disable all peripherals
-    PRR = 0xFF;
+    power_all_disable();
 
     // Enable pullup resistor on all inputs
     DDRB = 0;

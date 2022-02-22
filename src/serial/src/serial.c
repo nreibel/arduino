@@ -4,44 +4,17 @@
 #include "types.h"
 #include "bits.h"
 
-#include <avr/io.h>
-#include <avr/interrupt.h>
-
-/*
- * Private types
- */
-
-struct serial_prv_s {
-
-#if SERIAL_ASYNC_RX != OFF
-    char         rx_buf[SERIAL_RECEIVE_BUFFER_LENGTH];
-    unsigned int rx_sz;
-#endif
-
-#if SERIAL_ASYNC_TX != OFF
-    volatile const void  *tx_buf;
-    volatile unsigned int tx_sz;
-#endif
-
-};
-
 /*
  * Private functions prototypes
  */
 
-static void serial_ll_init(serial_bus_t bus, uint32_t baudrate);
-static void serial_ll_wait_for_tx_ready(serial_bus_t bus);
-static void serial_ll_wait_for_rx_ready(serial_bus_t bus);
-static int serial_ll_write_byte(serial_bus_t bus, uint8_t byte);
-static int serial_ll_read_byte(serial_bus_t bus, uint8_t *byte);
-
-/*
- * Private data
- */
-
-#if SERIAL_ASYNC_RX != OFF || SERIAL_ASYNC_TX != OFF
-static struct serial_prv_s instances[NUMBER_OF_SERIAL_BUSES];
-#endif // SERIAL_ASYNC_RX != OFF || SERIAL_ASYNC_TX != OFF
+extern void serial_ll_reset_device(usart_t self);
+extern void serial_ll_power_enable(usart_t self);
+static void serial_ll_init(usart_t self, uint32_t baudrate);
+static void serial_ll_wait_for_tx_ready(usart_t self);
+static void serial_ll_wait_for_rx_ready(usart_t self);
+static void serial_ll_write_byte(usart_t self, uint8_t byte);
+static uint8_t serial_ll_read_byte(usart_t self);
 
 /*
  * Public functions
@@ -49,95 +22,97 @@ static struct serial_prv_s instances[NUMBER_OF_SERIAL_BUSES];
 
 int serial_bus_init(serial_bus_t bus, uint32_t baudrate)
 {
-    if (bus != SERIAL_BUS_0)
-        return -1;
-
 #if SERIAL_ASYNC_RX != OFF
-    instances[bus].rx_sz = 0;
+    bus->rx_sz = 0;
 #endif
 
-#if SERIAL_ASYNC_TX != OFF
-    instances[bus].tx_buf = NULL_PTR;
-    instances[bus].tx_sz = 0;
+#if SERIAL_ASYNC_TX
+    bus->tx_buf = NULL_PTR;
+    bus->tx_sz = 0;
 #endif
 
-    serial_ll_init(bus, baudrate);
+    serial_ll_init(bus->instance, baudrate);
 
     return 0;
 }
 
-#if SERIAL_ASYNC_RX != OFF
-ISR(USART_RX_vect)
+#if SERIAL_ASYNC_RX
+void serial_rx_irq_handler(serial_bus_t bus)
 {
-    struct serial_prv_s *ser = &instances[SERIAL_BUS_0];
+    uint8_t data = serial_ll_read_byte(bus->instance);
 
-    uint8_t data = UDR0;
     if (data == SERIAL_LINE_TERMINATOR)
     {
         // Terminate string
-        ser->rx_buf[ser->rx_sz++] = 0;
+        bus->rx_buf[bus->rx_sz++] = 0;
 
         // Call user callback
-        serial_rx_callback(SERIAL_BUS_0, ser->rx_buf, ser->rx_sz);
+        serial_rx_callback(bus, bus->rx_buf, bus->rx_sz);
 
         // Reset buffer
-        ser->rx_sz = 0;
+        bus->rx_sz = 0;
     }
     else
     {
         // TODO : handle buffer full
-        ser->rx_buf[ser->rx_sz++] = data;
+        bus->rx_buf[bus->rx_sz++] = data;
     }
 }
 #endif
 
-#if SERIAL_ASYNC_TX != OFF
-ISR(USART_TX_vect)
+#if SERIAL_ASYNC_TX
+void serial_tx_irq_handler(serial_bus_t bus)
 {
-    struct serial_prv_s *ser = &instances[SERIAL_BUS_0];
-
-    if (ser->tx_sz > 0)
+    if (bus->tx_sz > 0)
     {
-        uint8_t byte = READ_PU8(ser->tx_buf++);
-        serial_ll_write_byte(SERIAL_BUS_0, byte);
-        ser->tx_sz--;
+        uint8_t byte = READ_PU8(bus->tx_buf++);
+        serial_ll_write_byte(bus->instance, byte);
+        bus->tx_sz--;
     }
     else
     {
-        ser->tx_buf = NULL_PTR;
-        ser->tx_sz = 0;
+        bus->tx_buf = NULL_PTR;
+        bus->tx_sz = 0;
     }
 }
 
 bool serial_tx_ready(serial_bus_t bus)
 {
-    return instances[bus].tx_buf == NULL_PTR && instances[bus].tx_sz == 0;
+    return bus->tx_buf == NULL_PTR && bus->tx_sz == 0;
 }
 
-void serial_write_async(serial_bus_t bus, const void *buffer, unsigned int length)
+int serial_write_async(serial_bus_t bus, const void *buffer, unsigned int length)
 {
-    if (buffer != NULL_PTR)
-    {
-        instances[bus].tx_buf = buffer+1;
-        instances[bus].tx_sz = length-1;
+    if (bus == NULL_PTR)
+        return -1;
 
-        // Kickstart transmission
-        uint8_t b = READ_PU8(buffer);
-        serial_ll_write_byte(SERIAL_BUS_0, b);
-    }
+    bus->tx_buf = buffer+1;
+    bus->tx_sz = length-1;
+
+    // Kickstart transmission
+    uint8_t b = READ_PU8(buffer);
+    serial_ll_write_byte(bus->instance, b);
+
+    return 0;
 }
 #endif
 
 int serial_write_byte(serial_bus_t bus, uint8_t chr)
 {
-    serial_ll_wait_for_tx_ready(bus);
-    return serial_ll_write_byte(bus, chr);
+    serial_ll_wait_for_tx_ready(bus->instance);
+    serial_ll_write_byte(bus->instance, chr);
+    return 1;
 }
 
 int serial_write_bytes(serial_bus_t bus, const void *buffer, unsigned int length)
 {
     int written = 0;
-    while(length-- > 0) written += serial_write_byte(bus, READ_PU8(buffer++));
+    while(length-- > 0)
+    {
+        uint8_t byte = READ_PU8(buffer++);
+        written += serial_write_byte(bus, byte);
+    }
+
     return written;
 }
 
@@ -173,8 +148,9 @@ int serial_println_P(serial_bus_t bus, const __flash char * string)
 
 int serial_read_byte(serial_bus_t bus, uint8_t *byte)
 {
-    serial_ll_wait_for_rx_ready(bus);
-    return serial_ll_read_byte(bus, byte);
+    serial_ll_wait_for_rx_ready(bus->instance);
+    *byte = serial_ll_read_byte(bus->instance);
+    return 1;
 }
 
 int serial_read_bytes(serial_bus_t bus, void *buffer, unsigned int length)
@@ -193,51 +169,51 @@ int serial_read_bytes(serial_bus_t bus, void *buffer, unsigned int length)
  * Private functions
  */
 
-void serial_ll_init(serial_bus_t self, uint32_t baudrate)
+static void serial_ll_init(usart_t self, uint32_t baudrate)
 {
+    // Reset USART to default values
+    serial_ll_reset_device(self);
+
     // Enable peripheral
-    RESET_BIT(*self->PRRx, self->PRUSARTx);
+    serial_ll_power_enable(self);
 
     // Set UBRR. Formula is UBRR = (Freq / (BAUD * 16) - 1)
-    *self->UBRRx = (F_CPU/16/baudrate)-1U;
+    self->UBRR = (F_CPU/16/baudrate)-1U;
 
     // Frame format: 8 bits, no parity bit, 1 stop bit
-    *self->UCSRxC = 0x06;
+    self->UCSRC.bits.UCSZ = 0x3;
 
     // Enable transmitter
-    uint8_t ucsrb = BIT(self->RXENx) | BIT(self->TXENx);
+    self->UCSRB.bits.RXEN = 1;
+    self->UCSRB.bits.TXEN = 1;
 
     // Enable interrupts
 #if SERIAL_ASYNC_RX != OFF
-    SET_BIT(ucsrb, self->RXCIEx);
+    self->UCSRB.bits.RXCIE = 1;
 #endif
 
-#if SERIAL_ASYNC_TX != OFF
-    SET_BIT(ucsrb, self->TXCIEx);
+#if SERIAL_ASYNC_TX
+    self->UCSRB.bits.TXCIE = 1;
 #endif
-
-    *self->UCSRxB = ucsrb;
 }
 
-static void serial_ll_wait_for_tx_ready(serial_bus_t self)
+static void serial_ll_wait_for_tx_ready(usart_t self)
 {
-    while (!IS_SET_BIT(*self->UCSRxA, self->UDREx));
+    while (!self->UCSRA.bits.UDRE);
 }
 
-static void serial_ll_wait_for_rx_ready(serial_bus_t self)
+static void serial_ll_wait_for_rx_ready(usart_t self)
 {
-    while(!IS_SET_BIT(*self->UCSRxA, self->RXCx));
+    while (!self->UCSRA.bits.RXC);
 }
 
-static int serial_ll_read_byte(serial_bus_t self, uint8_t *byte)
+static uint8_t serial_ll_read_byte(usart_t self)
 {
-    *byte = *self->UDRx;
-    return 1;
+    return self->UDR;
 }
 
-static int serial_ll_write_byte(serial_bus_t self, uint8_t byte)
+static void serial_ll_write_byte(usart_t self, uint8_t byte)
 {
-    *self->UDRx = byte;
-    return 1;
+    self->UDR = byte;
 }
 
