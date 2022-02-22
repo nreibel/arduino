@@ -1,4 +1,5 @@
 #include "os.h"
+#include "os_cfg.h"
 
 /*
  * Private data

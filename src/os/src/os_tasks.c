@@ -1,4 +1,5 @@
 #include "os.h"
+#include "os_cfg.h"
 
 /*
  * Private data
@@ -12,7 +13,7 @@ static struct {
 } tasks[NUMBER_OF_OS_TASKS];
 
 /*
- * System Timer interrupt
+ * Public functions
  */
 
 void os_task_setup(os_task_t task, time_t interval, callback_t callback, void* param)

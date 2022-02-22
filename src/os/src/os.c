@@ -170,7 +170,6 @@ int main(void)
     /* Run main loop */
     while(1)
     {
-
         os_cyclic_tasks();
 
         // Execute background tasks in the spare time, or sleep until next tick
