@@ -40,21 +40,21 @@ ISR(PCINT0_vect)
     }
 }
 
-ISR(PCINT1_vect)
-{
-    if (pcint_cbk[PORT_C] != NULL_PTR)
-    {
-        (*pcint_cbk[PORT_C])(PORT_C, PORTS[PORT_C].PIN, pcint_data[PORT_C]);
-    }
-}
-
-ISR(PCINT2_vect)
-{
-    if (pcint_cbk[PORT_D] != NULL_PTR)
-    {
-        (*pcint_cbk[PORT_D])(PORT_D, PORTS[PORT_D].PIN, pcint_data[PORT_D]);
-    }
-}
+// ISR(PCINT1_vect)
+// {
+//     if (pcint_cbk[PORT_C] != NULL_PTR)
+//     {
+//         (*pcint_cbk[PORT_C])(PORT_C, PORTS[PORT_C].PIN, pcint_data[PORT_C]);
+//     }
+// }
+//
+// ISR(PCINT2_vect)
+// {
+//     if (pcint_cbk[PORT_D] != NULL_PTR)
+//     {
+//         (*pcint_cbk[PORT_D])(PORT_D, PORTS[PORT_D].PIN, pcint_data[PORT_D]);
+//     }
+// }
 
 /* External interrupts */
 
@@ -158,7 +158,7 @@ int gpio_disable_extint(extint_t pin)
 
 int gpio_init(gpio_t self, port_t port, uint8_t pin, gpio_data_direction_t direction)
 {
-    if (self->pin >= 8)
+    if (pin >= 8)
         return -GPIO_INVALID_PIN;
 
     if (port >= NUMBER_OF_PORTS)
@@ -169,12 +169,12 @@ int gpio_init(gpio_t self, port_t port, uint8_t pin, gpio_data_direction_t direc
     {
         case GPIO_OUTPUT_ACTIVE_HIGH:
         case GPIO_OUTPUT_ACTIVE_LOW:
-            SET_BIT(PORTS[self->port].DDR, self->pin);
+            SET_BIT(PORTS[port].DDR, pin);
             break;
 
         case GPIO_INPUT_HIGH_Z:
         case GPIO_INPUT_PULLUP:
-            RESET_BIT(PORTS[self->port].DDR, self->pin);
+            RESET_BIT(PORTS[port].DDR, pin);
             break;
 
         default:
@@ -186,12 +186,12 @@ int gpio_init(gpio_t self, port_t port, uint8_t pin, gpio_data_direction_t direc
     {
         case GPIO_OUTPUT_ACTIVE_LOW:
         case GPIO_INPUT_PULLUP:
-            SET_BIT(PORTS[self->port].PORT, self->pin);
+            SET_BIT(PORTS[port].PORT, pin);
             break;
 
         case GPIO_OUTPUT_ACTIVE_HIGH:
         case GPIO_INPUT_HIGH_Z:
-            RESET_BIT(PORTS[self->port].PORT, self->pin);
+            RESET_BIT(PORTS[port].PORT, pin);
             break;
 
         default:

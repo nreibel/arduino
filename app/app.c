@@ -31,7 +31,7 @@ void app_init()
 {
     serial_bus_init(SERIAL_BUS[0], 19200);
 
-    gpio_init(led, PORT_B, 5, GPIO_OUTPUT_ACTIVE_LOW);
+    gpio_init(led, PORT_C, 7, GPIO_OUTPUT_ACTIVE_HIGH);
 
     gpio_enable_extint(EXTINT_0, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
     gpio_enable_extint(EXTINT_1, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
@@ -59,12 +59,12 @@ int task_main(void* data)
 
     if (cpt++ & 1)
     {
-        gpio_set(led);
+        gpio_reset(led);
         serial_write_async(SERIAL_BUS[0], "tock\r\n", 6);
     }
     else
     {
-        gpio_reset(led);
+        gpio_set(led);
         serial_write_async(SERIAL_BUS[0], "tick\r\n", 6);
     }
 
