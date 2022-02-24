@@ -28,12 +28,56 @@ int timer_init(timer_t self, timer_config_t * config)
     timer_ll_power_enable(self->instance);
 
     // Set Waveform Generation Mode
-    self->instance->TCCRA.bits.WGM = config->mode;
-    self->instance->TCCRB.bits.WGM = config->oca_mode;
+    switch(config->mode)
+    {
+        case TIMER_MODE_NORMAL:
+        case TIMER_MODE_CTC:
+        case TIMER_MODE_FAST_PWM:
+        case TIMER_MODE_PHASE_CORRECT_PWM:
+            self->instance->TCCRA.bits.WGM = config->mode;
+            break;
+
+        default:
+            return -TIMER_ERROR_MODE;
+    }
+
+    switch(config->oca_mode)
+    {
+        case TIMER_OCA_MODE_TOP:
+        case TIMER_OCA_MODE_PWM:
+            self->instance->TCCRB.bits.WGM = config->oca_mode;
+            break;
+
+        default:
+            return -TIMER_ERROR_OCA_MODE;
+    }
 
     // Set Compare Outpout Mode A/B
-    self->instance->TCCRA.bits.COMA = config->output_mode_a;
-    self->instance->TCCRA.bits.COMB = config->output_mode_b;
+    switch(config->output_mode_a)
+    {
+        case TIMER_OUTPUT_MODE_DISABLED:
+        case TIMER_OUTPUT_MODE_DEFAULT:
+        case TIMER_OUTPUT_MODE_INVERTED:
+        case TIMER_OUTPUT_MODE_TOGGLE:
+            self->instance->TCCRA.bits.COMA = config->output_mode_a;
+            break;
+
+        default:
+            return -TIMER_ERROR_OUTPUT_MODE;
+    }
+
+    switch(config->output_mode_b)
+    {
+        case TIMER_OUTPUT_MODE_DISABLED:
+        case TIMER_OUTPUT_MODE_DEFAULT:
+        case TIMER_OUTPUT_MODE_INVERTED:
+        case TIMER_OUTPUT_MODE_TOGGLE:
+            self->instance->TCCRA.bits.COMB = config->output_mode_b;
+            break;
+
+        default:
+            return -TIMER_ERROR_OUTPUT_MODE;
+    }
 
     // Set Output Compare Register A/B
     self->instance->OCRA = config->ocra;
