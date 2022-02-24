@@ -116,17 +116,25 @@ int gpio_init(gpio_t self, port_t port, uint8_t pin, gpio_data_direction_t direc
     if (port >= NUMBER_OF_PORTS)
         return -GPIO_INVALID_PORT;
 
+    self->port = port;
+    self->pin = pin;
+
+    return gpio_set_data_direction(self, direction);
+}
+
+int gpio_set_data_direction(gpio_t self, gpio_data_direction_t direction)
+{
     // Set data direction
     switch(direction)
     {
         case GPIO_OUTPUT_ACTIVE_HIGH:
         case GPIO_OUTPUT_ACTIVE_LOW:
-            SET_BIT(PORTS[port].DDR, pin);
+            SET_BIT(PORTS[self->port].DDR, self->pin);
             break;
 
         case GPIO_INPUT_HIGH_Z:
         case GPIO_INPUT_PULLUP:
-            RESET_BIT(PORTS[port].DDR, pin);
+            RESET_BIT(PORTS[self->port].DDR, self->pin);
             break;
 
         default:
@@ -138,20 +146,18 @@ int gpio_init(gpio_t self, port_t port, uint8_t pin, gpio_data_direction_t direc
     {
         case GPIO_OUTPUT_ACTIVE_LOW:
         case GPIO_INPUT_PULLUP:
-            SET_BIT(PORTS[port].PORT, pin);
+            SET_BIT(PORTS[self->port].PORT, self->pin);
             break;
 
         case GPIO_OUTPUT_ACTIVE_HIGH:
         case GPIO_INPUT_HIGH_Z:
-            RESET_BIT(PORTS[port].PORT, pin);
+            RESET_BIT(PORTS[self->port].PORT, self->pin);
             break;
 
         default:
             return -GPIO_INVALID_MODE;
     }
 
-    self->port = port;
-    self->pin = pin;
     self->direction = direction;
 
     return GPIO_OK;

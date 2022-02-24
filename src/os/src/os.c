@@ -150,10 +150,10 @@ int main(void)
         .ocra = 250
     };
 
-    if (timer_init(TIMER[0], &timer_cfg) < 0)
+    if (timer_init(TIMER_0, &timer_cfg) != TIMER_OK)
         HALT();
 
-    if (timer_start(TIMER[0]) < 0)
+    if (timer_start(TIMER_0) != TIMER_OK)
         HALT();
 
 #if OS_ENABLE_PRINTF

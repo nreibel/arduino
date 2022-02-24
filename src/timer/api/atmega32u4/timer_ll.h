@@ -3,7 +3,16 @@
 
 #include "types.h"
 
-#define NUMBER_OF_TIMERS 1
+typedef enum {
+    TIMER_0,
+    NUMBER_OF_TIMERS
+} timer_t;
+
+typedef enum {
+    TIMER_LL_OK,
+    TIMER_LL_ERROR_INSTANCE,
+    TIMER_LL_ERROR_PRESCALER
+} timer_ll_error_t;
 
 typedef union {
     struct {
@@ -42,8 +51,8 @@ typedef struct {
     volatile uint8_t TCNT;
     volatile uint8_t OCRA;
     volatile uint8_t OCRB;
-} * ll_timer_t;
+} * mem_timer_t;
 
-#define TIM0 TYPECAST(0x44, const ll_timer_t)
+#define TIM0 TYPECAST(0x44, const mem_timer_t)
 
 #endif /* TIMER_LL_API_H__ */

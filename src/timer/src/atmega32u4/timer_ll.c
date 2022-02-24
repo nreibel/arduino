@@ -2,17 +2,19 @@
 #include "timer_ll.h"
 #include "avr/power.h"
 
+// TODO
+
 // Timer object declaration
 static struct timer_s __timers[NUMBER_OF_TIMERS] = {
     [0] = { .instance = TIM0 }
 };
 
 // Timer handles declaration
-const timer_t TIMER[NUMBER_OF_TIMERS] = {
+const timer_handle_t TIMER[NUMBER_OF_TIMERS] = {
     [0] = &__timers[0],
 };
 
-void timer_ll_power_enable(ll_timer_t timer)
+void timer_ll_power_enable(mem_timer_t timer)
 {
     if (timer == TIM0)
     {
@@ -20,7 +22,7 @@ void timer_ll_power_enable(ll_timer_t timer)
     }
 }
 
-void timer_ll_set_imask(ll_timer_t timer, uint8_t imask)
+void timer_ll_set_imask(mem_timer_t timer, uint8_t imask)
 {
     if (timer == TIM0)
     {
@@ -28,7 +30,7 @@ void timer_ll_set_imask(ll_timer_t timer, uint8_t imask)
     }
 }
 
-int timer_ll_set_prescaler(ll_timer_t timer, uint8_t prescaler)
+int timer_ll_set_prescaler(mem_timer_t timer, uint8_t prescaler)
 {
     if (timer == TIM0)
     {

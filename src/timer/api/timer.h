@@ -2,6 +2,7 @@
 #define TIMER_API_H__
 
 #include "types.h"
+#include "gpio.h"
 #include "timer_ll.h"
 
 typedef enum {
@@ -51,11 +52,13 @@ typedef enum {
     TIMER_INTERRUPT_OCM_B,
 } timer_interrupt_t;
 
-typedef struct timer_s {
-    ll_timer_t instance;
+typedef struct {
+    const mem_timer_t instance;
     timer_prescaler_t prescaler;
+    struct gpio_prv_s oca;
+    struct gpio_prv_s ocb;
     bool init;
-} * timer_t;
+} timer_handle_t;
 
 typedef struct {
     timer_mode_t mode;
@@ -68,12 +71,10 @@ typedef struct {
     uint8_t ocrb;
 } timer_config_t;
 
-extern const timer_t TIMER[NUMBER_OF_TIMERS];
-
-int timer_init(timer_t self, timer_config_t * config);
-int timer_start(timer_t self);
-int timer_stop(timer_t self);
-int timer_set_ocra(timer_t self, uint8_t val);
-int timer_set_ocrb(timer_t self, uint8_t val);
+int timer_init(timer_t handle, timer_config_t * config);
+int timer_start(timer_t handle);
+int timer_stop(timer_t handle);
+int timer_set_ocra(timer_t handle, uint8_t val);
+int timer_set_ocrb(timer_t handle, uint8_t val);
 
 #endif /* TIMER_API_H__ */
