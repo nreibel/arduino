@@ -35,7 +35,8 @@ void app_init()
 
     gpio_enable_extint(EXTINT_0, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
     gpio_enable_extint(EXTINT_1, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
-    gpio_enable_pcint(PCINT_C, 0x0F, pcint_cbk, NULL_PTR);
+    gpio_enable_extint(EXTINT_6, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
+    gpio_enable_pcint(PCINT_B, 0xFF, pcint_cbk, NULL_PTR);
 
     printf("Start!\r\n");
     os_wait(10);

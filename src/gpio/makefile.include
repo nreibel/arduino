@@ -4,3 +4,4 @@ INCLUDES += \
 
 SOURCES += \
 	$(SRC_DIR)/gpio/src/gpio.c \
+	$(SRC_DIR)/gpio/src/$(ARCH)/port_ll.c \

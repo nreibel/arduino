@@ -12,15 +12,16 @@ typedef struct {
 } mem_port_t;
 
 typedef enum {
-    EXTINT_0,
-    EXTINT_1,
+    EXTINT_0, // PD0
+    EXTINT_1, // PD1
+    EXTINT_2, // PD2
+    EXTINT_3, // PD3
+    EXTINT_6, // PE6
     NUMBER_OF_EXTINTS
 } extint_t;
 
 typedef enum {
-    PCINT_B,
-    PCINT_C,
-    PCINT_D,
+    PCINT_B, // PB0..7 => PCINT0..7
     NUMBER_OF_PCINTS
 } pcint_t;
 

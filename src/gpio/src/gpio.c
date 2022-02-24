@@ -3,75 +3,51 @@
 #include "types.h"
 #include "os_cfg.h"
 
-#include <avr/interrupt.h>
+#include <avr/io.h>
 #include <util/delay.h>
 
 /* Private data */
 
-static volatile void* extint_data[NUMBER_OF_EXTINTS] = {0};
 static gpio_extint_cbk_t extint_cbk[NUMBER_OF_EXTINTS] = {0};
+static volatile void* extint_data[NUMBER_OF_EXTINTS] = {0};
 
-static volatile void* pcint_data[NUMBER_OF_PCINTS] = {0};
 static gpio_pcint_cbk_t pcint_cbk[NUMBER_OF_PCINTS] = {0};
+static volatile void* pcint_data[NUMBER_OF_PCINTS] = {0};
+
+/* LowLevel API */
+
+extern void gpio_ll_set_edge(extint_t pin, uint8_t edge);
+extern void gpio_ll_enable_extint(extint_t pin);
+extern void gpio_ll_disable_extint(extint_t pin);
+static void gpio_ll_enable_pcint(pcint_t port, uint8_t mask);
+static void gpio_ll_disable_pcint(pcint_t port);
 
 /* Interrupt routines */
 
-ISR(INT0_vect)
+void gpio_extint(extint_t i)
 {
-    if (extint_cbk[EXTINT_0] != NULL_PTR)
+    if (i < NUMBER_OF_EXTINTS && extint_cbk[i] != NULL_PTR)
     {
-        (*extint_cbk[EXTINT_0])(EXTINT_0, extint_data[EXTINT_0]);
+        (*extint_cbk[i])(i, extint_data[i]);
     }
 }
 
-ISR(INT1_vect)
+void gpio_pcint(pcint_t i, uint8_t val)
 {
-    if (extint_cbk[EXTINT_1] != NULL_PTR)
+    if (i < NUMBER_OF_PCINTS && pcint_cbk[i] != NULL_PTR)
     {
-        (*extint_cbk[EXTINT_1])(EXTINT_1, extint_data[EXTINT_1]);
+        (*pcint_cbk[i])(i, val, pcint_data[i]);
     }
 }
-
-ISR(PCINT0_vect)
-{
-    if (pcint_cbk[PORT_B] != NULL_PTR)
-    {
-        (*pcint_cbk[PORT_B])(PORT_B, PORTS[PORT_B].PIN, pcint_data[PORT_B]);
-    }
-}
-
-// ISR(PCINT1_vect)
-// {
-//     if (pcint_cbk[PORT_C] != NULL_PTR)
-//     {
-//         (*pcint_cbk[PORT_C])(PORT_C, PORTS[PORT_C].PIN, pcint_data[PORT_C]);
-//     }
-// }
-//
-// ISR(PCINT2_vect)
-// {
-//     if (pcint_cbk[PORT_D] != NULL_PTR)
-//     {
-//         (*pcint_cbk[PORT_D])(PORT_D, PORTS[PORT_D].PIN, pcint_data[PORT_D]);
-//     }
-// }
 
 /* External interrupts */
 
 int gpio_enable_pcint(pcint_t port, uint8_t mask, gpio_pcint_cbk_t cbk, volatile void *data)
 {
-    switch(port)
-    {
-        case PCINT_B: // PCINT0..7:
-        case PCINT_C: // PCINT8..14
-        case PCINT_D: // PCINT16..23
-            PCMSK[port] = mask;
-            SET_BIT(PCICR, port);
-            break;
+    if (port >= NUMBER_OF_PCINTS)
+        return -GPIO_INVALID_PORT;
 
-        default:
-            return -GPIO_INVALID_PORT;
-    }
+    gpio_ll_enable_pcint(port, mask);
 
     pcint_cbk[port] = cbk;
     pcint_data[port] = data;
@@ -81,18 +57,10 @@ int gpio_enable_pcint(pcint_t port, uint8_t mask, gpio_pcint_cbk_t cbk, volatile
 
 int gpio_disable_pcint(pcint_t port)
 {
-    switch(port)
-    {
-        case PCINT_B: // PCINT0..7:
-        case PCINT_C: // PCINT8..14
-        case PCINT_D: // PCINT16..23
-            RESET_BIT(PCICR, port);
-            PCMSK[port] = 0;
-            break;
+    if (port >= NUMBER_OF_PCINTS)
+        return -GPIO_INVALID_PORT;
 
-        default:
-            return -GPIO_INVALID_PORT;
-    }
+    gpio_ll_disable_pcint(port);
 
     pcint_cbk[port] = NULL_PTR;
     pcint_data[port] = NULL_PTR;
@@ -102,30 +70,21 @@ int gpio_disable_pcint(pcint_t port)
 
 int gpio_enable_extint(extint_t pin, gpio_edge_t edge, gpio_extint_cbk_t cbk, volatile void *data)
 {
-    switch(pin)
+    if (pin >= NUMBER_OF_EXTINTS)
+        return -GPIO_INVALID_INT;
+
+    switch(edge)
     {
-        case EXTINT_0:
-        case EXTINT_1:
-        {
-            switch(edge)
-            {
-                case GPIO_EDGE_LOW:
-                case GPIO_EDGE_ANY:
-                case GPIO_EDGE_FALLING:
-                case GPIO_EDGE_RISING:
-                    SET_MASK(EICRA, MASK(edge, 0x3) << (2*pin));
-                    SET_BIT(EIMSK, pin);
-                    break;
-
-                default:
-                    return -GPIO_INVALID_MODE;
-            }
-
+        case GPIO_EDGE_LOW:
+        case GPIO_EDGE_ANY:
+        case GPIO_EDGE_FALLING:
+        case GPIO_EDGE_RISING:
+            gpio_ll_set_edge(pin, edge);
+            gpio_ll_enable_extint(pin);
             break;
-        }
 
         default:
-            return -GPIO_INVALID_INT;
+            return -GPIO_INVALID_MODE;
     }
 
     extint_data[pin] = data;
@@ -136,17 +95,10 @@ int gpio_enable_extint(extint_t pin, gpio_edge_t edge, gpio_extint_cbk_t cbk, vo
 
 int gpio_disable_extint(extint_t pin)
 {
-    switch(pin)
-    {
-        case EXTINT_0:
-        case EXTINT_1:
-            RESET_BIT(EIMSK, pin);
-            RESET_MASK(EICRA, 0x3 << (2*pin));
-            break;
+    if (pin >= NUMBER_OF_EXTINTS)
+        return -GPIO_INVALID_INT;
 
-        default:
-            return -GPIO_INVALID_INT;
-    }
+    gpio_ll_disable_extint(pin);
 
     extint_data[pin] = NULL_PTR;
     extint_cbk[pin] = NULL_PTR;
@@ -181,7 +133,7 @@ int gpio_init(gpio_t self, port_t port, uint8_t pin, gpio_data_direction_t direc
             return -GPIO_INVALID_MODE;
     }
 
-    // Set pin value
+    // Set output state or pullup
     switch(direction)
     {
         case GPIO_OUTPUT_ACTIVE_LOW:
@@ -212,13 +164,11 @@ int gpio_get(gpio_t self, bool *state)
         case GPIO_INPUT_HIGH_Z:
         case GPIO_INPUT_PULLUP:
             *state = IS_SET_BIT(PORTS[self->port].PIN, self->pin) ? TRUE : FALSE;
-            break;
+            return GPIO_OK;
 
         default:
             return -GPIO_INVALID_MODE;
     }
-
-    return GPIO_OK;
 }
 
 int gpio_set(gpio_t self)
@@ -227,17 +177,29 @@ int gpio_set(gpio_t self)
     {
         case GPIO_OUTPUT_ACTIVE_HIGH:
             SET_BIT(PORTS[self->port].PORT, self->pin);
-            break;
+            return GPIO_OK;
 
         case GPIO_OUTPUT_ACTIVE_LOW:
             RESET_BIT(PORTS[self->port].PORT, self->pin);
-            break;
+            return GPIO_OK;
 
         default:
             return -GPIO_INVALID_MODE;
     }
+}
 
-    return GPIO_OK;
+int gpio_toggle(gpio_t self)
+{
+    switch(self->direction)
+    {
+        case GPIO_OUTPUT_ACTIVE_HIGH:
+        case GPIO_OUTPUT_ACTIVE_LOW:
+            SET_BIT(PORTS[self->port].PIN, self->pin);
+            return GPIO_OK;
+
+        default:
+            return -GPIO_INVALID_MODE;
+    }
 }
 
 int gpio_reset(gpio_t self)
@@ -246,15 +208,27 @@ int gpio_reset(gpio_t self)
     {
         case GPIO_OUTPUT_ACTIVE_HIGH:
             RESET_BIT(PORTS[self->port].PORT, self->pin);
-            break;
+            return GPIO_OK;
 
         case GPIO_OUTPUT_ACTIVE_LOW:
             SET_BIT(PORTS[self->port].PORT, self->pin);
-            break;
+            return GPIO_OK;
 
         default:
             return -GPIO_INVALID_MODE;
     }
+}
 
-    return GPIO_OK;
+/* Private functions */
+
+static void gpio_ll_enable_pcint(pcint_t port, uint8_t mask)
+{
+    PCMSK[port] = mask;
+    SET_BIT(PCICR, port);
+}
+
+static void gpio_ll_disable_pcint(pcint_t port)
+{
+    RESET_BIT(PCICR, port);
+    PCMSK[port] = 0;
 }

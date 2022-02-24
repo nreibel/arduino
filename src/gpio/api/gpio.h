@@ -41,6 +41,7 @@ typedef void (*gpio_pcint_cbk_t)(pcint_t port, uint8_t mask, volatile void*);
 int gpio_init(gpio_t self, port_t port, uint8_t pin, gpio_data_direction_t direction);
 int gpio_set(gpio_t self);
 int gpio_reset(gpio_t self);
+int gpio_toggle(gpio_t self);
 int gpio_get(gpio_t self, bool *state);
 
 int gpio_enable_extint(extint_t pin, gpio_edge_t edge, gpio_extint_cbk_t cbk, volatile void *data);
