@@ -13,7 +13,7 @@ typedef struct serial_bus_s {
     volatile unsigned int tx_sz;
     #endif
 
-    #if SERIAL_ASYNC_TX
+    #if SERIAL_ASYNC_RX
     char rx_buf[SERIAL_RECEIVE_BUFFER_LENGTH];
     unsigned int rx_sz;
     #endif

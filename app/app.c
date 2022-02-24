@@ -23,7 +23,7 @@ void extint_cbk(extint_t pin, volatile void * data)
 void pcint_cbk(pcint_t port, uint8_t mask, volatile void * data)
 {
     UNUSED(data);
-    printf("pcint %u 0x%02X\r\n", port, mask);
+    printf("pcint %u port=0x%02X\r\n", port, mask);
 }
 
 // App entry point
@@ -39,7 +39,6 @@ void app_init()
     gpio_enable_pcint(PCINT_B, 0xFF, pcint_cbk, NULL_PTR);
 
     printf("Start!\r\n");
-    os_wait(10);
 
     // Init tasks
     os_task_setup(TASK_MAIN, 1000, task_main, NULL_PTR);
@@ -48,7 +47,7 @@ void app_init()
 void serial_rx_callback(serial_bus_t bus, const char *buffer, unsigned int length)
 {
     UNUSED(bus);
-    printf("got size=%u : %s\r\n", length, buffer);
+    printf("received %u bytes : [%s]\r\n", length, buffer);
 }
 
 // Main task
@@ -56,18 +55,11 @@ int task_main(void* data)
 {
     UNUSED(data);
 
-    static int cpt = 0;
+    gpio_toggle(led);
 
-    if (cpt++ & 1)
-    {
-        gpio_reset(led);
-        serial_write_async(SERIAL_BUS[0], "tock\r\n", 6);
-    }
-    else
-    {
-        gpio_set(led);
-        serial_write_async(SERIAL_BUS[0], "tick\r\n", 6);
-    }
+    static int cpt = 0;
+    if (cpt++ & 1) printf("tock\r\n");
+    else printf("tick\r\n");
 
     return 0;
 }

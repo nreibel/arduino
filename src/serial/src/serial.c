@@ -22,7 +22,7 @@ static uint8_t serial_ll_read_byte(usart_t self);
 
 int serial_bus_init(serial_bus_t bus, uint32_t baudrate)
 {
-#if SERIAL_ASYNC_RX != OFF
+#if SERIAL_ASYNC_RX
     bus->rx_sz = 0;
 #endif
 
@@ -188,7 +188,7 @@ static void serial_ll_init(usart_t self, uint32_t baudrate)
     self->UCSRB.bits.TXEN = 1;
 
     // Enable interrupts
-#if SERIAL_ASYNC_RX != OFF
+#if SERIAL_ASYNC_RX
     self->UCSRB.bits.RXCIE = 1;
 #endif
 

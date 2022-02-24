@@ -46,7 +46,7 @@ void serial_rx_callback(serial_bus_t bus, const char *data, unsigned int len)
 
     rsp.data[rsp.length] = SERIAL_TP_FRAME_TERMINATOR;
 
-    #if SERIAL_ASYNC_TX == ON
+    #if SERIAL_ASYNC_TX
     serial_write_async(bus, &rsp, rsp.length + 3);
     #else
     serial_write_bytes(bus, &rsp, rsp.length + 3);
