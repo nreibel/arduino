@@ -1,7 +1,9 @@
+#include "os.h"
+#include "os_mem.h"
+#include "os_cfg.h"
 #include "gpio.h"
 #include "bits.h"
 #include "types.h"
-#include "os_cfg.h"
 
 #include <avr/io.h>
 #include <util/delay.h>
@@ -108,6 +110,35 @@ int gpio_disable_extint(extint_t pin)
 
 /* Public functions */
 
+#if OS_MALLOC
+gpio_t gpio_create(port_t port, uint8_t pin, gpio_data_direction_t direction)
+{
+    gpio_t self = os_malloc(sizeof(*self));
+
+    if (self == NULL_PTR)
+        goto exit;
+
+    if (gpio_init(self, port, pin, direction) != GPIO_OK)
+        goto cleanup;
+
+    return self;
+
+    cleanup:
+        os_free(self);
+
+    exit:
+        return NULL_PTR;
+}
+
+void gpio_destroy(gpio_t self)
+{
+    if (self != NULL_PTR)
+    {
+        os_free(self);
+    }
+}
+#endif // OS_MALLOC
+
 int gpio_init(gpio_t self, port_t port, uint8_t pin, gpio_data_direction_t direction)
 {
     if (pin >= 8)
@@ -118,6 +149,7 @@ int gpio_init(gpio_t self, port_t port, uint8_t pin, gpio_data_direction_t direc
 
     self->port = port;
     self->pin = pin;
+    self->direction = GPIO_DIRECTION_NONE;
 
     return gpio_set_data_direction(self, direction);
 }
@@ -236,5 +268,5 @@ static void gpio_ll_enable_pcint(pcint_t port, uint8_t mask)
 static void gpio_ll_disable_pcint(pcint_t port)
 {
     RESET_BIT(PCICR, port);
-    PCMSK[port] = 0;
+    PCMSK[port] = 0x0;
 }
