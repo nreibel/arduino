@@ -3,6 +3,7 @@
 
 #include "os_cfg.h"
 #include "types.h"
+#include "i2c_ll.h"
 
 typedef enum {
     I2C_OK = 0,

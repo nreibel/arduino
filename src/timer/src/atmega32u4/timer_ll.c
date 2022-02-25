@@ -1,50 +1,68 @@
+#include "bits.h"
 #include "timer.h"
 #include "timer_ll.h"
+
 #include "avr/power.h"
 
-// TODO
-
 // Timer object declaration
-static struct timer_s __timers[NUMBER_OF_TIMERS] = {
-    [0] = { .instance = TIM0 }
+timer_handle_t TIMER[NUMBER_OF_TIMERS] = {
+    [TIMER_0] = {
+        .init = FALSE,
+        .instance = TIM0,
+        .prescaler = TIMER_PRESCALER_STOPPED,
+        .oca = { .port = PORT_B, .pin = 7 },
+        .ocb = { .port = PORT_D, .pin = 0 }
+    }
 };
 
-// Timer handles declaration
-const timer_handle_t TIMER[NUMBER_OF_TIMERS] = {
-    [0] = &__timers[0],
-};
-
-void timer_ll_power_enable(mem_timer_t timer)
+int timer_ll_power_enable(timer_t timer)
 {
-    if (timer == TIM0)
+    switch(timer)
     {
-        power_timer0_enable();
+        case TIMER_0: power_timer0_enable(); break;
+        default: return -TIMER_LL_ERROR_INSTANCE;
     }
+
+    return TIMER_LL_OK;
 }
 
-void timer_ll_set_imask(mem_timer_t timer, uint8_t imask)
+int timer_ll_set_imask(timer_t timer, uint8_t imask)
 {
-    if (timer == TIM0)
+    switch(timer)
     {
-        TIMSK0 = imask & 0x7;
+        case TIMER_0: TIMSK0 = MASK(imask, 0x7); break;
+        default: return -TIMER_LL_ERROR_INSTANCE;
     }
+
+    return TIMER_LL_OK;
 }
 
-int timer_ll_set_prescaler(mem_timer_t timer, uint8_t prescaler)
+int timer_ll_set_prescaler(timer_t timer, uint8_t prescaler)
 {
-    if (timer == TIM0)
+    uint8_t reg = 0;
+
+    switch(timer)
     {
-        switch(prescaler)
+        case TIMER_0:
         {
-            case TIMER_PRESCALER_STOPPED: timer->TCCRB.bits.CS = 0x0; return 0;
-            case TIMER_PRESCALER_1:       timer->TCCRB.bits.CS = 0x1; return 0;
-            case TIMER_PRESCALER_8:       timer->TCCRB.bits.CS = 0x2; return 0;
-            case TIMER_PRESCALER_64:      timer->TCCRB.bits.CS = 0x3; return 0;
-            case TIMER_PRESCALER_256:     timer->TCCRB.bits.CS = 0x4; return 0;
-            case TIMER_PRESCALER_1024:    timer->TCCRB.bits.CS = 0x5; return 0;
-            default: return -1;
+            switch(prescaler)
+            {
+                case TIMER_PRESCALER_STOPPED: reg = 0x0; break;
+                case TIMER_PRESCALER_1:       reg = 0x1; break;
+                case TIMER_PRESCALER_8:       reg = 0x2; break;
+                case TIMER_PRESCALER_64:      reg = 0x3; break;
+                case TIMER_PRESCALER_256:     reg = 0x4; break;
+                case TIMER_PRESCALER_1024:    reg = 0x5; break;
+                default: return -TIMER_LL_ERROR_PRESCALER;
+            }
+
+            break;
         }
+
+        default:
+            return -TIMER_LL_ERROR_INSTANCE;
     }
 
-    return -1;
+    TIMER[timer].instance->TCCRB.bits.CS = reg;
+    return TIMER_LL_OK;
 }
