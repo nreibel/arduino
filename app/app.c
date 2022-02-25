@@ -3,9 +3,14 @@
 #include "app.h"
 #include "gpio.h"
 #include "serial.h"
+#include "i2c.h"
+#include "i2c_drv.h"
+#include "tc74.h"
 
-static struct gpio_prv_s led_prv_t;
-static gpio_t led = &led_prv_t;
+static gpio_t led = NULL_PTR;
+static tc74_t tc74 = NULL_PTR;
+static i2c_bus_t i2c = NULL_PTR;
+// extern int i2c_driver_init(twi_t bus, bool fast_mode);
 
 int os_putc(char chr, FILE *stream)
 {
@@ -31,12 +36,15 @@ void app_init()
 {
     serial_bus_init(SERIAL_BUS[0], 19200);
 
-    gpio_init(led, PORT_C, 7, GPIO_OUTPUT_ACTIVE_HIGH);
+    i2c = i2c_driver_create(TWI0, FALSE);
+    tc74 = tc74_create(i2c, TC74A4);
 
-    gpio_enable_extint(EXTINT_0, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
-    gpio_enable_extint(EXTINT_1, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
-    gpio_enable_extint(EXTINT_6, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
-    gpio_enable_pcint(PCINT_B, 0xFF, pcint_cbk, NULL_PTR);
+    led = gpio_create(PORT_B, 5, GPIO_OUTPUT_ACTIVE_HIGH);
+
+//     gpio_enable_extint(EXTINT_0, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
+//     gpio_enable_extint(EXTINT_1, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
+//     gpio_enable_extint(EXTINT_6, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
+//     gpio_enable_pcint(PCINT_B, 0x0F, pcint_cbk, NULL_PTR);
 
     printf("Start!\r\n");
 
@@ -60,6 +68,11 @@ int task_main(void* data)
     static int cpt = 0;
     if (cpt++ & 1) printf("tock\r\n");
     else printf("tick\r\n");
+
+    int temperature = 0;
+    int res = tc74_read_temperature(tc74, &temperature);
+    if (res < 0) printf("temperature : read error %d\r\n", res);
+    else printf("temperature : %d°C\r\n", temperature);
 
     return 0;
 }
