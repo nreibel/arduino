@@ -1,7 +1,7 @@
 #include "os.h"
-#include "gpio.h"
 #include "timer.h"
 #include "timer_ll.h"
+#include "gpio_ll.h"
 #include "bits.h"
 
 // From LL API
@@ -86,7 +86,7 @@ int timer_init(timer_t self, timer_config_t * config)
         case TIMER_OUTPUT_MODE_TOGGLE:
         case TIMER_OUTPUT_MODE_DEFAULT:
         case TIMER_OUTPUT_MODE_INVERTED:
-            gpio_set_data_direction(&TIMER[self].oca, GPIO_OUTPUT_ACTIVE_HIGH);
+            gpio_ll_set_data_direction(TIMER[self].oca.port, TIMER[self].oca.pin, TRUE);
             break;
 
         case TIMER_OUTPUT_MODE_DISABLED:
@@ -103,7 +103,7 @@ int timer_init(timer_t self, timer_config_t * config)
         case TIMER_OUTPUT_MODE_TOGGLE:
         case TIMER_OUTPUT_MODE_DEFAULT:
         case TIMER_OUTPUT_MODE_INVERTED:
-            gpio_set_data_direction(&TIMER[self].ocb, GPIO_OUTPUT_ACTIVE_HIGH);
+            gpio_ll_set_data_direction(TIMER[self].ocb.port, TIMER[self].ocb.pin, TRUE);
             break;
 
         case TIMER_OUTPUT_MODE_DISABLED:
