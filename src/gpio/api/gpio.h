@@ -1,34 +1,33 @@
-#ifndef __GPIO_H__
-#define __GPIO_H__
+#ifndef GPIO_API_H__
+#define GPIO_API_H__
 
 #include "types.h"
 #include "os_cfg.h"
-#include "port_ll.h"
+#include "gpio_ll.h"
+
+enum {
+    GPIO_OK,
+    GPIO_ERROR_PORT,
+    GPIO_ERROR_PIN,
+    GPIO_ERROR_INT,
+    GPIO_ERROR_EDGE,
+    GPIO_ERROR_DIRECTION,
+};
 
 typedef enum {
-    GPIO_OK,
-    GPIO_INVALID_PORT,
-    GPIO_INVALID_PIN,
-    GPIO_INVALID_INT,
-    GPIO_INVALID_MODE
-} gpio_errno_t;
-
-typedef enum
-{
-    GPIO_EDGE_LOW,
-    GPIO_EDGE_ANY,
-    GPIO_EDGE_FALLING,
-    GPIO_EDGE_RISING
-} gpio_edge_t;
-
-typedef enum
-{
     GPIO_DIRECTION_NONE,
     GPIO_INPUT_HIGH_Z,
     GPIO_INPUT_PULLUP,
     GPIO_OUTPUT_ACTIVE_HIGH,
     GPIO_OUTPUT_ACTIVE_LOW,
 } gpio_data_direction_t;
+
+typedef enum {
+    GPIO_EDGE_LOW,
+    GPIO_EDGE_ANY,
+    GPIO_EDGE_FALLING,
+    GPIO_EDGE_RISING
+} gpio_edge_t;
 
 typedef struct gpio_prv_s {
     port_t port;
@@ -57,4 +56,4 @@ int gpio_disable_extint(extint_t pin);
 int gpio_enable_pcint(pcint_t port, uint8_t mask, gpio_pcint_cbk_t cbk, volatile void *data);
 int gpio_disable_pcint(pcint_t port);
 
-#endif // __GPIO_H__
+#endif // GPIO_API_H__

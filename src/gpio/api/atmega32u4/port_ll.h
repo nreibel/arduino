@@ -5,23 +5,17 @@
 
 // TODO name clash with avr/io.h
 
-typedef struct {
-    uint8_t PIN;
-    uint8_t DDR;
-    uint8_t PORT;
-} mem_port_t;
-
 typedef enum {
-    EXTINT_0, // PD0
-    EXTINT_1, // PD1
-    EXTINT_2, // PD2
-    EXTINT_3, // PD3
-    EXTINT_6, // PE6
+    EXTINT0, // PD0
+    EXTINT1, // PD1
+    EXTINT2, // PD2
+    EXTINT3, // PD3
+    EXTINT6, // PE6
     NUMBER_OF_EXTINTS
 } extint_t;
 
 typedef enum {
-    PCINT_B, // PB0..7 => PCINT0..7
+    PCINTB, // PB0..7 => PCINT0..7
     NUMBER_OF_PCINTS
 } pcint_t;
 

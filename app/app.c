@@ -49,20 +49,17 @@ void app_init()
 
 #if defined __AVR_ATmega32U4__ // Leonardo
     led = gpio_create(PORT_C, 7, GPIO_OUTPUT_ACTIVE_HIGH); // Leonardo
-
-    gpio_enable_extint(EXTINT_0, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
-    gpio_enable_extint(EXTINT_1, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
-    gpio_enable_extint(EXTINT_6, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
-    gpio_enable_pcint(PCINT_B, 0x0F, pcint_cbk, NULL_PTR);
+    gpio_enable_extint(EXTINT6, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
+    gpio_enable_pcint(PCINTB, 0x0F, pcint_cbk, NULL_PTR);
 #elif defined __AVR_ATmega328P__ // Uno
     led = gpio_create(PORT_B, 5, GPIO_OUTPUT_ACTIVE_HIGH); // Uno
-
-    gpio_enable_extint(EXTINT_0, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
-    gpio_enable_extint(EXTINT_1, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
+    gpio_enable_extint(EXTINT0, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
+    gpio_enable_extint(EXTINT1, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
 #else
 #error "Unknown architecture"
 #endif
 
+    gpio_enable_pcint(PCINTB, 0x0F, pcint_cbk, NULL_PTR);
 
     printf("Start!\r\n");
 

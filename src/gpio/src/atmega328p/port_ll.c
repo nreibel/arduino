@@ -1,36 +1,34 @@
 #include "types.h"
 #include "port_ll.h"
+#include "gpio_ll.h"
 
 #include <avr/interrupt.h>
-
-extern void gpio_extint(extint_t i);
-extern void gpio_pcint(pcint_t i, uint8_t val);
 
 /* Interrupt handlers */
 
 ISR(INT0_vect)
 {
-    gpio_extint(EXTINT_0);
+    gpio_extint_cbk(EXTINT0);
 }
 
 ISR(INT1_vect)
 {
-    gpio_extint(EXTINT_1);
+    gpio_extint_cbk(EXTINT1);
 }
 
 ISR(PCINT0_vect)
 {
-    gpio_pcint(PCINT_B, PORTS[PORT_B].PIN);
+    gpio_pcint_cbk(PCINTB, PORTS[PORT_B].pin);
 }
 
 ISR(PCINT1_vect)
 {
-    gpio_pcint(PCINT_C, PORTS[PORT_C].PIN);
+    gpio_pcint_cbk(PCINTC, PORTS[PORT_C].pin);
 }
 
 ISR(PCINT2_vect)
 {
-    gpio_pcint(PCINT_D, PORTS[PORT_D].PIN);
+    gpio_pcint_cbk(PCINTD, PORTS[PORT_D].pin);
 }
 
 /* Registers */
@@ -55,32 +53,38 @@ static volatile union {
 
 /* Exported functions */
 
-void gpio_ll_set_edge(extint_t pin, uint8_t edge)
+int gpio_ll_set_edge(extint_t pin, gpio_edge_t edge)
 {
     switch(pin)
     {
-        case EXTINT_0: eicra->bits.isc0 = edge; break;
-        case EXTINT_1: eicra->bits.isc1 = edge; break;
-        default: break;
+        case EXTINT0: eicra->bits.isc0 = edge; break;
+        case EXTINT1: eicra->bits.isc1 = edge; break;
+        default: return -GPIO_LL_ERROR_PIN;
     }
+
+    return GPIO_LL_OK;
 }
 
-void gpio_ll_enable_extint(extint_t pin)
+int gpio_ll_enable_extint(extint_t pin)
 {
     switch(pin)
     {
-        case EXTINT_0: eimsk->bits.int0 = 1; break;
-        case EXTINT_1: eimsk->bits.int1 = 1; break;
-        default: break;
+        case EXTINT0: eimsk->bits.int0 = 1; break;
+        case EXTINT1: eimsk->bits.int1 = 1; break;
+        default: return -GPIO_LL_ERROR_PIN;
     }
+
+    return GPIO_LL_OK;
 }
 
-void gpio_ll_disable_extint(extint_t pin)
+int gpio_ll_disable_extint(extint_t pin)
 {
     switch(pin)
     {
-        case EXTINT_0: eimsk->bits.int0 = 0; break;
-        case EXTINT_1: eimsk->bits.int1 = 0; break;
-        default: break;
+        case EXTINT0: eimsk->bits.int0 = 0; break;
+        case EXTINT1: eimsk->bits.int1 = 0; break;
+        default: return -GPIO_LL_ERROR_PIN;
     }
+
+    return GPIO_LL_OK;
 }
