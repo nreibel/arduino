@@ -5,22 +5,11 @@
 #include "serial_ll.h"
 #include "serial_cfg.h"
 
-typedef struct serial_bus_s {
-    const usart_t instance;
-
-    #if SERIAL_ASYNC_TX
-    volatile const void  *tx_buf;
-    volatile unsigned int tx_sz;
-    #endif
-
-    #if SERIAL_ASYNC_RX
-    char rx_buf[SERIAL_RECEIVE_BUFFER_LENGTH];
-    unsigned int rx_sz;
-    #endif
-
-} * serial_bus_t;
-
-extern const serial_bus_t SERIAL_BUS[NUMBER_OF_USART];
+enum {
+    SERIAL_OK,
+    SERIAL_ERROR_INSTANCE,
+    SERIAL_ERROR_BUSY,
+};
 
 #define C_END       "\33[0m"
 #define C_BOLD      "\33[1m"
@@ -67,27 +56,27 @@ extern const serial_bus_t SERIAL_BUS[NUMBER_OF_USART];
 #define C_WHITEBG2  "\33[107m"
 
 #if SERIAL_ASYNC_RX
-extern void serial_rx_callback(serial_bus_t bus, const char *buffer, unsigned int length);
+extern void serial_rx_callback(usart_t usart, const char *buffer, unsigned int length);
 #endif
 
 #if SERIAL_ASYNC_TX
-bool serial_tx_ready(serial_bus_t bus);
-int serial_write_async(serial_bus_t bus, const void * buffer, unsigned int length);
+bool serial_tx_ready(usart_t usart);
+int serial_write_async(usart_t usart, const void * buffer, unsigned int length);
 #endif
 
-int serial_bus_init(serial_bus_t bus, uint32_t baudrate);
+int serial_init(usart_t usart, uint32_t baudrate);
 
-int serial_read_byte(serial_bus_t bus, uint8_t *chr);
-int serial_read_bytes(serial_bus_t bus, void * buffer, unsigned int length);
+int serial_read_byte(usart_t usart, uint8_t *chr);
+int serial_read_bytes(usart_t usart, void * buffer, unsigned int length);
 
-int serial_write_byte(serial_bus_t bus, uint8_t chr);
-int serial_write_bytes(serial_bus_t bus, const void * buffer, unsigned int length);
+int serial_write_byte(usart_t usart, uint8_t chr);
+int serial_write_bytes(usart_t usart, const void * buffer, unsigned int length);
 
-int serial_print(serial_bus_t bus, const char * string);
-int serial_println(serial_bus_t bus, const char * string);
-int serial_new_line(serial_bus_t bus);
+int serial_print(usart_t usart, const char * string);
+int serial_println(usart_t usart, const char * string);
+int serial_new_line(usart_t usart);
 
-int serial_print_P(serial_bus_t bus, const __flash char * string);
-int serial_println_P(serial_bus_t bus, const __flash char * string);
+int serial_print_P(usart_t usart, const __flash char * string);
+int serial_println_P(usart_t usart, const __flash char * string);
 
 #endif /* __SERIAL_API_H__ */

@@ -7,15 +7,23 @@
 #include "i2c_drv.h"
 #include "tc74.h"
 
+
+#if defined __AVR_ATmega32U4__ // Leonardo
+static const usart_t usart = USART1;
+#elif defined __AVR_ATmega328P__ // Uno
+static const usart_t usart = USART0;
+#else
+#error "Unknown architecture"
+#endif
+
 static gpio_t led = NULL_PTR;
 static tc74_t tc74 = NULL_PTR;
 static i2c_bus_t i2c = NULL_PTR;
-// extern int i2c_driver_init(twi_t bus, bool fast_mode);
 
 int os_putc(char chr, FILE *stream)
 {
     UNUSED(stream);
-    serial_write_byte(SERIAL_BUS[0], chr);
+    serial_write_byte(usart, chr);
     return chr;
 }
 
@@ -34,17 +42,27 @@ void pcint_cbk(pcint_t port, uint8_t mask, volatile void * data)
 // App entry point
 void app_init()
 {
-    serial_bus_init(SERIAL_BUS[0], 19200);
+    serial_init(usart, 19200);
 
     i2c = i2c_driver_create(TWI0, FALSE);
     tc74 = tc74_create(i2c, TC74A4);
 
-    led = gpio_create(PORT_B, 5, GPIO_OUTPUT_ACTIVE_HIGH);
+#if defined __AVR_ATmega32U4__ // Leonardo
+    led = gpio_create(PORT_C, 7, GPIO_OUTPUT_ACTIVE_HIGH); // Leonardo
 
-//     gpio_enable_extint(EXTINT_0, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
-//     gpio_enable_extint(EXTINT_1, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
-//     gpio_enable_extint(EXTINT_6, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
-//     gpio_enable_pcint(PCINT_B, 0x0F, pcint_cbk, NULL_PTR);
+    gpio_enable_extint(EXTINT_0, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
+    gpio_enable_extint(EXTINT_1, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
+    gpio_enable_extint(EXTINT_6, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
+    gpio_enable_pcint(PCINT_B, 0x0F, pcint_cbk, NULL_PTR);
+#elif defined __AVR_ATmega328P__ // Uno
+    led = gpio_create(PORT_B, 5, GPIO_OUTPUT_ACTIVE_HIGH); // Uno
+
+    gpio_enable_extint(EXTINT_0, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
+    gpio_enable_extint(EXTINT_1, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
+#else
+#error "Unknown architecture"
+#endif
+
 
     printf("Start!\r\n");
 
@@ -52,9 +70,9 @@ void app_init()
     os_task_setup(TASK_MAIN, 1000, task_main, NULL_PTR);
 }
 
-void serial_rx_callback(serial_bus_t bus, const char *buffer, unsigned int length)
+void serial_rx_callback(usart_t usart, const char *buffer, unsigned int length)
 {
-    UNUSED(bus);
+    UNUSED(usart);
     printf("received %u bytes : [%s]\r\n", length, buffer);
 }
 

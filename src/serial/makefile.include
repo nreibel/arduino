@@ -5,4 +5,5 @@ INCLUDES += \
 
 SOURCES += \
 	$(SRC_DIR)/serial/src/serial.c \
+	$(SRC_DIR)/serial/src/serial_ll.c \
 	$(SRC_DIR)/serial/src/$(ARCH)/serial_ll.c \

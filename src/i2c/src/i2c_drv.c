@@ -118,9 +118,9 @@ static int transaction(i2c_bus_t self, uint8_t addr, void *data, unsigned int wr
         err += i2c_ll_slave_read(bus->instance, addr);
 
         while(read < rd-1)
-            read += i2c_ll_read_ack(bus->instance, bytes+read);
+            read += i2c_ll_read_ack(bus->instance, &bytes[read]);
 
-        read += i2c_ll_read_nack(bus->instance, bytes+read);
+        read += i2c_ll_read_nack(bus->instance, &bytes[read]);
     }
 
     err += i2c_ll_stop_condition(bus->instance);
@@ -176,9 +176,9 @@ static int read(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned 
     err += i2c_ll_slave_read(bus->instance, addr);
 
     while(read < length-1)
-        read += i2c_ll_read_ack(bus->instance, bytes+read);
+        read += i2c_ll_read_ack(bus->instance, &bytes[read]);
 
-    read += i2c_ll_read_nack(bus->instance, bytes+read);
+    read += i2c_ll_read_nack(bus->instance, &bytes[read]);
     err += i2c_ll_stop_condition(bus->instance);
 
     if (err != 0 || written != 1 || read != length)
