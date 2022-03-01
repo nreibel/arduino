@@ -2,7 +2,7 @@
 #include "os_cfg.h"
 #include "bits.h"
 #include "types.h"
-#include "timer.h"
+#include "timer_ll.h"
 
 #include <avr/io.h>
 #include <avr/power.h>
@@ -143,18 +143,11 @@ int main(void)
     PORTD = 0xFF;
 
     // Configure 1ms system timer
-    timer_config_t timer_cfg = {
-        .mode = TIMER_MODE_CTC,
-        .imask = BIT(TIMER_INTERRUPT_OCM_A),
-        .prescaler = TIMER_PRESCALER_64,
-        .ocra = 250
-    };
-
-    if (timer_init(TIMER_0, &timer_cfg) != TIMER_OK)
-        HALT();
-
-    if (timer_start(TIMER_0) != TIMER_OK)
-        HALT();
+    timer_ll_power_enable(TIMER0);
+    timer_ll_set_wgm(TIMER0, TIMER_LL_WGM_CTC);
+    timer_ll_set_prescaler(TIMER0, TIMER0_LL_CS_DIV64);
+    timer_ll_set_ocra(TIMER0, 250);
+    timer_ll_set_imask(TIMER0, TIMER_LL_INT_OCM_A);
 
 #if OS_ENABLE_PRINTF
     static FILE os_stdout = FDEV_SETUP_STREAM(os_putc, NULL_PTR, _FDEV_SETUP_WRITE);
