@@ -3,6 +3,9 @@ INCLUDES += \
 	$(SRC_DIR)/gpio/api/$(ARCH) \
 
 SOURCES += \
-	$(SRC_DIR)/gpio/src/gpio.c \
 	$(SRC_DIR)/gpio/src/gpio_ll.c \
 	$(SRC_DIR)/gpio/src/$(ARCH)/port_ll.c \
+
+ifndef GPIO_LL
+SOURCES += $(SRC_DIR)/gpio/src/gpio.c
+endif

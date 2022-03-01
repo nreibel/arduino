@@ -6,6 +6,19 @@
 
 /* Interrupt handlers */
 
+__attribute((weak))
+void gpio_extint_cbk(extint_t i)
+{
+    UNUSED(i);
+}
+
+__attribute((weak))
+void gpio_pcint_cbk(pcint_t i, uint8_t val)
+{
+    UNUSED(i);
+    UNUSED(val);
+}
+
 ISR(INT0_vect)
 {
     gpio_extint_cbk(EXTINT0);

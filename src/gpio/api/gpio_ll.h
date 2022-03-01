@@ -24,8 +24,8 @@ typedef struct {
 } mem_port_t;
 
 // Interrupt callbacks
-void gpio_extint_cbk(extint_t i);
-void gpio_pcint_cbk(pcint_t i, uint8_t val);
+extern void gpio_extint_cbk(extint_t i);
+extern void gpio_pcint_cbk(pcint_t i, uint8_t val);
 
 // GPIO
 int gpio_ll_set_data_direction(port_t port, uint8_t pin, bool direction);
