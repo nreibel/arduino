@@ -1,7 +1,6 @@
 #include "os.h"
 #include "os_mem.h"
 #include "os_cfg.h"
-#include "gpio.h"
 #include "gpio_ll.h"
 #include "bits.h"
 #include "types.h"

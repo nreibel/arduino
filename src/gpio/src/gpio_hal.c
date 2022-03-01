@@ -1,4 +1,4 @@
-#include "gpio.h"
+#include "gpio_hal.h"
 #include "gpio_ll.h"
 #include "os_mem.h"
 #include "bits.h"

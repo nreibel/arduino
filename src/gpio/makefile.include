@@ -7,5 +7,5 @@ SOURCES += \
 	$(SRC_DIR)/gpio/src/$(ARCH)/port_ll.c \
 
 ifndef GPIO_LL
-SOURCES += $(SRC_DIR)/gpio/src/gpio.c
+SOURCES += $(SRC_DIR)/gpio/src/gpio_hal.c
 endif
