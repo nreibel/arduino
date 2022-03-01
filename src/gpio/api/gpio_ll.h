@@ -27,6 +27,12 @@ typedef struct {
 extern void gpio_extint_cbk(extint_t i);
 extern void gpio_pcint_cbk(pcint_t i, uint8_t val);
 
+// Port operation
+int gpio_ll_set_port_data_direction(port_t port, uint8_t mask);
+int gpio_ll_get_port_value(port_t port, uint8_t *mask);
+int gpio_ll_set_port_value(port_t port, uint8_t mask);
+int gpio_ll_toggle_port(port_t port, uint8_t mask);
+
 // GPIO
 int gpio_ll_set_data_direction(port_t port, uint8_t pin, bool direction);
 int gpio_ll_get(port_t port, uint8_t pin, bool *state);

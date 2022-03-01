@@ -3,8 +3,8 @@
 #include "bits.h"
 #include "types.h"
 #include "timer_ll.h"
+#include "gpio_ll.h"
 
-#include <avr/io.h>
 #include <avr/power.h>
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
@@ -134,13 +134,12 @@ int main(void)
     os_interrupts_disable();
     power_all_disable();
 
-    /* Enable pullup resistor on all inputs */
-    DDRB = 0;
-    DDRC = 0;
-    DDRD = 0;
-    PORTB = 0xFF;
-    PORTC = 0xFF;
-    PORTD = 0xFF;
+    /* Set all GPIO as inputs with pullup enabled to save power */
+    for (port_t p = 0 ; p < NUMBER_OF_PORTS ; p++)
+    {
+        gpio_ll_set_port_data_direction(p, 0x00);
+        gpio_ll_set_port_value(p, 0xFF);
+    }
 
     // Configure 1ms system timer
     timer_ll_power_enable(TIMER0);
