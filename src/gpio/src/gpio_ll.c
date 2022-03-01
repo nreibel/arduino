@@ -7,7 +7,26 @@
 
 #include <avr/io.h>
 
-/* Private data */
+/*
+ * Interrupt handlers
+ */
+
+__attribute((weak))
+void gpio_extint_cbk(extint_t i)
+{
+    UNUSED(i);
+}
+
+__attribute((weak))
+void gpio_pcint_cbk(pcint_t i, uint8_t val)
+{
+    UNUSED(i);
+    UNUSED(val);
+}
+
+/*
+ * Exported functions
+ */
 
 int gpio_ll_enable_pcint(pcint_t port, uint8_t mask)
 {
