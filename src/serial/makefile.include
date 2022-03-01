@@ -5,7 +5,7 @@ INCLUDES += \
 
 SOURCES += \
 	$(SRC_DIR)/serial/src/serial_ll.c \
-	$(SRC_DIR)/serial/src/$(ARCH)/serial_ll.c \
+	$(SRC_DIR)/serial/src/$(ARCH)/usart.c \
 
 ifndef SERIAL_LL
 SOURCES += $(SRC_DIR)/serial/src/serial_hal.c

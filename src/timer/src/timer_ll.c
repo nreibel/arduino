@@ -3,6 +3,12 @@
 
 extern const mem_timer_t __timers[NUMBER_OF_TIMERS];
 
+__attribute((weak))
+void timer_interrupt(timer_t timer)
+{
+    UNUSED(timer);
+}
+
 int timer_ll_set_prescaler(timer_t timer, uint8_t pscl)
 {
     __timers[timer]->tccrb.bits.cs = pscl;

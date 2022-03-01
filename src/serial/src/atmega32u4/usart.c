@@ -40,14 +40,3 @@ void serial_ll_power_enable(usart_t self)
         power_usart1_enable();
     }
 }
-
-void serial_ll_reset_device(usart_t self)
-{
-    if (self == USART1)
-    {
-        instances[self]->ucsra.reg = 0x0;
-        instances[self]->ucsrb.reg = 0x0;
-        instances[self]->ucsrc.reg = 0x0;
-        instances[self]->ucsrd.reg = 0x0;
-    }
-}

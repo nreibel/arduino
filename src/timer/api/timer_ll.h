@@ -89,6 +89,9 @@ typedef struct {
     volatile uint8_t ocrb;
 } * mem_timer_t;
 
+// Interrupt handler
+extern void timer_interrupt(timer_t timer);
+
 int timer_ll_reset(timer_t timer);
 int timer_ll_power_enable(timer_t timer);
 int timer_ll_set_imask(timer_t timer, uint8_t imask);

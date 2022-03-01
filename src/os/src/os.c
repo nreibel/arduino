@@ -31,7 +31,7 @@ int os_background_tasks();
  * System Timer interrupt
  */
 
-ISR(TIMER0_COMPA_vect)
+void os_systick()
 {
     os_timer++;
 }

@@ -54,3 +54,12 @@ void serial_ll_write_byte(usart_t self, uint8_t byte)
     instances[self]->udr = byte;
 }
 
+void serial_ll_reset_device(usart_t self)
+{
+    if (self == USART1)
+    {
+        instances[self]->ucsra.reg = 0x0;
+        instances[self]->ucsrb.reg = 0x0;
+        instances[self]->ucsrc.reg = 0x0;
+    }
+}

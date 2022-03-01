@@ -51,6 +51,7 @@ void os_watchdog_trigger();
 // OS Functions
 void HALT();
 void os_reset();
+void os_systick();
 
 #if OS_ENABLE_PRINTF
 extern int os_putc(char character, FILE *stream);
