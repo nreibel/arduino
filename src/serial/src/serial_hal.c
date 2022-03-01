@@ -64,7 +64,9 @@ void serial_rx_overflow(usart_t usart)
 
 void serial_rx_irq_handler(usart_t usart)
 {
-    uint8_t data = serial_ll_read_byte(usart);
+    uint8_t data = 0;
+
+    serial_ll_read_byte(usart, &data);
 
     if (instances[usart].rx_sz >= SERIAL_RECEIVE_BUFFER_LENGTH)
     {
@@ -208,7 +210,8 @@ int serial_read_byte(usart_t usart, uint8_t *byte)
         return -SERIAL_ERROR_INSTANCE;
 
     serial_ll_wait_for_rx_ready(usart);
-    *byte = serial_ll_read_byte(usart);
+
+    serial_ll_read_byte(usart, byte);
 
     return 1;
 }

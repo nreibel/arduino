@@ -2,11 +2,9 @@
 #include "serial_cfg.h"
 #include "os_cfg.h"
 
-extern void serial_ll_reset_device(usart_t self);
-extern void serial_ll_power_enable(usart_t self);
 extern const mem_usart_t instances[NUMBER_OF_USART];
 
-void serial_ll_init(usart_t self, uint32_t baudrate)
+int serial_ll_init(usart_t self, uint32_t baudrate)
 {
     // Reset USART to default values
     serial_ll_reset_device(self);
@@ -32,31 +30,58 @@ void serial_ll_init(usart_t self, uint32_t baudrate)
 #if SERIAL_ASYNC_TX
     instances[self]->ucsrb.bits.txcie = 1;
 #endif
+
+    return SERIAL_LL_OK;
 }
 
-void serial_ll_wait_for_tx_ready(usart_t self)
+int serial_ll_wait_for_tx_ready(usart_t usart)
 {
-    while (!instances[self]->ucsra.bits.udre);
+    if (usart >= NUMBER_OF_USART)
+        return -SERIAL_LL_ERROR_INSTANCE;
+
+    while (!instances[usart]->ucsra.bits.udre);
+
+    return SERIAL_LL_OK;
 }
 
-void serial_ll_wait_for_rx_ready(usart_t self)
+int serial_ll_wait_for_rx_ready(usart_t usart)
 {
-    while (!instances[self]->ucsra.bits.rxc);
+    if (usart >= NUMBER_OF_USART)
+        return -SERIAL_LL_ERROR_INSTANCE;
+
+    while (!instances[usart]->ucsra.bits.rxc);
+
+    return SERIAL_LL_OK;
 }
 
-uint8_t serial_ll_read_byte(usart_t self)
+int serial_ll_read_byte(usart_t usart, uint8_t *byte)
 {
-    return instances[self]->udr;
+    if (usart >= NUMBER_OF_USART)
+        return -SERIAL_LL_ERROR_INSTANCE;
+
+    *byte = instances[usart]->udr;
+
+    return SERIAL_LL_OK;
 }
 
-void serial_ll_write_byte(usart_t self, uint8_t byte)
+int serial_ll_write_byte(usart_t usart, uint8_t byte)
 {
-    instances[self]->udr = byte;
+    if (usart >= NUMBER_OF_USART)
+        return -SERIAL_LL_ERROR_INSTANCE;
+
+    instances[usart]->udr = byte;
+
+    return SERIAL_LL_OK;
 }
 
-void serial_ll_reset_device(usart_t self)
+int serial_ll_reset_device(usart_t usart)
 {
-    instances[self]->ucsra.reg = 0x0;
-    instances[self]->ucsrb.reg = 0x0;
-    instances[self]->ucsrc.reg = 0x0;
+    if (usart >= NUMBER_OF_USART)
+        return -SERIAL_LL_ERROR_INSTANCE;
+
+    instances[usart]->ucsra.reg = 0x0;
+    instances[usart]->ucsrb.reg = 0x0;
+    instances[usart]->ucsrc.reg = 0x0;
+
+    return SERIAL_LL_OK;
 }

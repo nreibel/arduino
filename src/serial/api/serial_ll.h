@@ -4,6 +4,11 @@
 #include "types.h"
 #include "usart.h"
 
+enum {
+    SERIAL_LL_OK,
+    SERIAL_LL_ERROR_INSTANCE,
+};
+
 typedef union {
     struct {
         uint8_t mpcm : 1;
@@ -52,10 +57,12 @@ typedef struct {
     volatile uint8_t  udr;
 } * mem_usart_t;
 
-void serial_ll_init(usart_t self, uint32_t baudrate);
-void serial_ll_wait_for_tx_ready(usart_t self);
-void serial_ll_wait_for_rx_ready(usart_t self);
-void serial_ll_write_byte(usart_t self, uint8_t byte);
-uint8_t serial_ll_read_byte(usart_t self);
+int serial_ll_reset_device(usart_t self);
+int serial_ll_power_enable(usart_t self);
+int serial_ll_init(usart_t self, uint32_t baudrate);
+int serial_ll_wait_for_tx_ready(usart_t self);
+int serial_ll_wait_for_rx_ready(usart_t self);
+int serial_ll_write_byte(usart_t self, uint8_t byte);
+int serial_ll_read_byte(usart_t usart, uint8_t *byte);
 
 #endif // SERIAL_LL_API_H__
