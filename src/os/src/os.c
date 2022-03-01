@@ -166,7 +166,7 @@ int main(void)
         os_cyclic_tasks();
 
         // Execute background tasks in the spare time, or sleep until next tick
-        if (NUMBER_OF_BACKGROUND_TASKS > 0 && os_background_tasks() == 0)
+        if (os_background_tasks() == 0)
         {
             os_sleep();
         }
