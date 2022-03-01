@@ -53,7 +53,7 @@ static volatile union {
 
 /* Exported functions */
 
-int gpio_ll_set_edge(extint_t pin, gpio_edge_t edge)
+int gpio_ll_set_edge(extint_t pin, uint8_t edge)
 {
     switch(pin)
     {
