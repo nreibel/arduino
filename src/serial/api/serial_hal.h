@@ -56,6 +56,7 @@ enum {
 #define C_WHITEBG2  "\33[107m"
 
 #if SERIAL_ASYNC_RX
+extern void serial_rx_overflow(usart_t usart);
 extern void serial_rx_callback(usart_t usart, const char *buffer, unsigned int length);
 #endif
 

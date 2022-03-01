@@ -1,12 +1,11 @@
 #include "stdio.h"
 #include "os.h"
 #include "app.h"
-#include "gpio.h"
-#include "serial.h"
+#include "gpio_hal.h"
+#include "serial_hal.h"
 #include "i2c.h"
 #include "i2c_drv.h"
 #include "tc74.h"
-
 
 #if defined __AVR_ATmega32U4__ // Leonardo
 static const usart_t usart = USART1;
@@ -48,15 +47,14 @@ void app_init()
     tc74 = tc74_create(i2c, TC74A4);
 
 #if defined __AVR_ATmega32U4__ // Leonardo
-    led = gpio_create(PORT_C, 7, GPIO_OUTPUT_ACTIVE_HIGH); // Leonardo
+    led = gpio_create(PORT_C, 7, TRUE);
     gpio_enable_extint(EXTINT6, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
     gpio_enable_pcint(PCINTB, 0x0F, pcint_cbk, NULL_PTR);
 #elif defined __AVR_ATmega328P__ // Uno
-    led = gpio_create(PORT_B, 5, GPIO_OUTPUT_ACTIVE_HIGH); // Uno
+    led = gpio_create(PORT_B, 5, TRUE);
+    gpio_init(led, PORT_B, 5, GPIO_OUTPUT_ACTIVE_HIGH); // Uno
     gpio_enable_extint(EXTINT0, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
     gpio_enable_extint(EXTINT1, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
-#else
-#error "Unknown architecture"
 #endif
 
     gpio_enable_pcint(PCINTB, 0x0F, pcint_cbk, NULL_PTR);
@@ -71,6 +69,12 @@ void serial_rx_callback(usart_t usart, const char *buffer, unsigned int length)
 {
     UNUSED(usart);
     printf("received %u bytes : [%s]\r\n", length, buffer);
+}
+
+void serial_rx_overflow(usart_t usart)
+{
+    UNUSED(usart);
+    printf("usart overflow!\r\n");
 }
 
 // Main task

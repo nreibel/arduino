@@ -1,6 +1,6 @@
-#include "serial.h"
-#include "serial_ll.h"
+#include "serial_hal.h"
 #include "serial_cfg.h"
+#include "serial_ll.h"
 #include "types.h"
 #include "stdbool.h"
 
@@ -47,11 +47,30 @@ int serial_init(usart_t usart, uint32_t baudrate)
 }
 
 #if SERIAL_ASYNC_RX
+
+__attribute((weak))
+void serial_rx_callback(usart_t usart, const char *buffer, unsigned int length)
+{
+    UNUSED(usart);
+    UNUSED(buffer);
+    UNUSED(length);
+}
+
+__attribute((weak))
+void serial_rx_overflow(usart_t usart)
+{
+    UNUSED(usart);
+}
+
 void serial_rx_irq_handler(usart_t usart)
 {
     uint8_t data = serial_ll_read_byte(usart);
 
-    if (data == SERIAL_LINE_TERMINATOR)
+    if (instances[usart].rx_sz >= SERIAL_RECEIVE_BUFFER_LENGTH)
+    {
+        serial_rx_overflow(usart);
+    }
+    else if (data == SERIAL_LINE_TERMINATOR)
     {
         // Terminate string
         instances[usart].rx_buf[instances[usart].rx_sz++] = 0;
@@ -64,7 +83,6 @@ void serial_rx_irq_handler(usart_t usart)
     }
     else
     {
-        // TODO : handle buffer full
         instances[usart].rx_buf[instances[usart].rx_sz++] = data;
     }
 }
