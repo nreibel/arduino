@@ -1,8 +1,9 @@
-#include "os.h"
 #include "timer_hal.h"
 #include "timer_ll.h"
-#include "gpio_ll.h"
-#include "bits.h"
+
+/*
+ * Private data
+ */
 
 static struct {
     bool init;

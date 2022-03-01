@@ -2,7 +2,6 @@
 #define TIMER_HAL_API_H__
 
 #include "types.h"
-#include "gpio.h"
 #include "timer_ll.h"
 
 typedef enum {

@@ -4,13 +4,18 @@
 
 #include <avr/power.h>
 
-// Timer object declaration
+/*
+ * Static allocation
+ */
+
 const mem_timer_t __timers[NUMBER_OF_TIMERS] = {
     [TIMER0] = TIM0,
-    [TIMER2] = TIM2
+    [TIMER2] = TIM2,
 };
 
-/* Exported functions */
+/*
+ * Exported functions
+ */
 
 int timer_ll_power_enable(timer_t timer)
 {
