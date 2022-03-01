@@ -8,11 +8,11 @@ typedef enum {
     NUMBER_OF_TIMERS
 } timer_t;
 
-typedef enum {
+enum {
     TIMER_LL_OK,
     TIMER_LL_ERROR_INSTANCE,
     TIMER_LL_ERROR_PRESCALER
-} timer_ll_error_t;
+};
 
 typedef union {
     struct {

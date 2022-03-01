@@ -1,5 +1,5 @@
-#ifndef TIMER_API_H__
-#define TIMER_API_H__
+#ifndef TIMER_HAL_API_H__
+#define TIMER_HAL_API_H__
 
 #include "types.h"
 #include "gpio.h"
@@ -31,7 +31,8 @@ typedef enum {
     TIMER_PRESCALER_64,
     TIMER_PRESCALER_128,
     TIMER_PRESCALER_256,
-    TIMER_PRESCALER_1024
+    TIMER_PRESCALER_1024,
+    NUMBER_OF_PRESCALERS
 } timer_prescaler_t;
 
 typedef enum {
@@ -46,35 +47,21 @@ typedef enum {
     TIMER_OCA_MODE_TOP, // OCRA is TOP value for OCB, OCA duty cycle fixed at 50%
 } timer_oca_mode_t;
 
-typedef enum {
-    TIMER_INTERRUPT_OVERFLOW,
-    TIMER_INTERRUPT_OCM_A,
-    TIMER_INTERRUPT_OCM_B,
-} timer_interrupt_t;
-
-typedef struct {
-    const mem_timer_t instance;
-    timer_prescaler_t prescaler;
-    struct gpio_prv_s oca;
-    struct gpio_prv_s ocb;
-    bool init;
-} timer_handle_t;
-
 typedef struct {
     timer_mode_t mode;
     timer_output_mode_t output_mode_a;
     timer_output_mode_t output_mode_b;
     timer_prescaler_t prescaler;
     timer_oca_mode_t oca_mode;
-    timer_interrupt_t imask;
+    bool overflow_interrupt;
+    bool ocma_interrupt;
+    bool ocmb_interrupt;
     uint8_t ocra;
     uint8_t ocrb;
 } timer_config_t;
 
-int timer_init(timer_t handle, timer_config_t * config);
-int timer_start(timer_t handle);
-int timer_stop(timer_t handle);
-int timer_set_ocra(timer_t handle, uint8_t val);
-int timer_set_ocrb(timer_t handle, uint8_t val);
+int timer_init(timer_t timer, timer_config_t * config);
+int timer_start(timer_t timer);
+int timer_stop(timer_t timer);
 
-#endif /* TIMER_API_H__ */
+#endif /* TIMER_HAL_API_H__ */
