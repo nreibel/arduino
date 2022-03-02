@@ -16,7 +16,8 @@
  * Private defines
  */
 
-#define I2C_ADDR(addr, rw) (((addr) << 1) | rw)
+#define RD(addr) (((addr) << 1) | TW_READ)
+#define WR(addr) (((addr) << 1) | TW_WRITE)
 
 /*
  * Exported functions
@@ -30,7 +31,7 @@ int i2c_ll_init(twi_t twi, bool fast_mode)
     twi->twcr.reg = 0;
 
     // Prescaler = 1
-    twi->twsr = 0;
+    twi->twsr.bits.twps = I2C_LL_PSCL_1;
 
     // Formula is ((F_CPU/F_I2C)-16)/2;
     twi->twbr = fast_mode ? 12 /* 400kHz */ : 72 /* 100kHz */;
@@ -38,7 +39,7 @@ int i2c_ll_init(twi_t twi, bool fast_mode)
     return I2C_LL_OK;
 }
 
-int i2c_ll_wait_tx(twi_t twi, unsigned int ms)
+int i2c_ll_wait_int(twi_t twi, unsigned int ms)
 {
     time_t start = os_millis();
 
@@ -76,21 +77,15 @@ int i2c_ll_start_condition(twi_t twi)
 
     twi->twcr = twcr;
 
-    switch( i2c_ll_wait_tx(twi, I2C_POLL_TIMEOUT) )
-    {
-        case I2C_LL_OK: /* Do nothing */ break;
-        case -I2C_LL_TIMEOUT: return -I2C_LL_TIMEOUT;
-        default: return -I2C_LL_SEQ_FAIL;
-    }
+    int ret = i2c_ll_wait_int(twi, I2C_POLL_TIMEOUT);
+    if (ret < 0) return ret;
 
     switch(TW_STATUS)
     {
         case TW_START:
             return I2C_LL_OK;
 
-        case TW_REP_START:
         default:
-            twi->twcr.reg = 0;
             return -I2C_LL_FAIL;
     }
 }
@@ -107,21 +102,15 @@ int i2c_ll_restart_condition(twi_t twi)
 
     twi->twcr = twcr;
 
-    switch( i2c_ll_wait_tx(twi, I2C_POLL_TIMEOUT) )
-    {
-        case I2C_LL_OK: /* Do nothing */ break;
-        case -I2C_LL_TIMEOUT: return -I2C_LL_TIMEOUT;
-        default: return -I2C_LL_SEQ_FAIL;
-    }
+    int ret = i2c_ll_wait_int(twi, I2C_POLL_TIMEOUT);
+    if (ret < 0) return ret;
 
     switch(TW_STATUS)
     {
         case TW_REP_START:
             return I2C_LL_OK;
 
-        case TW_START:
         default:
-            twi->twcr.reg = 0;
             return -I2C_LL_FAIL;
     }
 }
@@ -138,53 +127,60 @@ int i2c_ll_stop_condition(twi_t twi)
 
     twi->twcr = twcr;
 
-    switch(i2c_ll_wait_stop(twi, I2C_POLL_TIMEOUT))
-    {
-        case I2C_LL_OK:       return I2C_LL_OK;
-        case -I2C_LL_TIMEOUT: return -I2C_LL_TIMEOUT;
-        default: return -I2C_LL_SEQ_FAIL;
-    }
+    return i2c_ll_wait_stop(twi, I2C_POLL_TIMEOUT);
 }
 
 int i2c_ll_slave_write(twi_t twi, uint8_t addr)
 {
-    uint8_t status = 0;
+    twcr_t twcr = {
+        .bits = {
+            .twint = 1,
+            .twen = 1
+        }
+    };
 
-    int ret = i2c_ll_write(twi, I2C_ADDR(addr, TW_WRITE), &status );
-    if (ret < 0) return ret;
+    twi->twdr = WR(addr);
+    twi->twcr = twcr;
 
-    switch(status)
+    int ret = i2c_ll_wait_int(twi, I2C_POLL_TIMEOUT);
+    if(ret < 0) return ret;
+
+    switch(TW_STATUS)
     {
         case TW_MT_SLA_ACK:
             return I2C_LL_OK;
 
-        case TW_MT_SLA_NACK:
         default:
-            twi->twcr.reg = 0;
             return -I2C_LL_FAIL;
     }
 }
 
 int i2c_ll_slave_read(twi_t twi, uint8_t addr)
 {
-    uint8_t status = 0;
+    twcr_t twcr = {
+        .bits = {
+            .twint = 1,
+            .twen = 1
+        }
+    };
 
-    int ret = i2c_ll_write(twi, I2C_ADDR(addr, TW_READ), &status );
-    if (ret < 0) return ret;
+    twi->twdr = RD(addr);
+    twi->twcr = twcr;
 
-    switch(status)
+    int ret = i2c_ll_wait_int(twi, I2C_POLL_TIMEOUT);
+    if(ret < 0) return ret;
+
+    switch(TW_STATUS)
     {
         case TW_MR_SLA_ACK:
             return I2C_LL_OK;
 
-        case TW_MR_SLA_NACK:
         default:
-            twi->twcr.reg = 0;
             return -I2C_LL_FAIL;
     }
 }
 
-int i2c_ll_write(twi_t twi, uint8_t data, uint8_t *status)
+int i2c_ll_write(twi_t twi, uint8_t data)
 {
     twcr_t twcr = {
         .bits = {
@@ -196,23 +192,19 @@ int i2c_ll_write(twi_t twi, uint8_t data, uint8_t *status)
     twi->twdr = data;
     twi->twcr = twcr;
 
-    switch( i2c_ll_wait_tx(twi, I2C_POLL_TIMEOUT) )
-    {
-        case I2C_LL_OK:
-            // Do nothing
-            break;
+    int ret = i2c_ll_wait_int(twi, I2C_POLL_TIMEOUT);
+    if(ret < 0) return ret;
 
-        case -I2C_LL_TIMEOUT:
-            return -I2C_LL_TIMEOUT;
+    switch(TW_STATUS)
+    {
+        // TODO
+        case TW_MT_DATA_ACK:
+        case TW_MT_DATA_NACK:
+            return 1;
 
         default:
-            return -I2C_LL_SEQ_FAIL;
+            return -I2C_LL_FAIL;
     }
-
-    if (status != NULL_PTR)
-        *status = TW_STATUS;
-
-    return 1;
 }
 
 int i2c_ll_read_ack(twi_t twi, uint8_t *data)
@@ -227,12 +219,8 @@ int i2c_ll_read_ack(twi_t twi, uint8_t *data)
 
     twi->twcr = twcr;
 
-    switch( i2c_ll_wait_tx(twi, I2C_POLL_TIMEOUT) )
-    {
-        case I2C_LL_OK: /* Do nothing */ break;
-        case -I2C_LL_TIMEOUT: return -I2C_LL_TIMEOUT;
-        default: return -I2C_LL_SEQ_FAIL;
-    }
+    int ret = i2c_ll_wait_int(twi, I2C_POLL_TIMEOUT);
+    if (ret < 0) return ret;
 
     switch(TW_STATUS)
     {
@@ -240,9 +228,7 @@ int i2c_ll_read_ack(twi_t twi, uint8_t *data)
             *data = twi->twdr;
             return 1;
 
-        case TW_MR_DATA_NACK:
         default:
-            twi->twcr.reg = 0;
             return -I2C_LL_FAIL;
     }
 }
@@ -258,18 +244,8 @@ int i2c_ll_read_nack(twi_t twi, uint8_t *data)
 
     twi->twcr = twcr;
 
-    switch( i2c_ll_wait_tx(twi, I2C_POLL_TIMEOUT) )
-    {
-        case I2C_LL_OK:
-            // Do nothing
-            break;
-
-        case -I2C_LL_TIMEOUT:
-            return -I2C_LL_TIMEOUT;
-
-        default:
-            return -I2C_LL_SEQ_FAIL;
-    }
+    int ret = i2c_ll_wait_int(twi, I2C_POLL_TIMEOUT);
+    if (ret < 0) return ret;
 
     switch(TW_STATUS)
     {
@@ -277,9 +253,7 @@ int i2c_ll_read_nack(twi_t twi, uint8_t *data)
             *data = twi->twdr;
             return 1;
 
-        case TW_MR_DATA_ACK:
         default:
-            twi->twcr.reg = 0;
             return -I2C_LL_FAIL;
     }
 }

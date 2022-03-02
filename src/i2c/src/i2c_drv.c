@@ -89,7 +89,7 @@ static int init(i2c_bus_t self)
     return I2C_OK;
 }
 
-static int transaction(i2c_bus_t self, uint8_t addr, void *data, unsigned int wr, unsigned int rd, unsigned int delay)
+static int transaction(i2c_bus_t self, uint8_t addr, void *data, const unsigned int wr, const unsigned int rd, unsigned int delay)
 {
     if (self->drv != &atmega_i2c_drv)
         return -I2C_FAIL;
@@ -104,10 +104,8 @@ static int transaction(i2c_bus_t self, uint8_t addr, void *data, unsigned int wr
     err += i2c_ll_start_condition(bus->instance);
     err += i2c_ll_slave_write(bus->instance, addr);
 
-    for (unsigned int i = 0 ; i < wr ; i++ )
-    {
-        written += i2c_ll_write(bus->instance, bytes[i], NULL_PTR);
-    }
+    while(written < wr)
+        written += i2c_ll_write(bus->instance, bytes[written]);
 
     if (rd > 0)
     {
@@ -131,7 +129,7 @@ static int transaction(i2c_bus_t self, uint8_t addr, void *data, unsigned int wr
     return rd;
 }
 
-static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, unsigned int length)
+static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, const unsigned int length)
 {
     if (self->drv != &atmega_i2c_drv)
         return -I2C_FAIL;
@@ -144,10 +142,10 @@ static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, un
 
     err += i2c_ll_start_condition(bus->instance);
     err += i2c_ll_slave_write(bus->instance, addr);
-    written += i2c_ll_write(bus->instance, reg, NULL_PTR);
+    written += i2c_ll_write(bus->instance, reg);
 
     while(written < length)
-        written += i2c_ll_write(bus->instance, bytes[written], NULL_PTR);
+        written += i2c_ll_write(bus->instance, bytes[written]);
 
     err += i2c_ll_stop_condition(bus->instance);
 
@@ -171,7 +169,7 @@ static int read(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned 
 
     err += i2c_ll_start_condition(bus->instance);
     err += i2c_ll_slave_write(bus->instance, addr);
-    written += i2c_ll_write(bus->instance, reg, NULL_PTR);
+    written += i2c_ll_write(bus->instance, reg);
     err += i2c_ll_restart_condition(bus->instance);
     err += i2c_ll_slave_read(bus->instance, addr);
 

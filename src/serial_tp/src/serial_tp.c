@@ -25,7 +25,7 @@ static const __flash char STR_READY[] = "READY";
  * Public functions
  */
 
-void serial_rx_callback(serial_bus_t bus, const char *data, unsigned int len)
+void serial_rx_callback(usart_t bus, const char *data, unsigned int len)
 {
     serial_tp_request_t * req = TYPECAST(data, serial_tp_request_t*);
 
@@ -53,7 +53,7 @@ void serial_rx_callback(serial_bus_t bus, const char *data, unsigned int len)
     #endif // SERIAL_ASYNC_TX
 }
 
-void serial_tp_init(serial_bus_t bus)
+void serial_tp_init(usart_t bus)
 {
     serial_print_P(bus, STR_READY);
 }

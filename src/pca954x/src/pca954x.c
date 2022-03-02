@@ -78,7 +78,6 @@ int pca9544_init(pca9544_t self, i2c_bus_t parent, uint8_t addr)
     {
         // Init and register each mux channel
         i2c_bus_init(&self->bus[i].super, &pca954x_i2c_drv);
-        i2c_register_bus(&self->bus[i].super);
         self->bus[i].dev = self;
         self->bus[i].channel_id = i;
     }

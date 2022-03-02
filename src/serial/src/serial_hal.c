@@ -2,7 +2,6 @@
 #include "serial_cfg.h"
 #include "serial_ll.h"
 #include "types.h"
-#include "stdbool.h"
 
 /*
  * Private data
@@ -41,7 +40,7 @@ int serial_init(usart_t usart, uint32_t baudrate)
 
     serial_ll_init(usart, baudrate);
 
-    instances[usart].init = true;
+    instances[usart].init = TRUE;
 
     return SERIAL_OK;
 }
@@ -108,7 +107,7 @@ void serial_tx_irq_handler(usart_t usart)
 
 bool serial_tx_ready(usart_t usart)
 {
-    if ( usart >= NUMBER_OF_USART || !instances[usart].init ) return false; // TODO
+    if ( usart >= NUMBER_OF_USART || !instances[usart].init ) return FALSE; // TODO
     return instances[usart].tx_buf == NULL_PTR && instances[usart].tx_sz == 0;
 }
 

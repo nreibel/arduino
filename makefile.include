@@ -43,6 +43,7 @@ endif
 # Path to build tools
 CC = avr-gcc
 OBJCOPY = avr-objcopy
+OBJDUMP = avr-objdump
 SIZE = avr-size
 UPLOAD = avrdude
 MONITOR = picocom
@@ -56,6 +57,7 @@ OBJ = obj/$(ARCH)
 HEX = $(OUT)/$(APP).hex
 ELF = $(OUT)/$(APP).elf
 MAP = $(OUT)/$(APP).map
+DMP = $(OUT)/$(APP).objdump
 
 # Compilation options and flags
 WARNINGS += all extra undef
@@ -100,6 +102,7 @@ $(HEX): $(ELF)
 $(ELF): prepare $(OBJECTS)
 	@echo "Linking object files..."
 	@$(CC) $(addprefix $l,$(LIBS)) $(addprefix $w,$(LDFLAGS)) $(CFLAGS) $(OBJECTS) -o "$@"
+	@$(OBJDUMP) -xtr "$@" > $(DMP)
 
 # Generic rules for compiling C files
 $(OBJ)/%.o: %.c
