@@ -8,14 +8,6 @@
  * I2C Bus
  */
 
-static const char * error_strings[NUMBER_OF_I2C_ERRORS] = {
-    [I2C_OK] = "OK",
-    [I2C_FAIL] = "Error",
-    [I2C_TIMEOUT] = "Timeout",
-    [I2C_SEQ_FAIL] = "Sequence error",
-    [I2C_NOT_IMPLEMENTED] = "Feature not implemented",
-};
-
 int i2c_bus_init(i2c_bus_t self, i2c_driver_t drv)
 {
     self->drv = drv;
@@ -98,19 +90,4 @@ int i2c_device_read_bytes(i2c_device_t self, uint8_t reg, void *data, unsigned i
 int i2c_device_transaction(i2c_device_t self, void *data, unsigned int wr, unsigned int rd, unsigned int delay)
 {
     return i2c_bus_transaction(self->bus, self->addr, data, wr, rd, delay);
-}
-
-const char * i2c_get_error_string(int errcode)
-{
-    switch(-errcode)
-    {
-        case I2C_OK:
-        case I2C_FAIL:
-        case I2C_TIMEOUT:
-        case I2C_SEQ_FAIL:
-        case I2C_NOT_IMPLEMENTED:
-            return error_strings[-errcode];
-        default:
-            return "Unknown";
-    }
 }
