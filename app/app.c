@@ -6,6 +6,7 @@
 #include "i2c.h"
 #include "i2c_drv.h"
 #include "tc74.h"
+#include "adc.h"
 #include "timer_hal.h"
 
 #if defined __AVR_ATmega32U4__ // Leonardo
@@ -39,6 +40,12 @@ void pcint_cbk(pcint_t port, uint8_t mask, volatile void * data)
     printf("pcint %u port=0x%02X\r\n", port, mask);
 }
 
+void adc_interrupt(adc_t adc, uint16_t value)
+{
+    printf("adc read 0x%04x\r\n", value);
+    adc_ll_disable(adc);
+}
+
 // App entry point
 void app_init()
 {
@@ -58,6 +65,13 @@ void app_init()
 #endif
 
     gpio_enable_pcint(PCINTB, 0x0F, pcint_cbk, NULL_PTR);
+
+    // Setup ADC
+    adc_ll_init(ADC0);
+    adc_ll_set_prescaler(ADC0, ADC_LL_PSCL_128);
+    adc_ll_set_vref(ADC0, ADC_LL_VREF_AVCC);
+    adc_ll_select_channel(ADC0, 0);
+    adc_ll_enable_interrupts(ADC0);
 
     printf("Start!\r\n");
 
@@ -92,6 +106,10 @@ int task_main(void * data)
     int res = tc74_read_temperature(tc74, &temperature);
     if (res < 0) printf("temperature : read error %d\r\n", res);
     else printf("temperature : %d°C\r\n", temperature);
+
+    // Trigger new conversion
+    adc_ll_enable(ADC0);
+    adc_ll_start_conversion(ADC0);
 
     return 0;
 }

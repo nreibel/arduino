@@ -1,10 +1,10 @@
 # Serial
-SERIAL_TTY := /dev/ttyACM0
+SERIAL_TTY := /dev/ttyUSB0
 SERIAL_BAUDRATE := 19200
 
 ARDUINO_LIBS := .
 
-TARGET := $(ARDUINO_LIBS)/targets/leonardo.mk
+TARGET := $(ARDUINO_LIBS)/targets/uno.mk
 
 APP := out
 
@@ -22,7 +22,7 @@ LDFLAGS := -u,vfprintf
 LIBS := printf_flt m
 
 # Enable selected modules
-MODULES := os timer serial gpio i2c tc74
+MODULES := os timer serial gpio i2c tc74 adc
 
 # Use only LL API to save on memory
 # GPIO_LL=1
