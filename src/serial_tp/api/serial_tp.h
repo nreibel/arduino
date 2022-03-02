@@ -2,7 +2,7 @@
 #define __SERIAL_TP_API_H__
 
 #include "types.h"
-#include "serial.h"
+#include "serial_hal.h"
 
 #if SERIAL_ASYNC_RX != ON
 #error "Serial TP needs SERIAL_ASYNC_RX enabled!"
@@ -37,8 +37,8 @@ typedef struct {
     uint8_t data[];
 } serial_tp_request_t;
 
-extern uint8_t serial_tp_callback(serial_bus_t bus, const serial_tp_request_t * req, void *data, uint8_t *length);
+extern uint8_t serial_tp_callback(usart_t bus, const serial_tp_request_t * req, void *data, uint8_t *length);
 
-void serial_tp_init(serial_bus_t bus);
+void serial_tp_init(usart_t bus);
 
 #endif /* __SERIAL_TP_API_H__ */
