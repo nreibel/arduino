@@ -1,194 +1,119 @@
 #include "icp.h"
 #include "os.h"
 #include "bits.h"
+#include "gpio_ll.h"
+
 #include "avr/io.h"
+#include "avr/power.h"
 #include "avr/interrupt.h"
-
-/*
- * Private data
- */
-
-static struct {
-    volatile bool ovf;    // Timer has overflown
-    volatile uint16_t th; // High duration
-    volatile uint16_t p;  // Period
-    uint8_t factor;       // Prescaler factor
-    bool interrupts;      // Use interrupts
-} cfg[NUMBER_OF_ICP] = {
-    [ICP1] = { FALSE, 0, 0, 0, FALSE }
-};
-
-/*
- * Private methods declaration
- */
-
-static uint16_t icp_ll_capture_edge(bool rising);
-static bool icp_ll_is_ovf();
-static void icp_ll_clear_ovf_int();
 
 /*
  * Interrupt routines
  */
 
-ISR(TIMER1_CAPT_vect)
-{
-    if ( IS_SET_BIT(TCCR1B, ICES1) != FALSE )
-    {
-        // Rising edge
-        TCNT1 = 0;
-        cfg[ICP1].p = ICR1;
-        cfg[ICP1].ovf = FALSE;
-    }
-    else
-    {
-        // Falling edge
-        cfg[ICP1].th = ICR1;
-    }
-
-    TOGGLE_BIT(TCCR1B, ICES1);
-}
-
-ISR(TIMER1_OVF_vect)
-{
-    cfg[ICP1].ovf = TRUE;
-}
+// TODO
+//
+// __attribute__((weak))
+// void icp_overflow(icp_t icp)
+// {
+//     UNUSED(icp);
+// }
+//
+// ISR(TIMER1_CAPT_vect)
+// {
+//     static volatile uint16_t period = 0;
+//     static volatile uint16_t t_high = 0;
+//
+//     if (ICP1->tccrb.bits.ices)
+//     {
+//         // Rising edge
+//         ICP1->tcnt = 0;
+//         period = ICP1->icr;
+//     }
+//     else
+//     {
+//         // Falling edge
+//         t_high = ICP1->icr;
+//     }
+//
+//     ICP1->tccrb.bits.ices = ICP1->tccrb.bits.ices ? 0 : 1;
+// }
+//
+// ISR(TIMER1_OVF_vect)
+// {
+//     icp_overflow(ICP1);
+// }
 
 /*
  * Public functions
  */
 
-int icp_init(icp_t self, icp_prescaler_t prescaler, bool useInterrupts)
+int icp_init(icp_handle_t self, icp_t icp, icp_prescaler_t prescaler)
 {
-    uint8_t pscl = 0x0;
+    if (self == NULL_PTR)
+        return -ICP_ERROR_INSTANCE;
+
+    if (icp != ICP1)
+        return -ICP_ERROR_INSTANCE;
 
     switch(prescaler)
     {
-        case ICP_PRESCALER_1: // 2^0
-            cfg[self].factor = 0;
-            pscl = 0x1;
-            break;
-
-        case ICP_PRESCALER_8: // 2^3
-            cfg[self].factor = 3;
-            pscl = 0x2;
-            break;
-
-        case ICP_PRESCALER_64: // 2^6
-            cfg[self].factor = 6;
-            pscl = 0x3;
-            break;
-
-        case ICP_PRESCALER_256: // 2^8
-            cfg[self].factor = 8;
-            pscl = 0x4;
-            break;
-
-        case ICP_PRESCALER_1024: // 2^10
-            cfg[self].factor = 10;
-            pscl = 0x5;
-            break;
-
-        default:
-            return -ICP_ERROR_PARAM;
+        case ICP_PRESCALER_1:    self->factor = 0;  break; // 2^0
+        case ICP_PRESCALER_8:    self->factor = 3;  break; // 2^3
+        case ICP_PRESCALER_64:   self->factor = 6;  break; // 2^6
+        case ICP_PRESCALER_256:  self->factor = 8;  break; // 2^8
+        case ICP_PRESCALER_1024: self->factor = 10; break; // 2^10
+        default: return -ICP_ERROR_PRESCALER;
     }
 
-    switch(self)
-    {
-        case ICP1:
-            os_interrupts_disable();
-            RESET_BIT(PRR, PRTIM1);              // Enable Timer 1
-            RESET_BIT(DDRB, 0);                  // ICR1 is on PB0
-            TCCR1A = 0x0;                        // Normal port operation
-            TCCR1B = BIT(ICES1)|MASK(pscl, 0x7); // Capture rising edge, set prescaler
-            if (useInterrupts)
-            {
-                cfg[self].interrupts = TRUE;
-                TIMSK1 = BIT(ICIE1)|BIT(TOIE1);  // Enable Input Capture Interrupt and Timer Overflow Interrupt
-            }
-            else
-            {
-                cfg[self].interrupts = FALSE;
-            }
-            TCNT1 = 0;
-            os_interrupts_enable();
-            break;
+    // Enable Timer 1
+    power_timer1_enable();
 
-        default:
-            return -ICP_ERROR_INSTANCE;
-    }
+    // Set ICR1 (PB0) as input
+    gpio_ll_set_data_direction(PORT_B, 0, FALSE);
+
+    // Reset device
+    icp_ll_init(icp);
+
+    self->prescaler = prescaler;
+    self->instance = icp;
 
     return ICP_OK;
 }
 
-int icp_get_frequency(icp_t self, uint16_t * frequency)
+int icp_get_frequency(icp_handle_t self, uint16_t * frequency)
 {
-    uint16_t p;
+    icp_ll_reset(self->instance);
+    icp_ll_clear_ovf(self->instance);
+    icp_ll_set_prescaler(self->instance, self->prescaler);
+    uint16_t t1 = icp_ll_capture_edge(self->instance, TRUE);
+    uint16_t t2 = icp_ll_capture_edge(self->instance, TRUE);
+    icp_ll_set_prescaler(self->instance, ICP_PRESCALER_NONE);
 
-    if (self != ICP1)
-        return -ICP_ERROR_INSTANCE;
+    if ( icp_ll_is_ovf(self->instance) ) return -ICP_ERROR_OVERFLOW;
 
-    if (!cfg[self].interrupts)
-    {
-        icp_ll_clear_ovf_int();
-
-        uint16_t p1 = icp_ll_capture_edge(TRUE);
-        uint16_t p2 = icp_ll_capture_edge(TRUE);
-
-        if (icp_ll_is_ovf() != FALSE)
-            return -ICP_ERROR_OVERFLOW;
-
-        p = p2 - p1;
-    }
-    else
-    {
-        if (cfg[self].ovf)
-            return -ICP_ERROR_OVERFLOW;
-
-        if (cfg[self].p == 0)
-            return -ICP_ERROR_NO_DATA;
-
-        p = cfg[self].p;
-    }
-
-    *frequency = (F_CPU >> cfg[self].factor)/p;
+    uint16_t period = t2 - t1;
+    *frequency = (F_CPU >> self->factor) / period;
 
     return ICP_OK;
 }
 
-int icp_get_duty_cycle(icp_t self, uint8_t * duty_cycle)
+int icp_get_duty_cycle(icp_handle_t self, uint8_t * duty_cycle)
 {
-    uint16_t th, p;
+    icp_ll_reset(self->instance);
+    icp_ll_clear_ovf(self->instance);
+    icp_ll_set_prescaler(self->instance, self->prescaler);
+    uint16_t t1 = icp_ll_capture_edge(self->instance, TRUE);
+    uint16_t t2 = icp_ll_capture_edge(self->instance, FALSE);
+    uint16_t t3 = icp_ll_capture_edge(self->instance, TRUE);
+    icp_ll_set_prescaler(self->instance, ICP_PRESCALER_NONE);
 
-    if (self != ICP1)
-        return -ICP_ERROR_INSTANCE;
+    if ( icp_ll_is_ovf(self->instance) ) return -ICP_ERROR_OVERFLOW;
 
-    if (!cfg[self].interrupts)
-    {
-        icp_ll_clear_ovf_int();
+    uint16_t t_high = t2 - t1;
+    uint16_t period = t3 - t1;
 
-        uint16_t p1 = icp_ll_capture_edge(TRUE);
-        uint16_t p2 = icp_ll_capture_edge(FALSE);
-        uint16_t p3 = icp_ll_capture_edge(TRUE);
-
-        if (icp_ll_is_ovf() != FALSE)
-            return -ICP_ERROR_OVERFLOW;
-
-        th = p2 - p1;
-        p = p3 - p1;
-    }
-    else
-    {
-        if (cfg[self].ovf)
-            return -ICP_ERROR_OVERFLOW;
-
-        if (cfg[self].p == 0)
-            return -ICP_ERROR_NO_DATA;
-
-        th = cfg[self].th;
-        p = cfg[self].p;
-    }
-
-    *duty_cycle = 255UL * th / p;
+    *duty_cycle = 255UL * t_high / period;
 
     return ICP_OK;
 }
@@ -197,21 +122,58 @@ int icp_get_duty_cycle(icp_t self, uint8_t * duty_cycle)
  * Private functions
  */
 
-static uint16_t icp_ll_capture_edge(bool rising)
+void icp_ll_init(icp_t icp)
 {
-    if (rising) SET_BIT(TCCR1B, ICES1);
-    else RESET_BIT(TCCR1B, ICES1);
-    SET_BIT(TIFR1, ICF1);
-    while (!IS_SET_BIT(TIFR1, ICF1));
-    return ICR1;
+    icp->tccra.reg = 0x0;
+    icp->tccrb.reg = 0x0;
+    icp->tccrc.reg = 0x0;
 }
 
-static bool icp_ll_is_ovf()
+void icp_ll_reset(icp_t icp)
 {
+    icp->tcnt = 0;
+}
+
+void icp_ll_set_prescaler(icp_t icp, uint8_t prescaler)
+{
+    icp->tccrb.bits.cs = prescaler;
+}
+
+uint16_t icp_ll_capture_edge(icp_t icp, bool rising)
+{
+    icp->tccrb.bits.ices = rising ? 1 : 0;
+
+    // Clear interrupt
+    SET_BIT(TIFR1, ICF1);
+
+    // Wait for next interrupt
+    while (!IS_SET_BIT(TIFR1, ICF1));
+
+    return icp->icr;
+}
+
+bool icp_ll_is_ovf(icp_t icp)
+{
+    UNUSED(icp);
     return IS_SET_BIT(TIFR1, TOV1);
 }
 
-static void icp_ll_clear_ovf_int()
+void icp_ll_clear_ovf(icp_t icp)
 {
+    UNUSED(icp);
     SET_BIT(TIFR1, TOV1);
+}
+
+void icp_ll_set_interrupt_enabled(icp_t icp, bool enabled)
+{
+    UNUSED(icp);
+
+    timsk1_t timsk = {
+        .bits = {
+            .icie = enabled ? 1 : 0,
+            .toie = enabled ? 1 : 0,
+        }
+    };
+
+    TIMSK1 = timsk.reg;
 }

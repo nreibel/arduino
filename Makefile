@@ -22,12 +22,12 @@ LDFLAGS := -u,vfprintf
 LIBS := printf_flt m
 
 # Enable selected modules
-MODULES := os timer serial gpio i2c tc74 adc
+MODULES := os timer serial gpio i2c tc74 adc icp
 
 # Use only LL API to save on memory
 # GPIO_LL=1
 # SERIAL_LL=1
-TIMER_LL=1
+# TIMER_LL=1
 
 # Must be last
 include $(ARDUINO_LIBS)/makefile.include
