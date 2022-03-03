@@ -39,11 +39,11 @@ typedef void (*gpio_extint_cbk_t)(extint_t pin, volatile void*);
 typedef void (*gpio_pcint_cbk_t)(pcint_t port, uint8_t mask, volatile void*);
 
 #if OS_MALLOC
-gpio_t gpio_create(port_t port, uint8_t pin, gpio_data_direction_t direction);
+gpio_t gpio_create(port_t port, uint8_t pin);
 void gpio_destroy(gpio_t self);
 #endif // OS_MALLOC
 
-int gpio_init(gpio_t self, port_t port, uint8_t pin, gpio_data_direction_t direction);
+int gpio_init(gpio_t self, port_t port, uint8_t pin);
 int gpio_set_data_direction(gpio_t self, gpio_data_direction_t direction);
 int gpio_set(gpio_t self);
 int gpio_reset(gpio_t self);

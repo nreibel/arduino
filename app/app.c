@@ -1,7 +1,7 @@
 #include "stdio.h"
 #include "os.h"
 #include "app.h"
-#include "gpio_hal.h"
+#include "gpio.h"
 #include "serial_hal.h"
 #include "icp.h"
 #include "i2c.h"
@@ -61,13 +61,14 @@ void app_init()
     tc74 = tc74_create(i2c, TC74A4);
 
 #if defined __AVR_ATmega32U4__ // Leonardo
-    led = gpio_create(PORT_C, 7, GPIO_OUTPUT_ACTIVE_HIGH);
+    led = gpio_create(PORT_C, 7);
     gpio_enable_extint(EXTINT6, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
 #elif defined __AVR_ATmega328P__ // Uno
-    led = gpio_create(PORT_B, 5, GPIO_OUTPUT_ACTIVE_HIGH);
+    led = gpio_create(PORT_B, 5);
     gpio_enable_extint(EXTINT0, GPIO_EDGE_RISING, extint_cbk, NULL_PTR);
 #endif
 
+    gpio_set_data_direction(led, GPIO_OUTPUT_ACTIVE_HIGH);
     gpio_enable_pcint(PCINTB, 0x0E, pcint_cbk, NULL_PTR);
 
     // Setup ADC

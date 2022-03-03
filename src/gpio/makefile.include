@@ -4,8 +4,8 @@ INCLUDES += \
 
 SOURCES += \
 	$(SRC_DIR)/gpio/src/gpio_ll.c \
-	$(SRC_DIR)/gpio/src/$(ARCH)/port_ll.c \
+	$(SRC_DIR)/gpio/src/$(ARCH)/port.c \
 
 ifndef GPIO_LL
-SOURCES += $(SRC_DIR)/gpio/src/gpio_hal.c
+SOURCES += $(SRC_DIR)/gpio/src/gpio.c
 endif

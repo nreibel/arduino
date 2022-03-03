@@ -2,7 +2,7 @@
 #define GPIO_LL_API_H__
 
 #include "types.h"
-#include "port_ll.h"
+#include "port.h"
 
 enum {
     GPIO_LL_EDGE_LOW     = 0x0,

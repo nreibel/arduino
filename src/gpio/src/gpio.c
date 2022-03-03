@@ -1,4 +1,4 @@
-#include "gpio_hal.h"
+#include "gpio.h"
 #include "gpio_ll.h"
 #include "os_mem.h"
 #include "bits.h"
@@ -109,14 +109,14 @@ int gpio_disable_extint(extint_t pin)
 /* Public functions */
 
 #if OS_MALLOC
-gpio_t gpio_create(port_t port, uint8_t pin, gpio_data_direction_t direction)
+gpio_t gpio_create(port_t port, uint8_t pin)
 {
     gpio_t self = os_malloc(sizeof(*self));
 
     if (self == NULL_PTR)
         goto exit;
 
-    if (gpio_init(self, port, pin, direction) != GPIO_OK)
+    if (gpio_init(self, port, pin) != GPIO_OK)
         goto cleanup;
 
     return self;
@@ -137,7 +137,7 @@ void gpio_destroy(gpio_t self)
 }
 #endif // OS_MALLOC
 
-int gpio_init(gpio_t self, port_t port, uint8_t pin, gpio_data_direction_t direction)
+int gpio_init(gpio_t self, port_t port, uint8_t pin)
 {
     if (pin >= 8)
         return -GPIO_ERROR_PIN;
@@ -149,7 +149,7 @@ int gpio_init(gpio_t self, port_t port, uint8_t pin, gpio_data_direction_t direc
     self->pin = pin;
     self->direction = GPIO_DIRECTION_NONE;
 
-    return gpio_set_data_direction(self, direction);
+    return GPIO_OK;
 }
 
 int gpio_set_data_direction(gpio_t self, gpio_data_direction_t direction)
