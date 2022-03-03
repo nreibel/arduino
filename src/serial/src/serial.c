@@ -1,4 +1,4 @@
-#include "serial_hal.h"
+#include "serial.h"
 #include "serial_cfg.h"
 #include "serial_ll.h"
 #include "types.h"

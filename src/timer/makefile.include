@@ -4,9 +4,9 @@ INCLUDES += \
 
 SOURCES += \
 	$(SRC_DIR)/timer/src/timer_ll.c \
-	$(SRC_DIR)/timer/src/$(ARCH)/timer.c \
+	$(SRC_DIR)/timer/src/$(ARCH)/timer_dev.c \
 
 ifndef TIMER_LL
-SOURCES += $(SRC_DIR)/timer/src/timer_hal.c
+SOURCES += $(SRC_DIR)/timer/src/timer.c
 SOURCES += $(SRC_DIR)/timer/src/$(ARCH)/timer_hal.c
 endif

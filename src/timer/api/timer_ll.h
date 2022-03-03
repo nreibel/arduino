@@ -2,7 +2,7 @@
 #define TIMER_LL_API_H__
 
 #include "types.h"
-#include "timer.h"
+#include "timer_dev.h"
 
 enum {
     TIMER_LL_OK,

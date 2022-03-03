@@ -2,13 +2,13 @@
 #include "os.h"
 #include "app.h"
 #include "gpio.h"
-#include "serial_hal.h"
+#include "serial.h"
 #include "icp.h"
 #include "i2c.h"
 #include "i2c_drv.h"
 #include "tc74.h"
 #include "adc_ll.h"
-#include "timer_hal.h"
+#include "timer.h"
 
 #if defined __AVR_ATmega32U4__ // Leonardo
 static const usart_t usart = USART1;

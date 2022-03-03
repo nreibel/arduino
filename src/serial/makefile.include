@@ -8,5 +8,5 @@ SOURCES += \
 	$(SRC_DIR)/serial/src/$(ARCH)/usart.c \
 
 ifndef SERIAL_LL
-SOURCES += $(SRC_DIR)/serial/src/serial_hal.c
+SOURCES += $(SRC_DIR)/serial/src/serial.c
 endif

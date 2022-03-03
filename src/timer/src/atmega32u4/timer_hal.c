@@ -1,5 +1,5 @@
 #include "types.h"
-#include "timer_hal.h"
+#include "timer.h"
 
 const uint8_t __timer_prescaler_table[NUMBER_OF_TIMERS][NUMBER_OF_PRESCALERS] = {
     [TIMER0] = {

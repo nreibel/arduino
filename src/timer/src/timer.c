@@ -1,4 +1,4 @@
-#include "timer_hal.h"
+#include "timer.h"
 #include "timer_ll.h"
 
 /*

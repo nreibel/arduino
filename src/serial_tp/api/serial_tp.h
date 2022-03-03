@@ -2,7 +2,7 @@
 #define __SERIAL_TP_API_H__
 
 #include "types.h"
-#include "serial_hal.h"
+#include "serial.h"
 
 #if SERIAL_ASYNC_RX != ON
 #error "Serial TP needs SERIAL_ASYNC_RX enabled!"
