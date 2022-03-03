@@ -3,6 +3,9 @@
 
 #include "types.h"
 
+#define ADC_RESOLUTION 10U
+#define ADC_MAX_VALUE  ((1U << (ADC_RESOLUTION)) - 1)
+
 enum {
     ADC_LL_OK,
     ADC_LL_ERROR
@@ -48,7 +51,10 @@ typedef union {
 } admux_t;
 
 typedef struct {
-    volatile uint16_t  adc;
+    volatile union {
+        uint8_t bytes[2];
+        uint16_t u16;
+    } adc;
     volatile adcsra_t  adcsra;
     volatile uint8_t   adcsrb;
     volatile admux_t   admux;
@@ -56,16 +62,18 @@ typedef struct {
 
 #define ADC0 TYPECAST(0x78, const adc_t)
 
+extern void adc_interrupt(adc_t adc, uint16_t value);
+
 int adc_ll_init(adc_t adc);
-int adc_ll_enable(adc_t adc);
-int adc_ll_disable(adc_t adc);
-int adc_ll_enable_interrupts(adc_t adc);
-int adc_ll_disable_interrupts(adc_t adc);
-int adc_ll_select_channel(adc_t adc, uint8_t channel);
+int adc_ll_set_enabled(adc_t adc, bool enabled);
+int adc_ll_set_interrupts_enabled(adc_t adc, bool enabled);
 int adc_ll_set_prescaler(adc_t adc, uint8_t pscl);
 int adc_ll_set_vref(adc_t adc, uint8_t vref);
+int adc_ll_set_left_aligned(adc_t adc, bool left_aligned);
+int adc_ll_select_channel(adc_t adc, uint8_t channel);
 int adc_ll_start_conversion(adc_t adc);
 int adc_ll_wait_conversion(adc_t adc);
-int adc_ll_read_value(adc_t adc, uint16_t * data);
+int adc_ll_read_word(adc_t adc, uint16_t * data);
+int adc_ll_read_byte(adc_t adc, uint8_t * data);
 
 #endif /* ADC_LL_H__ */

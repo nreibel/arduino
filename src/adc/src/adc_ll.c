@@ -1,8 +1,12 @@
-#include "adc.h"
+#include "adc_ll.h"
 #include "types.h"
 
 #include <avr/power.h>
 #include <avr/interrupt.h>
+
+/*
+ * Handle interrupts
+ */
 
 __attribute__((weak))
 void adc_interrupt(adc_t adc, uint16_t value)
@@ -13,8 +17,12 @@ void adc_interrupt(adc_t adc, uint16_t value)
 
 ISR(ADC_vect)
 {
-    adc_interrupt(ADC0, ADC0->adc);
+    adc_interrupt(ADC0, ADC0->adc.u16);
 }
+
+/*
+ * Exported functions
+ */
 
 int adc_ll_init(adc_t adc)
 {
@@ -24,27 +32,15 @@ int adc_ll_init(adc_t adc)
     return ADC_LL_OK;
 }
 
-int adc_ll_enable(adc_t adc)
+int adc_ll_set_enabled(adc_t adc, bool enabled)
 {
-    adc->adcsra.bits.aden = 1;
+    adc->adcsra.bits.aden = enabled ? 1 : 0;
     return ADC_LL_OK;
 }
 
-int adc_ll_disable(adc_t adc)
+int adc_ll_set_interrupts_enabled(adc_t adc, bool enabled)
 {
-    adc->adcsra.bits.aden = 0;
-    return ADC_LL_OK;
-}
-
-int adc_ll_enable_interrupts(adc_t adc)
-{
-    adc->adcsra.bits.adie = 1;
-    return ADC_LL_OK;
-}
-
-int adc_ll_disable_interrupts(adc_t adc)
-{
-    adc->adcsra.bits.adie = 0;
+    adc->adcsra.bits.adie = enabled ? 1 : 0;
     return ADC_LL_OK;
 }
 
@@ -57,6 +53,12 @@ int adc_ll_set_prescaler(adc_t adc, uint8_t pscl)
 int adc_ll_set_vref(adc_t adc, uint8_t vref)
 {
     adc->admux.bits.refs = vref;
+    return ADC_LL_OK;
+}
+
+int adc_ll_set_left_aligned(adc_t adc, bool left_aligned)
+{
+    adc->admux.bits.adlar = left_aligned ? 1 : 0;
     return ADC_LL_OK;
 }
 
@@ -78,18 +80,16 @@ int adc_ll_start_conversion(adc_t adc)
     return ADC_LL_OK;
 }
 
-int adc_ll_read_value(adc_t adc, uint16_t * data)
+int adc_ll_read_word(adc_t adc, uint16_t * data)
 {
-    *data = adc->adc;
+    *data = adc->adc.u16;
     return ADC_LL_OK;
 }
 
-// uint16_t adc_ll_read(adc_t adc, uint8_t channel)
-// {
-//     adc->adcsra.bits.adsc = 1;
-//
-//     // Wait for acquisition
-//     while(adc->adcsra.bits.adsc);
-//
-//     return adc->adc;
-// }
+int adc_ll_read_byte(adc_t adc, uint8_t * data)
+{
+    *data = adc->adc.bytes[1];
+    return ADC_LL_OK;
+}
+
+
