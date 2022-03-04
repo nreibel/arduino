@@ -129,7 +129,7 @@ static int transaction(i2c_bus_t self, uint8_t addr, void *data, const unsigned 
     return rd;
 }
 
-static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, const unsigned int length)
+static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, unsigned int length)
 {
     if (self->drv != &atmega_i2c_drv)
         return -I2C_FAIL;
@@ -144,8 +144,8 @@ static int write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, co
     err += i2c_ll_slave_write(bus->instance, addr);
     written += i2c_ll_write(bus->instance, reg);
 
-    while(written < length)
-        written += i2c_ll_write(bus->instance, bytes[written]);
+    for(unsigned int i = 0 ; i < length ; i++)
+        written += i2c_ll_write(bus->instance, bytes[i]);
 
     err += i2c_ll_stop_condition(bus->instance);
 
