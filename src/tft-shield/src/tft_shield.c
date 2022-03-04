@@ -1,6 +1,7 @@
 #include "tft_shield.h"
 #include "bits.h"
 #include "string.h"
+#include "os_mem.h"
 
 /*
  * Private constants
@@ -37,6 +38,35 @@ static struct gpio_prv_s D8 = {
     .port = PORT_B,
     .pin = 0
 };
+
+#if OS_MALLOC
+
+tft_shield_t tft_shield_create(spi_bus_t spi, i2c_bus_t i2c, st7735_orientation_t orientation)
+{
+    tft_shield_t self = os_malloc(sizeof(*self));
+
+    if (self == NULL_PTR)
+        goto exit;
+
+    if (tft_shield_init(self, spi, i2c, orientation) != 0)
+        goto cleanup;
+
+    return self;
+
+    cleanup:
+        os_free(self);
+
+    exit:
+        return NULL_PTR;
+}
+
+void tft_shield_destroy(tft_shield_t self)
+{
+    if (self != NULL_PTR)
+        os_free(self);
+}
+
+#endif // OS_MALLOC
 
 int tft_shield_init(tft_shield_t self, spi_bus_t spi, i2c_bus_t i2c, st7735_orientation_t orientation)
 {
