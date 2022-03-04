@@ -4,10 +4,10 @@
 
 extern const mem_usart_t instances[NUMBER_OF_USART];
 
-int serial_ll_init(usart_t self, uint32_t baudrate)
+void serial_ll_init(usart_t self, uint32_t baudrate)
 {
     // Reset USART to default values
-    serial_ll_reset_device(self);
+    serial_ll_reset(self);
 
     // Enable peripheral
     serial_ll_power_enable(self);
@@ -30,58 +30,31 @@ int serial_ll_init(usart_t self, uint32_t baudrate)
 #if SERIAL_ASYNC_TX
     instances[self]->ucsrb.bits.txcie = 1;
 #endif
-
-    return SERIAL_LL_OK;
 }
 
-int serial_ll_wait_for_tx_ready(usart_t usart)
+void serial_ll_wait_tx(usart_t usart)
 {
-    if (usart >= NUMBER_OF_USART)
-        return -SERIAL_LL_ERROR_INSTANCE;
-
     while (!instances[usart]->ucsra.bits.udre);
-
-    return SERIAL_LL_OK;
 }
 
-int serial_ll_wait_for_rx_ready(usart_t usart)
+void serial_ll_wait_rx(usart_t usart)
 {
-    if (usart >= NUMBER_OF_USART)
-        return -SERIAL_LL_ERROR_INSTANCE;
-
     while (!instances[usart]->ucsra.bits.rxc);
-
-    return SERIAL_LL_OK;
 }
 
-int serial_ll_read_byte(usart_t usart, uint8_t *byte)
+uint8_t serial_ll_read(usart_t usart)
 {
-    if (usart >= NUMBER_OF_USART)
-        return -SERIAL_LL_ERROR_INSTANCE;
-
-    *byte = instances[usart]->udr;
-
-    return SERIAL_LL_OK;
+    return instances[usart]->udr;
 }
 
-int serial_ll_write_byte(usart_t usart, uint8_t byte)
+void serial_ll_write(usart_t usart, uint8_t byte)
 {
-    if (usart >= NUMBER_OF_USART)
-        return -SERIAL_LL_ERROR_INSTANCE;
-
     instances[usart]->udr = byte;
-
-    return SERIAL_LL_OK;
 }
 
-int serial_ll_reset_device(usart_t usart)
+void serial_ll_reset(usart_t usart)
 {
-    if (usart >= NUMBER_OF_USART)
-        return -SERIAL_LL_ERROR_INSTANCE;
-
     instances[usart]->ucsra.reg = 0x0;
     instances[usart]->ucsrb.reg = 0x0;
     instances[usart]->ucsrc.reg = 0x0;
-
-    return SERIAL_LL_OK;
 }

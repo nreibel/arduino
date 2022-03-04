@@ -63,9 +63,7 @@ void serial_rx_overflow(usart_t usart)
 
 void serial_rx_irq_handler(usart_t usart)
 {
-    uint8_t data = 0;
-
-    serial_ll_read_byte(usart, &data);
+    uint8_t data = serial_ll_read(usart);
 
     if (instances[usart].rx_sz >= SERIAL_RECEIVE_BUFFER_LENGTH)
     {
@@ -95,7 +93,7 @@ void serial_tx_irq_handler(usart_t usart)
     if (instances[usart].tx_sz > 0)
     {
         uint8_t byte = READ_PU8(instances[usart].tx_buf++);
-        serial_ll_write_byte(usart, byte);
+        serial_ll_write(usart, byte);
         instances[usart].tx_sz--;
     }
     else
@@ -124,7 +122,7 @@ int serial_write_async(usart_t usart, const void *buffer, unsigned int length)
 
     // Kickstart transmission
     uint8_t b = READ_PU8(buffer);
-    serial_ll_write_byte(usart, b);
+    serial_ll_write(usart, b);
 
     return SERIAL_OK;
 }
@@ -135,8 +133,8 @@ int serial_write_byte(usart_t usart, uint8_t chr)
     if (usart >= NUMBER_OF_USART || !instances[usart].init)
         return -SERIAL_ERROR_INSTANCE;
 
-    serial_ll_write_byte(usart, chr);
-    serial_ll_wait_for_tx_ready(usart);
+    serial_ll_write(usart, chr);
+    serial_ll_wait_tx(usart);
 
     return 1;
 }
@@ -208,9 +206,9 @@ int serial_read_byte(usart_t usart, uint8_t *byte)
     if (usart >= NUMBER_OF_USART || !instances[usart].init)
         return -SERIAL_ERROR_INSTANCE;
 
-    serial_ll_wait_for_rx_ready(usart);
+    serial_ll_wait_rx(usart);
 
-    serial_ll_read_byte(usart, byte);
+    *byte = serial_ll_read(usart);
 
     return 1;
 }

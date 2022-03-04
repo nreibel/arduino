@@ -33,17 +33,8 @@ ISR(USART_RX_vect)
  * Architecture-specific functions
  */
 
-int serial_ll_power_enable(usart_t usart)
+void serial_ll_power_enable(usart_t usart)
 {
-    switch(usart)
-    {
-        case USART0:
-            power_usart0_enable();
-            break;
-
-        default:
-            return -SERIAL_LL_ERROR_INSTANCE;
-    }
-
-    return -SERIAL_LL_OK;
+    UNUSED(usart);
+    power_usart0_enable();
 }
