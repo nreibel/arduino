@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "gpio.h"
+#include "os_cfg.h"
 
 typedef enum {
     SPI_CLOCK_DIV_2,
@@ -34,6 +35,11 @@ typedef struct spi_device_prv_s{
     spi_mode_t mode;
     bool transaction_mode;
 } * spi_device_t;
+
+#ifdef OS_MALLOC
+spi_device_t spi_device_create(spi_bus_t bus, gpio_t cs, spi_clock_t clk, spi_mode_t mode);
+void spi_device_destroy(spi_device_t dev);
+#endif // OS_MALLOC
 
 void spi_init(spi_bus_t bus);
 void spi_device_init(spi_device_t self, spi_bus_t bus, gpio_t cs, spi_clock_t clk, spi_mode_t mode);

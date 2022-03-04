@@ -1,6 +1,8 @@
 #ifndef __SPI_API_LL_H
 #define __SPI_API_LL_H
 
+#include "spi.h"
+
 void spi_ll_enable();
 void spi_ll_configure(spi_clock_t clock, spi_mode_t mode);
 bool spi_ll_ready();
