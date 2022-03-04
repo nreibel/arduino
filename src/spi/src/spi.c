@@ -1,16 +1,15 @@
 #include "spi.h"
 #include "spi_ll.h"
-#include "gpio.h"
+#include "gpio_ll.h"
 #include "bits.h"
 
 void spi_init(spi_bus_t bus)
 {
     UNUSED(bus);
 
-    // Enable MISO, MOSI, SCK
-    gpio_set_data_direction(MOSI, GPIO_OUTPUT_ACTIVE_HIGH);
-    gpio_set_data_direction(MISO, GPIO_INPUT_HIGH_Z);
-    gpio_set_data_direction(SCK, GPIO_OUTPUT_ACTIVE_HIGH);
+    gpio_ll_set_data_direction(PORT_B, 3, TRUE);  // MOSI
+    gpio_ll_set_data_direction(PORT_B, 4, FALSE); // MISO
+    gpio_ll_set_data_direction(PORT_B, 5, TRUE);  // SCK
 
     spi_ll_enable();
 }

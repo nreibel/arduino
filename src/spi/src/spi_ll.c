@@ -2,11 +2,12 @@
 #include "spi_ll.h"
 #include "bits.h"
 #include <avr/io.h>
+#include <avr/power.h>
 
 void spi_ll_enable()
 {
     // Enable peripheral
-    RESET_BIT(PRR, PRSPI);
+    power_spi_enable();
 }
 
 void spi_ll_configure(spi_clock_t clock, spi_mode_t mode)

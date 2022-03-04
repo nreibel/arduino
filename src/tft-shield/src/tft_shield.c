@@ -28,6 +28,16 @@
  * Public methods
  */
 
+static struct gpio_prv_s D10 = {
+    .port = PORT_B,
+    .pin = 2
+};
+
+static struct gpio_prv_s D8 = {
+    .port = PORT_B,
+    .pin = 0
+};
+
 int tft_shield_init(tft_shield_t self, spi_bus_t spi, i2c_bus_t i2c, st7735_orientation_t orientation)
 {
     uint8_t w = 160, h = 128;
@@ -53,7 +63,7 @@ int tft_shield_init(tft_shield_t self, spi_bus_t spi, i2c_bus_t i2c, st7735_orie
             return -1;
     }
 
-    st7735_init_device(&self->tft, spi, D10, D8, w, h);
+    st7735_init_device(&self->tft, spi, &D10, &D8, w, h);
     st7735_set_orientation(&self->tft, orientation);
 
     // Enable buttons and joystick as input with pullup
@@ -79,7 +89,8 @@ st7735_t tft_shield_get_tft(tft_shield_t self)
 int tft_shield_backlight(tft_shield_t self, uint8_t val)
 {
     const uint8_t cmd[3] = { PWM_VAL, 0, val };
-    if (i2c_device_write_bytes(&self->seesaw, MODULE_PWM, cmd, 3) != 3) return -1;
+    int ret = i2c_device_write_bytes(&self->seesaw, MODULE_PWM, cmd, 3);
+    if (ret < 0) return ret;
     return 0;
 }
 
