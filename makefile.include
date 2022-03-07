@@ -73,39 +73,58 @@ I=-I
 W=-W
 D=-D
 
+# Font colors
+C_BOLD    = \e[1m
+C_BLACK   = \e[30m
+C_RED     = \e[31m
+C_GREEN   = \e[32m
+C_ORANGE  = \e[33m
+C_BLUE    = \e[34m
+C_MAGENTA = \e[35m
+C_CYAN    = \e[36m
+C_GREY    = \e[37m
+C_WHITE   = \e[0m
+
+# Printing macros
+print_error = echo "$(C_RED)$(C_BOLD)$(1)$(C_WHITE)"
+print_info = echo "$(C_MAGENTA)$(1)$(C_WHITE)"
+print_trace = echo "$(C_GREEN)$(1)$(C_WHITE)"
+
 .PHONY: clean prepare all upload monitor
 
 all: $(HEX)
 
 clean:
-	@echo "Cleaning workspace"
+	@$(call print_info,"Cleaning workspace")
 	@rm -rf "$(OBJ)"
 	@rm -rf "$(OUT)"
 
 prepare:
-	@echo "Preparing workspace"
+	@$(call print_info,"Preparing workspace")
 	@mkdir -p "$(OBJ)" "$(OUT)"
 
 upload: $(HEX)
+	@$(call print_info,"Uploading to target")
 	@$(UPLOAD) -b $(UPLOAD_BAUD_RATE) -c $(PROGRAMMER) -p $(ARCH) -P $(SERIAL_TTY) -U flash:w:"$<"
 
 monitor:
 	@$(MONITOR) -b $(SERIAL_BAUDRATE) $(SERIAL_TTY)
 
 $(HEX): $(ELF)
-	@echo "Creating HEX file..."
+	@$(call print_info,"Creating HEX file")
 	@$(OBJCOPY) -O ihex "$<" "$@"
-	@echo "=================================="
+	@$(call print_trace,"Built $@")
 	@$(SIZE) -C --mcu=$(ARCH) "$<"
-	@echo "Done"
+	@$(call print_info,"Done")
 
 $(ELF): prepare $(OBJECTS)
-	@echo "Linking object files..."
+	@$(call print_info,"Linking object files")
 	@$(CC) $(addprefix $l,$(LIBS)) $(addprefix $w,$(LDFLAGS)) $(CFLAGS) $(OBJECTS) -o "$@"
 	@$(OBJDUMP) -xtr "$@" > $(DMP)
+	@$(call print_trace,"Built $@")
 
 # Generic rules for compiling C files
 $(OBJ)/%.o: %.c
-	@echo "Building $<"
+	@$(call print_trace,"Building $@")
 	@mkdir -p "$(@D)"
 	@$(CC) $(addprefix $I,$(INCLUDES)) $(addprefix $D,$(DEFINES)) $(addprefix $W,$(WARNINGS)) $(CFLAGS) -c -o "$@" "$<"
