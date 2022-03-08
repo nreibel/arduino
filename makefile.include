@@ -62,10 +62,11 @@ DMP = $(OUT)/$(APP).objdump
 # Compilation options and flags
 WARNINGS += all extra undef
 DEFINES +=
-CFLAGS += -O2 -flto -g0 -mmcu=$(ARCH)
+CFLAGS += -MMD -O2 -flto -g0 -mmcu=$(ARCH)
 LDFLAGS += -gc-sections --relax -Map,$(MAP)
 
 OBJECTS = $(SOURCES:%.c=$(OBJ)/%.o)
+DEPENDS = $(SOURCES:%.c=$(OBJ)/%.d)
 
 w=-Wl,
 l=-l
@@ -90,7 +91,7 @@ print_error = echo "$(C_RED)$(C_BOLD)$(1)$(C_WHITE)"
 print_info = echo "$(C_MAGENTA)$(1)$(C_WHITE)"
 print_trace = echo "$(C_GREEN)$(1)$(C_WHITE)"
 
-.PHONY: clean prepare all upload monitor
+.PHONY: clean prepare upload monitor
 
 all: $(HEX)
 
@@ -128,3 +129,5 @@ $(OBJ)/%.o: %.c
 	@$(call print_trace,"Building $@")
 	@mkdir -p "$(@D)"
 	@$(CC) $(addprefix $I,$(INCLUDES)) $(addprefix $D,$(DEFINES)) $(addprefix $W,$(WARNINGS)) $(CFLAGS) -c -o "$@" "$<"
+
+-include $(DEPENDS)
