@@ -91,6 +91,7 @@ print_error = echo "$(C_RED)$(C_BOLD)$(1)$(C_WHITE)"
 print_info = echo "$(C_MAGENTA)$(1)$(C_WHITE)"
 print_trace = echo "$(C_GREEN)$(1)$(C_WHITE)"
 
+.PRECIOUS: %/.dir
 .PHONY: all clean upload monitor
 
 # Output is silent by default, unless VERBOSE is defined
@@ -112,24 +113,28 @@ upload: $(HEX)
 monitor:
 	$(MONITOR) -b $(SERIAL_BAUDRATE) $(SERIAL_TTY)
 
-$(HEX): $(ELF)
+%/.dir:
+	mkdir -p $(@D)
+	touch $@
+
+.SECONDEXPANSION:
+
+$(HEX): $(ELF) | $$(@D)/.dir
 	$(call print_info,"Creating HEX file")
 	$(OBJCOPY) -O ihex "$<" "$@"
 	$(call print_trace,"Built $@")
 	$(SIZE) -C --mcu=$(ARCH) "$<"
 	$(call print_info,"Done")
 
-$(ELF): $(OBJECTS)
+$(ELF): $(OBJECTS) | $$(@D)/.dir
 	$(call print_info,"Linking object files")
-	mkdir -p "$(@D)"
 	$(CC) $(addprefix $l,$(LIBS)) $(addprefix $w,$(LDFLAGS)) $(CFLAGS) $(OBJECTS) -o "$@"
 	$(OBJDUMP) -xtr "$@" > $(DMP)
 	$(call print_trace,"Built $@")
 
 # Generic rules for compiling C files
-$(OBJ)/%.o: %.c
+$(OBJ)/%.o: %.c | $$(@D)/.dir
 	$(call print_trace,"Building $@")
-	mkdir -p "$(@D)"
 	$(CC) $(addprefix $I,$(INCLUDES)) $(addprefix $D,$(DEFINES)) $(addprefix $W,$(WARNINGS)) $(CFLAGS) -c -o "$@" "$<"
 
 -include $(DEPENDS)
