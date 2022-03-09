@@ -57,7 +57,7 @@ OBJ = obj/$(ARCH)
 HEX = $(OUT)/$(APP).hex
 ELF = $(OUT)/$(APP).elf
 MAP = $(OUT)/$(APP).map
-DMP = $(OUT)/$(APP).objdump
+DMP = $(OUT)/$(APP).dump
 
 # Compilation options and flags
 WARNINGS += all extra undef
@@ -75,21 +75,15 @@ W=-W
 D=-D
 
 # Font colors
-C_BOLD    = \e[1m
-C_BLACK   = \e[30m
-C_RED     = \e[31m
-C_GREEN   = \e[32m
-C_ORANGE  = \e[33m
-C_BLUE    = \e[34m
-C_MAGENTA = \e[35m
-C_CYAN    = \e[36m
-C_GREY    = \e[37m
-C_WHITE   = \e[0m
+C_RED     = $(shell tput setaf 1)
+C_GREEN   = $(shell tput setaf 2)
+C_MAGENTA = $(shell tput setaf 5)
+C_RESET   = $(shell tput sgr0)
 
 # Printing macros
-print_error = echo "$(C_RED)$(C_BOLD)$(1)$(C_WHITE)"
-print_info = echo "$(C_MAGENTA)$(1)$(C_WHITE)"
-print_trace = echo "$(C_GREEN)$(1)$(C_WHITE)"
+print_error = $(error $(C_RED)$1$(C_RESET))
+print_info  = $(info $(C_MAGENTA)$1$(C_RESET))
+print_trace = $(info $(C_GREEN)$1$(C_RESET))
 
 .PRECIOUS: %/.dir
 .PHONY: all clean upload monitor
@@ -99,42 +93,48 @@ ifndef VERBOSE
 .SILENT:
 endif
 
-all: $(HEX)
+all: $(HEX) $(ELF) $(DMP)
+	$(call print_info,Done)
+	@echo "Output is : $(HEX)"
+	$(SIZE) -C --mcu=$(ARCH) "$(ELF)"
 
 clean:
-	$(call print_info,"Cleaning workspace")
+	$(call print_info,Cleaning workspace)
 	rm -rf "$(OBJ)"
 	rm -rf "$(OUT)"
 
 upload: $(HEX)
-	$(call print_info,"Uploading to target")
+	$(call print_info,Uploading to target)
 	$(UPLOAD) -b $(UPLOAD_BAUD_RATE) -c $(PROGRAMMER) -p $(ARCH) -P $(SERIAL_TTY) -U flash:w:"$<"
 
 monitor:
+	$(call print_info,Start serial monitor)
 	$(MONITOR) -b $(SERIAL_BAUDRATE) $(SERIAL_TTY)
 
 %/.dir:
-	mkdir -p $(@D)
-	touch $@
+	mkdir -p "$(@D)"
+	touch "$@"
 
 .SECONDEXPANSION:
 
-$(HEX): $(ELF) | $$(@D)/.dir
-	$(call print_info,"Creating HEX file")
-	$(OBJCOPY) -O ihex "$<" "$@"
-	$(call print_trace,"Built $@")
-	$(SIZE) -C --mcu=$(ARCH) "$<"
-	$(call print_info,"Done")
-
 $(ELF): $(OBJECTS) | $$(@D)/.dir
-	$(call print_info,"Linking object files")
+	$(call print_info,Linking object files)
 	$(CC) $(addprefix $l,$(LIBS)) $(addprefix $w,$(LDFLAGS)) $(CFLAGS) $(OBJECTS) -o "$@"
-	$(OBJDUMP) -xtr "$@" > $(DMP)
-	$(call print_trace,"Built $@")
+	@echo "Built $@"
+
+$(HEX): $(ELF) | $$(@D)/.dir
+	$(call print_info,Creating HEX file)
+	$(OBJCOPY) -O ihex "$<" "$@"
+	@echo "Built $@"
+
+$(DMP): $(ELF) | $$(@D)/.dir
+	$(call print_info,Generating object dump)
+	$(OBJDUMP) -xtr "$<" > "$@"
+	@echo "Built $@"
 
 # Generic rules for compiling C files
 $(OBJ)/%.o: %.c | $$(@D)/.dir
-	$(call print_trace,"Building $@")
+	$(call print_trace,Building $@)
 	$(CC) $(addprefix $I,$(INCLUDES)) $(addprefix $D,$(DEFINES)) $(addprefix $W,$(WARNINGS)) $(CFLAGS) -c -o "$@" "$<"
 
 -include $(DEPENDS)
