@@ -18,17 +18,17 @@ SOURCES := app/app.c
 
 # Enable support for doubles and floats in printf
 # Adds ~2.5kB to ROM data!!!
-LDFLAGS := -u,vfprintf
-LIBS := printf_flt m
+# LDFLAGS := -u,vfprintf
+# LIBS := printf_flt m
 
 # Enable selected modules
-MODULES := os timer serial gpio i2c tc74 adc icp
+MODULES := os timer serial gpio
 
 # Use only LL API to save on memory
-# GPIO_LL=1
-# SERIAL_LL=1
-# TIMER_LL=1
-# SPI_LL=1
+GPIO_LL=1
+SERIAL_LL=1
+TIMER_LL=1
+SPI_LL=1
 
 # Must be last
 include $(ARDUINO_LIBS)/makefile.include
