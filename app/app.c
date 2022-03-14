@@ -25,7 +25,7 @@ void app_init()
     serial_ll_init(usart, 19200);
 
     // Init tasks
-    printf("Start!\r\n");
+    printf( C_RED "Start!" C_END "\r\n");
     os_task_setup(TASK_MAIN, 1000, task_main, NULL_PTR);
 }
 
@@ -35,8 +35,8 @@ int task_main(void * data)
     UNUSED(data);
 
     static int cpt = 0;
-    if (cpt++ & 1) printf("Tock\r\n");
-    else printf("Tick\r\n");
+    if (cpt++ & 1) printf( C_GREY "Tock" C_END "\r\n" );
+    else printf( C_GREY "Tick" C_END "\r\n" );
 
     return 0;
 }

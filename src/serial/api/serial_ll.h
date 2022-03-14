@@ -9,49 +9,50 @@ enum {
     SERIAL_LL_ERROR_INSTANCE,
 };
 
-#define C_END       "\33[0m"
-#define C_BOLD      "\33[1m"
-#define C_ITALIC    "\33[3m"
-#define C_URL       "\33[4m"
-#define C_BLINK     "\33[5m"
-#define C_BLINK2    "\33[6m"
-#define C_SELECTED  "\33[7m"
+#define COLOR(c)    "\33[" #c "m"
+#define C_END       COLOR(0)
+#define C_BOLD      COLOR(1)
+#define C_ITALIC    COLOR(3)
+#define C_URL       COLOR(4)
+#define C_BLINK     COLOR(5)
+#define C_BLINK2    COLOR(6)
+#define C_SELECTED  COLOR(7)
 
-#define C_BLACK     "\33[30m"
-#define C_RED       "\33[31m"
-#define C_GREEN     "\33[32m"
-#define C_YELLOW    "\33[33m"
-#define C_BLUE      "\33[34m"
-#define C_VIOLET    "\33[35m"
-#define C_BEIGE     "\33[36m"
-#define C_WHITE     "\33[37m"
+#define C_BLACK     COLOR(30)
+#define C_RED       COLOR(31)
+#define C_GREEN     COLOR(32)
+#define C_YELLOW    COLOR(33)
+#define C_BLUE      COLOR(34)
+#define C_VIOLET    COLOR(35)
+#define C_BEIGE     COLOR(36)
+#define C_WHITE     COLOR(37)
 
-#define C_BLACKBG   "\33[40m"
-#define C_REDBG     "\33[41m"
-#define C_GREENBG   "\33[42m"
-#define C_YELLOWBG  "\33[43m"
-#define C_BLUEBG    "\33[44m"
-#define C_VIOLETBG  "\33[45m"
-#define C_BEIGEBG   "\33[46m"
-#define C_WHITEBG   "\33[47m"
+#define C_BLACKBG   COLOR(40)
+#define C_REDBG     COLOR(41)
+#define C_GREENBG   COLOR(42)
+#define C_YELLOWBG  COLOR(43)
+#define C_BLUEBG    COLOR(44)
+#define C_VIOLETBG  COLOR(45)
+#define C_BEIGEBG   COLOR(46)
+#define C_WHITEBG   COLOR(47)
 
-#define C_GREY      "\33[90m"
-#define C_RED2      "\33[91m"
-#define C_GREEN2    "\33[92m"
-#define C_YELLOW2   "\33[93m"
-#define C_BLUE2     "\33[94m"
-#define C_VIOLET2   "\33[95m"
-#define C_BEIGE2    "\33[96m"
-#define C_WHITE2    "\33[97m"
+#define C_GREY      COLOR(90)
+#define C_RED2      COLOR(91)
+#define C_GREEN2    COLOR(92)
+#define C_YELLOW2   COLOR(93)
+#define C_BLUE2     COLOR(94)
+#define C_VIOLET2   COLOR(95)
+#define C_BEIGE2    COLOR(96)
+#define C_WHITE2    COLOR(97)
 
-#define C_GREYBG    "\33[100m"
-#define C_REDBG2    "\33[101m"
-#define C_GREENBG2  "\33[102m"
-#define C_YELLOWBG2 "\33[103m"
-#define C_BLUEBG2   "\33[104m"
-#define C_VIOLETBG2 "\33[105m"
-#define C_BEIGEBG2  "\33[106m"
-#define C_WHITEBG2  "\33[107m"
+#define C_GREYBG    COLOR(100)
+#define C_REDBG2    COLOR(101)
+#define C_GREENBG2  COLOR(102)
+#define C_YELLOWBG2 COLOR(103)
+#define C_BLUEBG2   COLOR(104)
+#define C_VIOLETBG2 COLOR(105)
+#define C_BEIGEBG2  COLOR(106)
+#define C_WHITEBG2  COLOR(107)
 
 typedef union {
     struct {
