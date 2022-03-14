@@ -11,7 +11,7 @@ void max31855_device_init(max31855_t *self, gpio_t *cs)
 bool max31855_get_temperature(max31855_t *self, float *temperature)
 {
     uint8_t bytes[2] = {0};
-    spi_read_bytes(&self->spi_device, bytes, 2);
+    spi_device_read_bytes(&self->spi_device, bytes, 2);
     if IS_SET_BIT(bytes[1], 0) return FALSE;
 
     float ipart = (bytes[0] << 4) + (bytes[1] >> 4);
@@ -27,7 +27,7 @@ bool max31855_get_temperature(max31855_t *self, float *temperature)
 void max31855_get_internal_temperature(max31855_t *self, float *temperature)
 {
     uint8_t bytes[4] = {0};
-    spi_read_bytes(&self->spi_device, bytes, 4);
+    spi_device_read_bytes(&self->spi_device, bytes, 4);
 
     float ipart = bytes[2];
     float fpart = HIGH_NIBBLE(bytes[3]) / 16.0;

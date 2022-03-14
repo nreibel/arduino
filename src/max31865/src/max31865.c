@@ -9,7 +9,7 @@
 int max31865_init(max31865_t *self, gpio_t *cs, max31865_mode_t mode, max31865_filter_t filter)
 {
     spi_device_init(&self->dev, cs, SPI_CLOCK_DIV_16 , SPI_MODE_3);
-    spi_set_transaction_mode_enabled(&self->dev, TRUE);
+    spi_device_set_transaction_mode(&self->dev, TRUE);
 
     // VBIAS = On, Conversion mode = Auto
     uint8_t configuration = BIT(7) | BIT(6);
@@ -42,16 +42,16 @@ int max31865_init(max31865_t *self, gpio_t *cs, max31865_mode_t mode, max31865_f
     }
 
     // Write config
-    spi_enable_slave(&self->dev);
-    spi_write_byte(&self->dev, MAX31865_REG_CONFIG | MAX31865_WRITE, NULL_PTR);
-    spi_write_byte(&self->dev, configuration, NULL_PTR);
-    spi_disable_slave(&self->dev);
+    spi_device_enable(&self->dev);
+    spi_device_write_byte(&self->dev, MAX31865_REG_CONFIG | MAX31865_WRITE, NULL_PTR);
+    spi_device_write_byte(&self->dev, configuration, NULL_PTR);
+    spi_device_disable(&self->dev);
 
     // Read back config
-    spi_enable_slave(&self->dev);
-    spi_write_byte(&self->dev, MAX31865_REG_CONFIG | MAX31865_READ, NULL_PTR);
-    spi_write_byte(&self->dev, configuration, &read);
-    spi_disable_slave(&self->dev);
+    spi_device_enable(&self->dev);
+    spi_device_write_byte(&self->dev, MAX31865_REG_CONFIG | MAX31865_READ, NULL_PTR);
+    spi_device_write_byte(&self->dev, configuration, &read);
+    spi_device_disable(&self->dev);
 
     // Same config should be read back if communication is set up properly
     if (read != configuration) return -1;
@@ -64,11 +64,11 @@ int max31865_read_rtd(max31865_t *self, double *rtd, bool *fault)
     uint8_t msb = 0;
     uint8_t lsb = 0;
 
-    spi_enable_slave(&self->dev);
-    spi_write_byte(&self->dev, MAX31865_REG_RTD_MSB | MAX31865_READ, NULL_PTR);
-    spi_read_byte(&self->dev, &msb);
-    spi_read_byte(&self->dev, &lsb);
-    spi_disable_slave(&self->dev);
+    spi_device_enable(&self->dev);
+    spi_device_write_byte(&self->dev, MAX31865_REG_RTD_MSB | MAX31865_READ, NULL_PTR);
+    spi_device_read_byte(&self->dev, &msb);
+    spi_device_read_byte(&self->dev, &lsb);
+    spi_device_disable(&self->dev);
 
     if ( lsb == 0 && msb == 0 )
     {
@@ -99,10 +99,10 @@ double max31865_rtd_to_temperature(double rtd)
 
 int max31865_read_fault_status(max31865_t *self, uint8_t *status)
 {
-    spi_enable_slave(&self->dev);
-    spi_write_byte(&self->dev, MAX31865_REG_FAULT_STATUS | MAX31865_READ, NULL_PTR);
-    spi_write_byte(&self->dev, 0, status);
-    spi_disable_slave(&self->dev);
+    spi_device_enable(&self->dev);
+    spi_device_write_byte(&self->dev, MAX31865_REG_FAULT_STATUS | MAX31865_READ, NULL_PTR);
+    spi_device_write_byte(&self->dev, 0, status);
+    spi_device_disable(&self->dev);
 
     return 0;
 }
