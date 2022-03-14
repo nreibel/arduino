@@ -1,7 +1,6 @@
 #include "st7735.h"
 #include "st7735_cfg.h"
 #include "spi.h"
-#include "spi_ll.h"
 #include "gpio.h"
 #include "bits.h"
 #include "charset.h"
@@ -68,8 +67,8 @@ typedef struct {
 void st7735_init_device(st7735_t self, spi_bus_t bus, gpio_t cs, gpio_t dc, unsigned int w, unsigned int h)
 {
     spi_device_init(&self->dev, bus, cs, SPI_CLOCK_DIV_2, SPI_MODE_0);
-    spi_set_transaction_mode_enabled(&self->dev, TRUE);
-    spi_enable_slave(&self->dev);
+    spi_device_set_transaction_mode(&self->dev, TRUE);
+    spi_device_enable(&self->dev);
 
     gpio_set_data_direction(dc, GPIO_OUTPUT_ACTIVE_LOW);
 
@@ -100,7 +99,7 @@ void st7735_init_device(st7735_t self, spi_bus_t bus, gpio_t cs, gpio_t dc, unsi
     st7735_data(self, ST7735_ORIENTATION_PORTRAIT);
 
     st7735_command(self, ST7735_DISPON);
-    spi_disable_slave(&self->dev);
+    spi_device_disable(&self->dev);
 }
 
 unsigned int st7735_get_width(st7735_t self)
@@ -123,37 +122,37 @@ void st7735_set_scale(st7735_t self, unsigned int scale)
 
 static void st7735_data(st7735_t self, uint8_t data)
 {
-    spi_write_byte(&self->dev, data, NULL_PTR);
+    spi_device_write_byte(&self->dev, data, NULL_PTR);
 }
 
 static void st7735_command(st7735_t self, uint8_t command)
 {
     gpio_set(self->dc);
-    spi_write_byte(&self->dev, command, NULL_PTR);
+    spi_device_write_byte(&self->dev, command, NULL_PTR);
     gpio_reset(self->dc);
 }
 
 static void st7735_color(st7735_t self, st7735_color_t color)
 {
-    UNUSED(self);
-
-    while(!spi_ll_ready());
-    spi_ll_write_byte(color >> 8);
-    while(!spi_ll_ready());
-    spi_ll_write_byte(color);
+    spi_device_write_fast(&self->dev, color >> 8);
+    spi_device_write_fast(&self->dev, color);
 }
 
 static void st7735_set_draw_window(st7735_t self, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2)
 {
     // Set the column to write to
-    uint8_t col[4] = {0, x1+self->offset_x, 0, x2+self->offset_x};
     st7735_command(self, ST7735_CASET);
-    spi_write_fast(&self->dev, col, 4);
+    spi_device_write_fast(&self->dev, 0);
+    spi_device_write_fast(&self->dev, x1+self->offset_x);
+    spi_device_write_fast(&self->dev, 0);
+    spi_device_write_fast(&self->dev, x2+self->offset_x);
 
     // Set the row range to write to
-    uint8_t row[4] = {0, y1+self->offset_y, 0, y2+self->offset_y};
     st7735_command(self, ST7735_RASET);
-    spi_write_fast(&self->dev, row, 4);
+    spi_device_write_fast(&self->dev, 0);
+    spi_device_write_fast(&self->dev, y1+self->offset_y);
+    spi_device_write_fast(&self->dev, 0);
+    spi_device_write_fast(&self->dev, y2+self->offset_y);
 
     // Write to RAM
     st7735_command(self, ST7735_RAMWR);
@@ -179,10 +178,10 @@ void st7735_set_orientation(st7735_t self, st7735_orientation_t orientation)
             break;
     }
 
-    spi_enable_slave(&self->dev);
+    spi_device_enable(&self->dev);
     st7735_command(self, ST7735_MADCTL);
     st7735_data(self, madctl);
-    spi_disable_slave(&self->dev);
+    spi_device_disable(&self->dev);
 }
 
 void st7735_set_background(st7735_t self, st7735_color_t c)
@@ -228,7 +227,7 @@ void st7735_draw_pixel(st7735_t self, unsigned int x, unsigned int y)
 
 void st7735_fill_rectangle(st7735_t self, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 {
-    spi_enable_slave(&self->dev);
+    spi_device_enable(&self->dev);
 
     st7735_set_draw_window(self, x, y, x+w-1, y+h-1);
 
@@ -237,7 +236,7 @@ void st7735_fill_rectangle(st7735_t self, unsigned int x, unsigned int y, unsign
         st7735_color(self, self->foreground_color);
     }
 
-    spi_disable_slave(&self->dev);
+    spi_device_disable(&self->dev);
 }
 
 void st7735_draw_char(st7735_t self, unsigned int x, unsigned int y, const char chr)
@@ -259,7 +258,7 @@ void st7735_draw_char(st7735_t self, unsigned int x, unsigned int y, const char 
     unsigned int w = SCALE * ST7735_CHARSET_WIDTH;
     unsigned int h = SCALE * ST7735_CHARSET_HEIGHT;
 
-    spi_enable_slave(&self->dev);
+    spi_device_enable(&self->dev);
     st7735_set_draw_window(self, x, y, x+w-1, y+h-1);
 
     for (unsigned int dy = 0 ; dy < ST7735_CHARSET_HEIGHT ; dy++)
@@ -283,7 +282,7 @@ void st7735_draw_char(st7735_t self, unsigned int x, unsigned int y, const char 
         }
     }
 
-    spi_disable_slave(&self->dev);
+    spi_device_disable(&self->dev);
 }
 
 void st7735_draw_chars(st7735_t self, unsigned int x, unsigned int y, const char* chars, int length)
@@ -410,7 +409,7 @@ void st7735_draw_xbm(st7735_t self, st7735_xbm_t *bits, unsigned int x, unsigned
 void st7735_render(st7735_t self, unsigned int x, unsigned int y, unsigned int w, unsigned int h, ST7735_Renderer renderer, void* param)
 {
     //Set the drawing region
-    spi_enable_slave(&self->dev);
+    spi_device_enable(&self->dev);
     st7735_set_draw_window(self, x, y, x+(SCALE*w)-1, y+(SCALE*h)-1);
 
     for(unsigned int y = 0; y < h; y++)
@@ -433,7 +432,7 @@ void st7735_render(st7735_t self, unsigned int x, unsigned int y, unsigned int w
         }
     }
 
-    spi_disable_slave(&self->dev);
+    spi_device_disable(&self->dev);
 }
 
 // void ST7735_DrawLine(int x1, int y1, int x2, int y2, st7735_color_t c)

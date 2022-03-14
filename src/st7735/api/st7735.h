@@ -1,10 +1,10 @@
 #ifndef __ST7735_API_H
 #define __ST7735_API_H
 
-#include "st7735_cfg.h"
 #include "types.h"
-#include "spi.h"
 #include "gpio.h"
+#include "spi.h"
+#include "st7735_cfg.h"
 
 typedef uint16_t st7735_color_t;
 typedef const __flash uint8_t st7735_xbm_t;

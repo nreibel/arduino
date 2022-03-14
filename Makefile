@@ -28,6 +28,7 @@ MODULES := os timer serial gpio i2c tc74 adc icp
 # GPIO_LL=1
 # SERIAL_LL=1
 # TIMER_LL=1
+# SPI_LL=1
 
 # Must be last
 include $(ARDUINO_LIBS)/makefile.include

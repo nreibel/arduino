@@ -1,99 +1,67 @@
-#include "spi.h"
 #include "spi_ll.h"
+#include "gpio_ll.h"
 #include "bits.h"
-#include <avr/io.h>
+
 #include <avr/power.h>
 
-void spi_ll_enable()
+void spi_ll_init(spi_t spi)
 {
+    const spcr_t spcr = {
+        .bits = {
+            .mstr = 1,
+            .spe = 1
+        }
+    };
+
+    // Init GPIO
+    gpio_ll_set_data_direction(PORT_B, 3, TRUE);  // MOSI
+    gpio_ll_set_data_direction(PORT_B, 4, FALSE); // MISO
+    gpio_ll_set_data_direction(PORT_B, 5, TRUE);  // SCK
+
     // Enable peripheral
     power_spi_enable();
+
+    // Init device
+    spi->spcr = spcr;
+    spi->spsr.reg = 0;
 }
 
-void spi_ll_configure(spi_clock_t clock, spi_mode_t mode)
+void spi_ll_set_double_speed(spi_t spi, bool dbl)
 {
-    static spi_clock_t _clock = NUMBER_OF_SPI_CLOCK_DIV;
-    static spi_mode_t  _mode  = NUMBER_OF_SPI_MODE;
-
-    // Clock/Mode already set
-    if (clock == _clock && mode == _mode) return;
-
-    // Enable SPI, Master Mode
-    uint8_t spcr = BIT(MSTR) | BIT(SPE);
-    uint8_t spsr = 0;
-
-    switch(clock)
-    {
-        case SPI_CLOCK_DIV_2:
-            SET_BIT(spsr, SPI2X);
-        case SPI_CLOCK_DIV_4:
-            // Do nothing
-            break;
-
-        case SPI_CLOCK_DIV_8:
-            SET_BIT(spsr, SPI2X);
-        case SPI_CLOCK_DIV_16:
-            SET_BIT(spcr, SPR0);
-            break;
-
-        case SPI_CLOCK_DIV_32:
-            SET_BIT(spsr, SPI2X);
-        case SPI_CLOCK_DIV_64:
-            SET_BIT(spcr, SPR1);
-            break;
-
-        case SPI_CLOCK_DIV_128:
-            SET_BIT(spcr, SPR0);
-            SET_BIT(spcr, SPR1);
-            break;
-
-        default:
-            // TODO;
-            break;
-    }
-
-    switch(mode)
-    {
-        case SPI_MODE_0:
-            // Do nothing
-            break;
-
-        case SPI_MODE_1:
-            SET_BIT(spcr, CPHA);
-            break;
-
-        case SPI_MODE_2:
-            SET_BIT(spcr, CPOL);
-            break;
-
-        case SPI_MODE_3:
-            SET_BIT(spcr, CPOL);
-            SET_BIT(spcr, CPHA);
-            break;
-
-        default:
-            // TODO;
-            break;
-    }
-
-    SPCR = spcr;
-    SPSR = spsr;
-
-    _clock = clock;
-    _mode = mode;
+    spi->spsr.bits.spi2x = dbl ? 1 : 0;
 }
 
-bool spi_ll_ready(void)
+void spi_ll_set_prescaler(spi_t spi, uint8_t prescaler)
 {
-    return IS_SET_BIT(SPSR, SPIF);
+    spi->spcr.bits.spr = prescaler;
 }
 
-void spi_ll_write_byte(const uint8_t write)
+void spi_ll_set_clock_polarity(spi_t spi, bool polarity)
 {
-    SPDR = write;
+    spi->spcr.bits.cpol = polarity ? 1 : 0;
 }
 
-uint8_t spi_ll_read_byte(void)
+void spi_ll_set_clock_phase(spi_t spi, bool phase)
 {
-    return SPDR;
+    spi->spcr.bits.cpha = phase ? 1 : 0;
+}
+
+bool spi_ll_ready(spi_t spi)
+{
+    return spi->spsr.bits.spif;
+}
+
+void spi_ll_wait_tx(spi_t spi)
+{
+    while(!spi->spsr.bits.spif);
+}
+
+void spi_ll_write_byte(spi_t spi, const uint8_t write)
+{
+    spi->spdr = write;
+}
+
+uint8_t spi_ll_read_byte(spi_t spi)
+{
+    return spi->spdr;
 }
