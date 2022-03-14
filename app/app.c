@@ -15,6 +15,7 @@ int os_putc(char chr, FILE *stream)
 {
     UNUSED(stream);
     serial_ll_write(usart, chr);
+    serial_ll_wait_tx(usart);
     return chr;
 }
 
@@ -34,8 +35,8 @@ int task_main(void * data)
     UNUSED(data);
 
     static int cpt = 0;
-    if (cpt++ & 1) printf("tock\r\n");
-    else printf("tick\r\n");
+    if (cpt++ & 1) printf("Tock\r\n");
+    else printf("Tick\r\n");
 
     return 0;
 }
