@@ -1,6 +1,7 @@
-INCLUDES += \
-	$(SRC_DIR)/spi/api \
+INCLUDES += $(SRC_DIR)/spi/api
+SOURCES += $(SRC_DIR)/spi/src/spi_ll.c
 
-SOURCES += \
-	$(SRC_DIR)/spi/src/spi.c \
-	$(SRC_DIR)/spi/src/spi_ll.c \
+ifndef SPI_LL
+SOURCES += $(SRC_DIR)/spi/src/spi_bus.c
+SOURCES += $(SRC_DIR)/spi/src/spi_device.c
+endif
