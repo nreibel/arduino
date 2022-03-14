@@ -4,7 +4,7 @@
 #include "os_cfg.h"
 #include "os_mem.h"
 
-#ifdef OS_MALLOC
+#if OS_MALLOC
 
 spi_device_t spi_device_create(spi_bus_t bus, gpio_t cs, spi_clock_t clk, spi_mode_t mode)
 {
