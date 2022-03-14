@@ -5,6 +5,7 @@
 #include "gpio.h"
 #include "i2c.h"
 #include "st7735.h"
+#include "os_cfg.h"
 
 typedef struct tft_shield_prv_s {
     struct i2c_device_prv_s seesaw;
@@ -22,6 +23,11 @@ typedef enum {
     TFT_SHIELD_KEY_RIGHT,
     NUMBER_OF_TFT_SHIELD_KEYS
 } tft_shield_key_t;
+
+#if OS_MALLOC
+tft_shield_t tft_shield_create(spi_bus_t spi, i2c_bus_t i2c, st7735_orientation_t orientation);
+void tft_shield_destroy(tft_shield_t self);
+#endif // OS_MALLOC
 
 int tft_shield_init(tft_shield_t self, spi_bus_t spi, i2c_bus_t i2c, st7735_orientation_t orientation);
 

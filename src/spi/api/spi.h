@@ -45,7 +45,7 @@ typedef struct spi_device_prv_s {
     bool transaction_mode;
 } * spi_device_t;
 
-#ifdef OS_MALLOC
+#if OS_MALLOC
 spi_bus_t spi_bus_create(spi_t dev);
 void spi_bus_destroy(spi_bus_t dev);
 

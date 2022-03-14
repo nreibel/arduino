@@ -4,7 +4,7 @@
 #include "os_cfg.h"
 #include "os_mem.h"
 
-#ifdef OS_MALLOC
+#if OS_MALLOC
 
 spi_bus_t spi_bus_create(spi_t bus)
 {
