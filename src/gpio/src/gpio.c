@@ -6,14 +6,19 @@
 
 /* Private data */
 
+#if GPIO_EXTINT
 static gpio_extint_cbk_t extint_cbk[NUMBER_OF_EXTINTS] = {0};
 static volatile void* extint_data[NUMBER_OF_EXTINTS] = {0};
+#endif // GPIO_EXTINT
 
+#if GPIO_PCINT
 static gpio_pcint_cbk_t pcint_cbk[NUMBER_OF_PCINTS] = {0};
 static volatile void* pcint_data[NUMBER_OF_PCINTS] = {0};
+#endif // GPIO_PCINT
 
 /* Interrupt routines */
 
+#if GPIO_EXTINT
 void gpio_extint_cbk(extint_t i)
 {
     if (i < NUMBER_OF_EXTINTS && extint_cbk[i] != NULL_PTR)
@@ -21,7 +26,9 @@ void gpio_extint_cbk(extint_t i)
         (*extint_cbk[i])(i, extint_data[i]);
     }
 }
+#endif // GPIO_EXTINT
 
+#if GPIO_PCINT
 void gpio_pcint_cbk(pcint_t i, uint8_t val)
 {
     if (i < NUMBER_OF_PCINTS && pcint_cbk[i] != NULL_PTR)
@@ -29,9 +36,11 @@ void gpio_pcint_cbk(pcint_t i, uint8_t val)
         (*pcint_cbk[i])(i, val, pcint_data[i]);
     }
 }
+#endif // GPIO_PCINT
 
 /* External interrupts */
 
+#if GPIO_PCINT
 int gpio_enable_pcint(pcint_t port, uint8_t mask, gpio_pcint_cbk_t cbk, volatile void *data)
 {
     if (port >= NUMBER_OF_PCINTS)
@@ -57,7 +66,9 @@ int gpio_disable_pcint(pcint_t port)
 
     return GPIO_OK;
 }
+#endif // GPIO_PCINT
 
+#if GPIO_EXTINT
 int gpio_enable_extint(extint_t pin, gpio_edge_t edge, gpio_extint_cbk_t cbk, volatile void *data)
 {
     if (pin >= NUMBER_OF_EXTINTS)
@@ -105,6 +116,7 @@ int gpio_disable_extint(extint_t pin)
 
     return GPIO_OK;
 }
+#endif // GPIO_EXTINT
 
 /* Public functions */
 

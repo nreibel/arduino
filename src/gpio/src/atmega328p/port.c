@@ -4,8 +4,7 @@
 
 #include <avr/interrupt.h>
 
-/* Interrupt handlers */
-
+#if GPIO_EXTINT
 ISR(INT0_vect)
 {
     gpio_extint_cbk(EXTINT0);
@@ -15,7 +14,9 @@ ISR(INT1_vect)
 {
     gpio_extint_cbk(EXTINT1);
 }
+#endif // GPIO_EXTINT
 
+#if GPIO_PCINT
 ISR(PCINT0_vect)
 {
     gpio_pcint_cbk(PCINTB, PORTS[PORT_B].pin);
@@ -30,8 +31,10 @@ ISR(PCINT2_vect)
 {
     gpio_pcint_cbk(PCINTD, PORTS[PORT_D].pin);
 }
+#endif // GPIO_PCINT
 
-/* Registers */
+
+#if GPIO_EXTINT
 
 static volatile union {
     struct {
@@ -50,8 +53,6 @@ static volatile union {
     } bits;
     uint8_t reg;
 } * eimsk = (volatile void *) 0x3D;
-
-/* Exported functions */
 
 int gpio_ll_set_edge(extint_t pin, uint8_t edge)
 {
@@ -88,3 +89,4 @@ int gpio_ll_disable_extint(extint_t pin)
 
     return GPIO_LL_OK;
 }
+#endif // GPIO_EXTINT

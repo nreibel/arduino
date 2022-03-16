@@ -6,6 +6,7 @@
 
 /* Interrupt handlers */
 
+#if GPIO_EXTINT
 ISR(INT0_vect)
 {
     gpio_extint_cbk(EXTINT0);
@@ -30,11 +31,16 @@ ISR(INT6_vect)
 {
     gpio_extint_cbk(EXTINT6);
 }
+#endif // GPIO_EXTINT
 
+#if GPIO_PCINT
 ISR(PCINT0_vect)
 {
     gpio_pcint_cbk(PCINTB, PORTS[PORT_B].pin);
 }
+#endif // GPIO_PCINT
+
+#if GPIO_EXTINT
 
 /* Registers */
 
@@ -118,3 +124,4 @@ int gpio_ll_disable_extint(extint_t pin)
 
     return GPIO_LL_OK;
 }
+#endif // GPIO_EXTINT

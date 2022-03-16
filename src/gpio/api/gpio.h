@@ -4,6 +4,7 @@
 #include "types.h"
 #include "os_cfg.h"
 #include "gpio_ll.h"
+#include "gpio_cfg.h"
 
 enum {
     GPIO_OK,
@@ -22,12 +23,14 @@ typedef enum {
     GPIO_OUTPUT_ACTIVE_LOW,
 } gpio_data_direction_t;
 
+#if GPIO_EXTINT
 typedef enum {
     GPIO_EDGE_LOW,
     GPIO_EDGE_ANY,
     GPIO_EDGE_FALLING,
     GPIO_EDGE_RISING
 } gpio_edge_t;
+#endif // GPIO_EXTINT
 
 typedef struct gpio_prv_s {
     port_t port;
@@ -35,8 +38,6 @@ typedef struct gpio_prv_s {
     gpio_data_direction_t direction;
 } * gpio_t;
 
-typedef void (*gpio_extint_cbk_t)(extint_t pin, volatile void*);
-typedef void (*gpio_pcint_cbk_t)(pcint_t port, uint8_t mask, volatile void*);
 
 #if OS_MALLOC
 gpio_t gpio_create(port_t port, uint8_t pin);
@@ -50,10 +51,16 @@ int gpio_reset(gpio_t self);
 int gpio_toggle(gpio_t self);
 int gpio_get(gpio_t self, bool *state);
 
+#if GPIO_EXTINT
+typedef void (*gpio_extint_cbk_t)(extint_t pin, volatile void*);
 int gpio_enable_extint(extint_t pin, gpio_edge_t edge, gpio_extint_cbk_t cbk, volatile void *data);
 int gpio_disable_extint(extint_t pin);
+#endif // GPIO_EXTINT
 
+#if GPIO_PCINT
+typedef void (*gpio_pcint_cbk_t)(pcint_t port, uint8_t mask, volatile void*);
 int gpio_enable_pcint(pcint_t port, uint8_t mask, gpio_pcint_cbk_t cbk, volatile void *data);
 int gpio_disable_pcint(pcint_t port);
+#endif // GPIO_PCINT
 
 #endif // GPIO_API_H__

@@ -1,6 +1,7 @@
 INCLUDES += \
 	$(SRC_DIR)/gpio/api \
 	$(SRC_DIR)/gpio/api/$(ARCH) \
+	$(CFG_DIR)/gpio \
 
 SOURCES += \
 	$(SRC_DIR)/gpio/src/gpio_ll.c \

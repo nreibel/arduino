@@ -11,23 +11,28 @@
  * Interrupt handlers
  */
 
+#if GPIO_EXTINT
 __attribute((weak))
 void gpio_extint_cbk(extint_t i)
 {
     UNUSED(i);
 }
+#endif // GPIO_EXTINT
 
+#if GPIO_PCINT
 __attribute((weak))
 void gpio_pcint_cbk(pcint_t i, uint8_t val)
 {
     UNUSED(i);
     UNUSED(val);
 }
+#endif // GPIO_PCINT
 
 /*
  * Exported functions
  */
 
+#if GPIO_PCINT
 int gpio_ll_enable_pcint(pcint_t port, uint8_t mask)
 {
     if (port >= NUMBER_OF_PCINTS)
@@ -49,6 +54,7 @@ int gpio_ll_disable_pcint(pcint_t port)
 
     return GPIO_LL_OK;
 }
+#endif // GPIO_PCINT
 
 int gpio_ll_set_port_data_direction(port_t port, uint8_t mask)
 {
