@@ -63,7 +63,7 @@ int spi_bus_read_byte(spi_bus_t self, uint8_t *byte);
 int spi_bus_read_bytes(spi_bus_t self, void *buffer, int len);
 int spi_bus_write_byte(spi_bus_t self, uint8_t byte, uint8_t *read);
 int spi_bus_write_bytes(spi_bus_t self, void *buffer, int len);
-int spi_bus_write_fast(spi_bus_t self, const uint8_t byte);
+void spi_bus_write_fast(spi_bus_t self, const uint8_t byte);
 
 /*
  * SPI Device
@@ -77,6 +77,6 @@ int spi_device_read_byte(spi_device_t self, uint8_t *byte);
 int spi_device_read_bytes(spi_device_t self, void *buffer, int len);
 int spi_device_write_byte(spi_device_t self, uint8_t byte, uint8_t *read);
 int spi_device_write_bytes(spi_device_t self, void *buffer, int len);
-int spi_device_write_fast(spi_device_t self, const uint8_t byte);
+void spi_device_write_fast(spi_device_t self, const uint8_t byte);
 
 #endif // SPI_API_H__

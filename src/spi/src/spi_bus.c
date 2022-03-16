@@ -169,10 +169,8 @@ int spi_bus_write_byte(spi_bus_t self, uint8_t byte, uint8_t *read)
     return 1;
 }
 
-int spi_bus_write_fast(spi_bus_t self, const uint8_t byte)
+void spi_bus_write_fast(spi_bus_t self, const uint8_t byte)
 {
     spi_ll_write_byte(self->bus, byte);
     spi_ll_wait_tx(self->bus);
-
-    return 1;
 }
