@@ -122,37 +122,37 @@ void st7735_set_scale(st7735_t self, unsigned int scale)
 
 static void st7735_data(st7735_t self, uint8_t data)
 {
-    spi_device_write_byte(&self->dev, data, NULL_PTR);
+    spi_bus_write_fast(self->dev.bus, data);
 }
 
 static void st7735_command(st7735_t self, uint8_t command)
 {
     gpio_set(self->dc);
-    spi_device_write_byte(&self->dev, command, NULL_PTR);
+    spi_bus_write_fast(self->dev.bus, command);
     gpio_reset(self->dc);
 }
 
 static void st7735_color(st7735_t self, st7735_color_t color)
 {
-    spi_device_write_fast(&self->dev, color >> 8);
-    spi_device_write_fast(&self->dev, color);
+    spi_bus_write_fast(self->dev.bus, color >> 8);
+    spi_bus_write_fast(self->dev.bus, color);
 }
 
 static void st7735_set_draw_window(st7735_t self, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2)
 {
     // Set the column to write to
     st7735_command(self, ST7735_CASET);
-    spi_device_write_fast(&self->dev, 0);
-    spi_device_write_fast(&self->dev, x1+self->offset_x);
-    spi_device_write_fast(&self->dev, 0);
-    spi_device_write_fast(&self->dev, x2+self->offset_x);
+    spi_bus_write_fast(self->dev.bus, 0);
+    spi_bus_write_fast(self->dev.bus, x1+self->offset_x);
+    spi_bus_write_fast(self->dev.bus, 0);
+    spi_bus_write_fast(self->dev.bus, x2+self->offset_x);
 
     // Set the row range to write to
     st7735_command(self, ST7735_RASET);
-    spi_device_write_fast(&self->dev, 0);
-    spi_device_write_fast(&self->dev, y1+self->offset_y);
-    spi_device_write_fast(&self->dev, 0);
-    spi_device_write_fast(&self->dev, y2+self->offset_y);
+    spi_bus_write_fast(self->dev.bus, 0);
+    spi_bus_write_fast(self->dev.bus, y1+self->offset_y);
+    spi_bus_write_fast(self->dev.bus, 0);
+    spi_bus_write_fast(self->dev.bus, y2+self->offset_y);
 
     // Write to RAM
     st7735_command(self, ST7735_RAMWR);
