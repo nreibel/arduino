@@ -31,7 +31,7 @@ int spi_bus_init(spi_bus_t self, spi_t bus)
     spi_ll_init(bus);
 
     self->bus = bus;
-    self->clk = NUMBER_OF_SPI_CLOCK_DIVS;
+    self->clock = NUMBER_OF_SPI_CLOCK_DIVS;
     self->mode = NUMBER_OF_SPI_MODES;
 
     return SPI_OK;
@@ -39,59 +39,85 @@ int spi_bus_init(spi_bus_t self, spi_t bus)
 
 int spi_bus_configure(spi_bus_t self, spi_clock_t clock, spi_mode_t mode)
 {
-    spi_ll_set_double_speed(self->bus, FALSE);
-    spi_ll_set_clock_polarity(self->bus, FALSE);
-    spi_ll_set_clock_phase(self->bus, FALSE);
 
-    switch(clock)
+    if (self->clock != clock)
     {
-        case SPI_CLOCK_DIV_2:
-            spi_ll_set_double_speed(self->bus, TRUE);
-        case SPI_CLOCK_DIV_4:
-            spi_ll_set_prescaler(self->bus, SPI_LL_PSCL_4);
-            break;
+        switch(clock)
+        {
+            case SPI_CLOCK_DIV_2:
+            case SPI_CLOCK_DIV_8:
+            case SPI_CLOCK_DIV_32:
+                spi_ll_set_double_speed(self->bus, TRUE);
+                break;
 
-        case SPI_CLOCK_DIV_8:
-            spi_ll_set_double_speed(self->bus, TRUE);
-        case SPI_CLOCK_DIV_16:
-            spi_ll_set_prescaler(self->bus, SPI_LL_PSCL_16);
-            break;
+            case SPI_CLOCK_DIV_4:
+            case SPI_CLOCK_DIV_16:
+            case SPI_CLOCK_DIV_64:
+            case SPI_CLOCK_DIV_128:
+                spi_ll_set_double_speed(self->bus, FALSE);
+                break;
 
-        case SPI_CLOCK_DIV_32:
-            spi_ll_set_double_speed(self->bus, TRUE);
-        case SPI_CLOCK_DIV_64:
-            spi_ll_set_prescaler(self->bus, SPI_LL_PSCL_64);
-            break;
+            default:
+                return -SPI_ERROR_PRESCALER;
+        }
 
-        case SPI_CLOCK_DIV_128:
-            spi_ll_set_prescaler(self->bus, SPI_LL_PSCL_128);
-            break;
+        switch(clock)
+        {
+            case SPI_CLOCK_DIV_2:
+            case SPI_CLOCK_DIV_4:
+                spi_ll_set_prescaler(self->bus, SPI_LL_PSCL_4);
+                break;
 
-        default:
-            return -SPI_ERROR_PRESCALER;
+            case SPI_CLOCK_DIV_8:
+            case SPI_CLOCK_DIV_16:
+                spi_ll_set_prescaler(self->bus, SPI_LL_PSCL_16);
+                break;
+
+            case SPI_CLOCK_DIV_32:
+            case SPI_CLOCK_DIV_64:
+                spi_ll_set_prescaler(self->bus, SPI_LL_PSCL_64);
+                break;
+
+            case SPI_CLOCK_DIV_128:
+                spi_ll_set_prescaler(self->bus, SPI_LL_PSCL_128);
+                break;
+
+            default:
+                return -SPI_ERROR_PRESCALER;
+        }
+
+        self->clock = clock;
     }
 
-    switch(mode)
+    if (self->mode != mode)
     {
-        case SPI_MODE_0:
-            // Nothing to do
-            break;
+        switch(mode)
+        {
+            case SPI_MODE_0:
+                spi_ll_set_clock_polarity(self->bus, FALSE);
+                spi_ll_set_clock_phase(self->bus, FALSE);
+                break;
 
-        case SPI_MODE_1:
-            spi_ll_set_clock_phase(self->bus, TRUE);
-            break;
+            case SPI_MODE_1:
+                spi_ll_set_clock_polarity(self->bus, FALSE);
+                spi_ll_set_clock_phase(self->bus, TRUE);
+                break;
 
-        case SPI_MODE_2:
-            spi_ll_set_clock_polarity(self->bus, TRUE);
-            break;
+            case SPI_MODE_2:
+                spi_ll_set_clock_polarity(self->bus, TRUE);
+                spi_ll_set_clock_phase(self->bus, FALSE);
+                break;
 
-        case SPI_MODE_3:
-            spi_ll_set_clock_polarity(self->bus, TRUE);
-            spi_ll_set_clock_phase(self->bus, TRUE);
-            break;
+            case SPI_MODE_3:
+                spi_ll_set_clock_polarity(self->bus, TRUE);
+                spi_ll_set_clock_phase(self->bus, TRUE);
+                break;
 
-        default:
-            return -SPI_ERROR_POLARITY;
+            default:
+                return -SPI_ERROR_POLARITY;
+        }
+
+        self->mode = mode;
     }
 
     return SPI_OK;

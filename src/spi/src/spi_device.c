@@ -6,14 +6,14 @@
 
 #if OS_MALLOC
 
-spi_device_t spi_device_create(spi_bus_t bus, gpio_t cs, spi_clock_t clk, spi_mode_t mode)
+spi_device_t spi_device_create(spi_bus_t bus, gpio_t cs, spi_clock_t clock, spi_mode_t mode)
 {
     spi_device_t self = os_malloc(sizeof(*self));
 
     if (self == NULL_PTR)
         return NULL_PTR;
 
-    spi_device_init(self, bus, cs, clk, mode);
+    spi_device_init(self, bus, cs, clock, mode);
 
     return self;
 }
@@ -26,13 +26,13 @@ void spi_device_destroy(spi_device_t dev)
 
 #endif // OS_MALLOC
 
-int spi_device_init(spi_device_t self, spi_bus_t bus, gpio_t cs, spi_clock_t clk, spi_mode_t mode)
+int spi_device_init(spi_device_t self, spi_bus_t bus, gpio_t cs, spi_clock_t clock, spi_mode_t mode)
 {
     UNUSED(bus);
 
     self->bus = bus;
     self->cs = cs;
-    self->clk = clk;
+    self->clock = clock;
     self->mode = mode;
     self->transaction_mode = FALSE;
 
@@ -49,7 +49,7 @@ int spi_device_set_transaction_mode(spi_device_t self, bool enabled)
 
 int spi_device_enable(spi_device_t self)
 {
-    spi_bus_configure(self->bus, self->clk, self->mode);
+    spi_bus_configure(self->bus, self->clock, self->mode);
     gpio_set(self->cs);
     return SPI_OK;
 }

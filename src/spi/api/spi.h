@@ -33,14 +33,14 @@ typedef enum {
 
 typedef struct spi_bus_prv_s {
     spi_t bus;
-    spi_clock_t clk;
+    spi_clock_t clock;
     spi_mode_t mode;
 } * spi_bus_t;
 
 typedef struct spi_device_prv_s {
     spi_bus_t bus;
     gpio_t cs;
-    spi_clock_t clk;
+    spi_clock_t clock;
     spi_mode_t mode;
     bool transaction_mode;
 } * spi_device_t;
