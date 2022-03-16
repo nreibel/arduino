@@ -60,7 +60,7 @@ int spi_device_disable(spi_device_t self)
     return SPI_OK;
 }
 
-int spi_device_read_bytes(spi_device_t self, void *buffer, int len)
+int spi_device_read_bytes(spi_device_t self, void *buffer, unsigned int len)
 {
     if (!self->transaction_mode) spi_device_enable(self);
     int ret = spi_bus_read_bytes(self->bus, buffer, len);
@@ -78,7 +78,7 @@ int spi_device_read_byte(spi_device_t self, uint8_t *byte)
     return ret;
 }
 
-int spi_device_write_bytes(spi_device_t self, void *buffer, int len)
+int spi_device_write_bytes(spi_device_t self, void *buffer, unsigned int len)
 {
     if (!self->transaction_mode) spi_device_enable(self);
     int ret = spi_bus_write_bytes(self->bus, buffer, len);
