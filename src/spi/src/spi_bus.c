@@ -4,6 +4,8 @@
 #include "os_cfg.h"
 #include "os_mem.h"
 
+#include <util/delay.h>
+
 #if OS_MALLOC
 
 spi_bus_t spi_bus_create(spi_t bus)
@@ -172,5 +174,5 @@ int spi_bus_write_byte(spi_bus_t self, uint8_t byte, uint8_t *read)
 void spi_bus_write_fast(spi_bus_t self, const uint8_t byte)
 {
     spi_ll_write_byte(self->bus, byte);
-    spi_ll_wait_tx(self->bus);
+    _delay_us(1);
 }

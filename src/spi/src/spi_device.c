@@ -95,8 +95,3 @@ int spi_device_write_byte(spi_device_t self, uint8_t byte, uint8_t *read)
 
     return ret;
 }
-
-void spi_device_write_fast(spi_device_t self, const uint8_t byte)
-{
-    spi_bus_write_fast(self->bus, byte);
-}
