@@ -35,7 +35,7 @@ void os_cyclic_tasks()
         if(elapsed >= tasks[i].interval)
         {
             tasks[i].callback(tasks[i].param);
-            tasks[i].last += tasks[i].interval;
+            tasks[i].last = os_millis();
         }
     }
 }
