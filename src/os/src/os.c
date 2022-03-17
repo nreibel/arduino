@@ -101,6 +101,16 @@ time_t os_millis()
     return os_timer;
 }
 
+uint8_t os_rand()
+{
+    static uint8_t rand = OS_RANDOM_SEED;
+    rand ^= os_timer & 0xFF;
+    uint8_t lsb = rand & 0x1;
+    rand >>= 1;
+    if (lsb) rand ^= 0xB8;
+    return rand;
+}
+
 void os_sleep()
 {
     set_sleep_mode(OS_SLEEP_MODE);
