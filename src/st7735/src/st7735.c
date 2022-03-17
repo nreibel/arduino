@@ -112,7 +112,6 @@ unsigned int st7735_get_height(st7735_t self)
     return self->height;
 }
 
-
 #if ST7735_SCALING_ENABLED
 void st7735_set_scale(st7735_t self, unsigned int scale)
 {
@@ -122,37 +121,42 @@ void st7735_set_scale(st7735_t self, unsigned int scale)
 
 static void st7735_data(st7735_t self, uint8_t data)
 {
-    spi_bus_write_fast(self->dev.bus, data);
+    spi_bus_t bus = spi_device_get_bus(&self->dev);
+    spi_bus_write_fast(bus, data);
 }
 
 static void st7735_command(st7735_t self, uint8_t command)
 {
     gpio_set(self->dc);
-    spi_bus_write_fast(self->dev.bus, command);
+    spi_bus_t bus = spi_device_get_bus(&self->dev);
+    spi_bus_write_fast(bus, command);
     gpio_reset(self->dc);
 }
 
 static void st7735_color(st7735_t self, st7735_color_t color)
 {
-    spi_bus_write_fast(self->dev.bus, color >> 8);
-    spi_bus_write_fast(self->dev.bus, color);
+    spi_bus_t bus = spi_device_get_bus(&self->dev);
+    spi_bus_write_fast(bus, color.b[1]);
+    spi_bus_write_fast(bus, color.b[0]);
 }
 
 static void st7735_set_draw_window(st7735_t self, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2)
 {
+    spi_bus_t bus = spi_device_get_bus(&self->dev);
+
     // Set the column to write to
     st7735_command(self, ST7735_CASET);
-    spi_bus_write_fast(self->dev.bus, 0);
-    spi_bus_write_fast(self->dev.bus, x1+self->offset_x);
-    spi_bus_write_fast(self->dev.bus, 0);
-    spi_bus_write_fast(self->dev.bus, x2+self->offset_x);
+    spi_bus_write_fast(bus, 0);
+    spi_bus_write_fast(bus, x1+self->offset_x);
+    spi_bus_write_fast(bus, 0);
+    spi_bus_write_fast(bus, x2+self->offset_x);
 
     // Set the row range to write to
     st7735_command(self, ST7735_RASET);
-    spi_bus_write_fast(self->dev.bus, 0);
-    spi_bus_write_fast(self->dev.bus, y1+self->offset_y);
-    spi_bus_write_fast(self->dev.bus, 0);
-    spi_bus_write_fast(self->dev.bus, y2+self->offset_y);
+    spi_bus_write_fast(bus, 0);
+    spi_bus_write_fast(bus, y1+self->offset_y);
+    spi_bus_write_fast(bus, 0);
+    spi_bus_write_fast(bus, y2+self->offset_y);
 
     // Write to RAM
     st7735_command(self, ST7735_RAMWR);

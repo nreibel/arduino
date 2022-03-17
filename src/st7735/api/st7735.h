@@ -6,7 +6,16 @@
 #include "spi.h"
 #include "st7735_cfg.h"
 
-typedef uint16_t st7735_color_t;
+typedef union {
+    struct {
+        uint16_t b : 5;
+        uint16_t g : 6;
+        uint16_t r : 5;
+    } c;
+    uint8_t  b[2];
+    uint16_t w;
+} st7735_color_t;
+
 typedef const __flash uint8_t st7735_xbm_t;
 // typedef char* st7735_xpm_t;
 typedef st7735_color_t (*ST7735_Renderer)(unsigned int x, unsigned int y, unsigned int w, unsigned int h, void* data);
@@ -67,29 +76,28 @@ void st7735_render(st7735_t self, unsigned int x, unsigned int y, unsigned int w
 void st7735_draw_xbm(st7735_t self, st7735_xbm_t *bits, unsigned int x, unsigned int y, unsigned int w, unsigned int h);
 
 // Valid for 16bits 565 mode
-#define ST7735_RED(x)    ((((x) >> 3) & 0x1FU) << 11)
-#define ST7735_GREEN(x)  ((((x) >> 2) & 0x3FU) << 5)
-#define ST7735_BLUE(x)   (((x) >> 3) & 0x1FU)
+#define ST7735_COLOR(_r, _g, _b) ((st7735_color_t){.c={.r=_r>>3,.g=_g>>2,.b=_b>>3}})
 
-#define ST7735_COLOR_BLACK    (0x0000U)
-#define ST7735_COLOR_WHITE    (0xFFFFU)
-#define ST7735_COLOR_RED      (ST7735_RED(0xFFU))
-#define ST7735_COLOR_LIME     (ST7735_GREEN(0xFFU))
-#define ST7735_COLOR_BLUE     (ST7735_BLUE(0xFFU))
-#define ST7735_COLOR_MAROON   (ST7735_RED(0x80U))
-#define ST7735_COLOR_GREEN    (ST7735_GREEN(0x80U))
-#define ST7735_COLOR_NAVY     (ST7735_BLUE(0x80U))
-#define ST7735_COLOR_YELLOW   (ST7735_RED(0xFFU) | ST7735_GREEN(0xFFU))
-#define ST7735_COLOR_FUSCHIA  (ST7735_RED(0xFFU) | ST7735_BLUE(0xFFU))
-#define ST7735_COLOR_PINK     (ST7735_RED(0xFFU) | ST7735_GREEN(0xC0U) | ST7735_BLUE(0xC0U))
-#define ST7735_COLOR_CYAN     (ST7735_GREEN(0xFFU) | ST7735_BLUE(0xFFU))
-#define ST7735_COLOR_PURPLE   (ST7735_RED(0x80U) | ST7735_BLUE(0x80U))
-#define ST7735_COLOR_OLIVE    (ST7735_RED(0x80U) | ST7735_GREEN(0x80U))
-#define ST7735_COLOR_TEAL     (ST7735_GREEN(0x80U) | ST7735_BLUE(0x80U))
-#define ST7735_COLOR_SILVER   (ST7735_RED(0xC0U) | ST7735_GREEN(0xC0U) | ST7735_BLUE(0xC0U))
-#define ST7735_COLOR_GREY     (ST7735_RED(0x80U) | ST7735_GREEN(0x80U) | ST7735_BLUE(0x80U))
-#define ST7735_COLOR_DARKGREY (ST7735_RED(0x40U) | ST7735_GREEN(0x40U) | ST7735_BLUE(0x40U))
-#define ST7735_COLOR_ORANGE   (ST7735_RED(0xFFU) | ST7735_GREEN(0x80U))
-#define ST7735_COLOR_SPRING   (ST7735_GREEN(0xFFU) | ST7735_BLUE(0x80U))
+#define ST7735_COLOR_BLACK    ST7735_COLOR(0,    0,    0   )
+#define ST7735_COLOR_DARKGREY ST7735_COLOR(0x40, 0x40, 0x40)
+#define ST7735_COLOR_GREY     ST7735_COLOR(0x80, 0x80, 0x80)
+#define ST7735_COLOR_SILVER   ST7735_COLOR(0xC0, 0xC0, 0xC0)
+#define ST7735_COLOR_WHITE    ST7735_COLOR(0xFF, 0xFF, 0xFF)
+#define ST7735_COLOR_RED      ST7735_COLOR(0xFF, 0,    0   )
+#define ST7735_COLOR_LIME     ST7735_COLOR(0,    0xFF, 0   )
+#define ST7735_COLOR_BLUE     ST7735_COLOR(0,    0,    0xFF)
+#define ST7735_COLOR_MAROON   ST7735_COLOR(0x80, 0,    0   )
+#define ST7735_COLOR_GREEN    ST7735_COLOR(0,    0x80, 0   )
+#define ST7735_COLOR_NAVY     ST7735_COLOR(0,    0,    0x80)
+#define ST7735_COLOR_CYAN     ST7735_COLOR(0,    0xFF, 0xFF)
+#define ST7735_COLOR_FUSCHIA  ST7735_COLOR(0xFF, 0,    0xFF)
+#define ST7735_COLOR_YELLOW   ST7735_COLOR(0xFF, 0xFF, 0   )
+#define ST7735_COLOR_TEAL     ST7735_COLOR(0,    0x80, 0x80)
+#define ST7735_COLOR_PURPLE   ST7735_COLOR(0x80, 0,    0x80)
+#define ST7735_COLOR_OLIVE    ST7735_COLOR(0x80, 0x80, 0   )
+#define ST7735_COLOR_ORANGE   ST7735_COLOR(0xFF, 0x80, 0   )
+#define ST7735_COLOR_SPRING   ST7735_COLOR(0,    0xFF, 0x80)
+#define ST7735_COLOR_VIOLET   ST7735_COLOR(0x80, 0,    0xFF)
+#define ST7735_COLOR_PINK     ST7735_COLOR(0xFF, 0xC0, 0xC0)
 
 #endif // __ST7735_API_H
