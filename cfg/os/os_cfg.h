@@ -12,7 +12,7 @@ typedef uint16_t time_t;
 // In Hz
 #define F_CPU 16000000UL
 
-#define OS_RANDOM_SEED 0xAA
+// #define OS_RANDOM_SEED 0xAA
 
 // Enable malloc and free
 #define OS_MALLOC_NONE   0 // No malloc

@@ -101,6 +101,7 @@ time_t os_millis()
     return os_timer;
 }
 
+#ifdef OS_RANDOM_SEED
 uint8_t os_rand()
 {
     static uint8_t rand = OS_RANDOM_SEED;
@@ -110,6 +111,7 @@ uint8_t os_rand()
     if (lsb) rand ^= 0xB8;
     return rand;
 }
+#endif // OS_RANDOM_SEED
 
 void os_sleep()
 {

@@ -52,7 +52,10 @@ void os_watchdog_trigger();
 void HALT();
 void os_reset();
 void os_systick();
+
+#ifdef OS_RANDOM_SEED
 uint8_t os_rand();
+#endif // OS_RANDOM_SEED
 
 #if OS_ENABLE_PRINTF
 extern int os_putc(char character, FILE *stream);
