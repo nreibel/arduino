@@ -95,3 +95,11 @@ int spi_device_write_byte(spi_device_t self, uint8_t byte, uint8_t *read)
 
     return ret;
 }
+
+spi_bus_t spi_device_get_bus(spi_device_t self)
+{
+    if (self == NULL_PTR)
+        return NULL_PTR;
+
+    return self->bus;
+}

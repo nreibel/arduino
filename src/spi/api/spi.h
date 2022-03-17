@@ -76,6 +76,7 @@ int spi_device_read_byte(spi_device_t self, uint8_t *byte);
 int spi_device_read_bytes(spi_device_t self, void *buffer, unsigned int len);
 int spi_device_write_byte(spi_device_t self, uint8_t byte, uint8_t *read);
 int spi_device_write_bytes(spi_device_t self, void *buffer, unsigned int len);
+spi_bus_t spi_device_get_bus(spi_device_t self);
 
 // Only works when SPI clock is set to SPI_CLOCK_DIV_2
 void spi_bus_write_fast(spi_bus_t self, const uint8_t byte);
