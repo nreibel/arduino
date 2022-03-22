@@ -29,6 +29,7 @@ GPIO_LL=1
 SERIAL_LL=1
 TIMER_LL=1
 SPI_LL=1
+ADC_LL=1
 
 # Must be last
 include $(ARDUINO_LIBS)/makefile.include

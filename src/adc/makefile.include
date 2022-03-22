@@ -4,3 +4,7 @@ INCLUDES += \
 
 SOURCES += \
 	$(SRC_DIR)/adc/src/adc_ll.c \
+
+ifndef ADC_LL
+SOURCES += $(SRC_DIR)/adc/src/adc.c
+endif
