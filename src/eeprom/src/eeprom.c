@@ -1,73 +1,67 @@
 #include "eeprom.h"
 #include "bits.h"
 #include "types.h"
-#include <avr/io.h>
 
 int eeprom_init()
 {
     /* Erase and write in atomic operation */
-    EECR = 0;
-
-    return 0;
+    EEPROM0->eecr.reg = 0;
+    return EEPROM_OK;
 }
 
 int eeprom_memset(uint16_t addr, uint8_t val, unsigned int length)
 {
-    int count = 0;
-
-    while (length-- > 0)
+    for (unsigned int i = 0 ; i < length ; i++)
     {
-        EEAR = addr++;
-        EEDR = val;
+        // Wait for completion of previous write
+        while(EEPROM0->eecr.bits.eepe);
 
-        /* Set Master Program Enable first, then Program Enable */
-        SET_BIT(EECR, EEMPE);
-        SET_BIT(EECR, EEPE);
+        // Setup address and data
+        EEPROM0->eear = addr++;
+        EEPROM0->eedr = val;
 
-        while (IS_SET_BIT(EECR, EEPE));
-
-        count++;
+        // Set Master Program Enable first, then Program Enable
+        EEPROM0->eecr.bits.eempe = 1;
+        EEPROM0->eecr.bits.eepe = 1;
     }
 
-    return count;
+    return length;
 }
 
 int eeprom_write(uint16_t addr, void* data, unsigned int length)
 {
-    int count = 0;
+    uint8_t * bytes = data;
 
-    while (length-- > 0)
+    for (unsigned int i = 0 ; i < length ; i++)
     {
-        EEAR = addr++;
-        EEDR = READ_PU8(data++);
+        // Wait for completion of previous write
+        while(EEPROM0->eecr.bits.eepe);
 
-        /* Set Master Program Enable first, then Program Enable */
-        SET_BIT(EECR, EEMPE);
-        SET_BIT(EECR, EEPE);
+        // Setup address and data
+        EEPROM0->eear = addr++;
+        EEPROM0->eedr = bytes[i];
 
-        while (IS_SET_BIT(EECR, EEPE));
-
-        count++;
+        // Set Master Program Enable first, then Program Enable
+        EEPROM0->eecr.bits.eempe = 1;
+        EEPROM0->eecr.bits.eepe = 1;
     }
 
-    return count;
+    return length;
 }
 
 int eeprom_read(uint16_t addr, void* data, unsigned int length)
 {
-    int count = 0;
+    uint8_t * bytes = data;
 
-    while(length-- > 0)
+    // Wait for completion of previous write
+    while(EEPROM0->eecr.bits.eepe);
+
+    for (unsigned int i = 0 ; i < length ; i++)
     {
-        EEAR = addr++;
-
-        /* Read Enable */
-        SET_BIT(EECR, EERE);
-
-        WRITE_PU8(data++, EEDR);
-
-        count++;
+        EEPROM0->eear = addr++;
+        EEPROM0->eecr.bits.eere = 1;
+        bytes[i] = EEPROM0->eedr;
     }
 
-    return count;
+    return length;
 }
