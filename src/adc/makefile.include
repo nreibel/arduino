@@ -1,5 +1,6 @@
 INCLUDES += \
 	$(SRC_DIR)/adc/api \
+	$(CFG_DIR)/adc \
 
 SOURCES += \
 	$(SRC_DIR)/adc/src/adc_ll.c \
