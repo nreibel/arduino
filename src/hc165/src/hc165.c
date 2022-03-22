@@ -1,24 +1,24 @@
 #include "os.h"
+#include "os_cfg.h"
+#include "os_mem.h"
 #include "types.h"
 #include "bits.h"
 #include "hc165.h"
 #include "gpio.h"
 
-#ifndef HC165_EDGE_DELAY
-#define HC165_EDGE_DELAY 1
-#endif // HC165_EDGE_DELAY
+#define HC165_EDGE_DELAY 1 // in µs
 
 #if OS_MALLOC
-hc165_t hc165_create(gpio_t serial, gpio_t clock, gpio_t latch)
+hc165_t hc165_create()
 {
     hc165_t instance = os_malloc(sizeof(*instance));
-    if (instance != NULL_PTR) hc165_init(instance, serial, clock, latch);
     return instance;
 }
 
 void hc165_destroy(hc165_t self)
 {
-    os_free(self);
+    if (self != NULL_PTR)
+        os_free(self);
 }
 #endif // OS_MALLOC
 
@@ -35,23 +35,26 @@ void hc165_init(hc165_t self, gpio_t serial, gpio_t clock, gpio_t latch)
 
 int hc165_read(hc165_t self, buffer_t buf, int len)
 {
-    bool ser = FALSE;
+    uint8_t * data = buf;
 
     gpio_set(self->latch);
 
     for (int i = 0 ; i < len ; i++)
     {
-        uint8_t *data = TYPECAST(buf++, uint8_t*);
+        uint8_t byte = 0;
+
         for (int j = 7 ; j >= 0 ; j--)
         {
+            bool ser = FALSE;
             gpio_get(self->serial, &ser);
-
-            if (ser) SET_BIT(*data, j);
+            if (ser) SET_BIT(byte, j);
 
             gpio_set(self->clock);
-            os_wait(HC165_EDGE_DELAY);
+            os_wait_us(HC165_EDGE_DELAY);
             gpio_reset(self->clock);
         }
+
+        data[i] = byte;
     }
 
     gpio_reset(self->latch);
@@ -59,23 +62,17 @@ int hc165_read(hc165_t self, buffer_t buf, int len)
     return len;
 }
 
-uint8_t hc165_read_byte(hc165_t self)
+int hc165_read_byte(hc165_t self, uint8_t * value)
 {
-    uint8_t data = 0;
-    hc165_read(self, &data, 1);
-    return data;
+    return hc165_read(self, value, 1);
 }
 
-uint16_t hc165_read_word(hc165_t self)
+int hc165_read_word(hc165_t self, uint16_t * value)
 {
-    uint16_t data = 0;
-    hc165_read(self, &data, 2);
-    return data;
+    return hc165_read(self, value, 2);
 }
 
-uint32_t hc165_read_dword(hc165_t self)
+int hc165_read_dword(hc165_t self, uint32_t * value)
 {
-    uint32_t data = 0;
-    hc165_read(self, &data, 4);
-    return data;
+    return hc165_read(self, value, 4);
 }
