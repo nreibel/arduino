@@ -17,7 +17,7 @@ void hc165_destroy(hc165_t self);
 #endif // OS_MALLOC
 
 void hc165_init(hc165_t self, gpio_t serial, gpio_t clock, gpio_t latch);
-int hc165_read(hc165_t self, buffer_t buf, int len);
+int hc165_read(hc165_t self, void * data, int len);
 
 int hc165_read_byte(hc165_t self, uint8_t * value);
 int hc165_read_word(hc165_t self, uint16_t * value);

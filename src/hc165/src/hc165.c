@@ -26,18 +26,20 @@ void hc165_init(hc165_t self, gpio_t serial, gpio_t clock, gpio_t latch)
 {
     gpio_set_data_direction(serial, GPIO_INPUT_HIGH_Z);
     gpio_set_data_direction(clock,  GPIO_OUTPUT_ACTIVE_HIGH);
-    gpio_set_data_direction(latch,  GPIO_OUTPUT_ACTIVE_HIGH);
+    gpio_set_data_direction(latch,  GPIO_OUTPUT_ACTIVE_LOW);
 
     self->serial = serial;
     self->clock = clock;
     self->latch = latch;
 }
 
-int hc165_read(hc165_t self, buffer_t buf, int len)
+int hc165_read(hc165_t self, void * data, int len)
 {
-    uint8_t * data = buf;
+    uint8_t * bytes = data;
 
     gpio_set(self->latch);
+    os_wait_us(HC165_EDGE_DELAY);
+    gpio_reset(self->latch);
 
     for (int i = 0 ; i < len ; i++)
     {
@@ -54,10 +56,8 @@ int hc165_read(hc165_t self, buffer_t buf, int len)
             gpio_reset(self->clock);
         }
 
-        data[i] = byte;
+        bytes[i] = byte;
     }
-
-    gpio_reset(self->latch);
 
     return len;
 }
