@@ -34,6 +34,7 @@ void os_interrupts_disable();
 
 // OS Timers
 void os_wait(time_t ms);
+void os_wait_us(unsigned int us);
 void os_timer_start(os_timer_t timer);
 void os_timer_reset(os_timer_t timer);
 void os_timer_stop(os_timer_t timer);

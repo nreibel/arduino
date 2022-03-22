@@ -5,13 +5,14 @@
 #include "timer_ll.h"
 #include "gpio_ll.h"
 
+#include <util/delay.h>
 #include <avr/power.h>
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
 #include <avr/wdt.h>
 
 #if OS_ENABLE_PRINTF
-#include "stdio.h"
+#include <stdio.h>
 #endif // OS_ENABLE_PRINTF
 
 /*
@@ -124,6 +125,11 @@ void os_sleep()
     */
 
     sleep_disable();
+}
+
+void os_wait_us(unsigned int us)
+{
+    _delay_us(us);
 }
 
 void os_wait(time_t ms)
