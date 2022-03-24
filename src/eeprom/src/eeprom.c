@@ -1,67 +1,68 @@
 #include "eeprom.h"
-#include "bits.h"
-#include "types.h"
 
-int eeprom_init()
+// TODO : use programming modes to preserve EEPROM and minimize write times
+
+int eeprom_init(eeprom_t self)
 {
-    /* Erase and write in atomic operation */
-    EEPROM0->eecr.reg = 0;
+    if (self == NULL_PTR)
+        return -EEPROM_ERROR_INSTANCE;
+
+    eeprom_ll_init(self);
+
     return EEPROM_OK;
 }
 
-int eeprom_memset(uint16_t addr, uint8_t val, unsigned int length)
+int eeprom_memset(eeprom_t self, uint16_t addr, uint8_t val, unsigned int length)
 {
+    if (self == NULL_PTR)
+        return -EEPROM_ERROR_INSTANCE;
+
     for (unsigned int i = 0 ; i < length ; i++)
     {
-        // Wait for completion of previous write
-        while(EEPROM0->eecr.bits.eepe);
-
-        // Setup address and data
-        EEPROM0->eear = addr++;
-        EEPROM0->eedr = val;
-
-        // Set Master Program Enable first, then Program Enable
-        EEPROM0->eecr.bits.eempe = 1;
-        EEPROM0->eecr.bits.eepe = 1;
+        eeprom_ll_wait_ready(self);
+        eeprom_ll_write_byte(self, addr++, val);
     }
 
     return length;
 }
 
-int eeprom_write(uint16_t addr, void* data, unsigned int length)
+int eeprom_write(eeprom_t self, uint16_t addr, const void * data, unsigned int length)
 {
-    uint8_t * bytes = data;
+    if (self == NULL_PTR)
+        return -EEPROM_ERROR_INSTANCE;
+
+    const uint8_t * bytes = data;
 
     for (unsigned int i = 0 ; i < length ; i++)
     {
-        // Wait for completion of previous write
-        while(EEPROM0->eecr.bits.eepe);
-
-        // Setup address and data
-        EEPROM0->eear = addr++;
-        EEPROM0->eedr = bytes[i];
-
-        // Set Master Program Enable first, then Program Enable
-        EEPROM0->eecr.bits.eempe = 1;
-        EEPROM0->eecr.bits.eepe = 1;
+        eeprom_ll_wait_ready(self);
+        eeprom_ll_write_byte(self, addr++, bytes[i]);
     }
 
     return length;
 }
 
-int eeprom_read(uint16_t addr, void* data, unsigned int length)
+int eeprom_read(eeprom_t self, uint16_t addr, void* data, unsigned int length)
 {
+    if (self == NULL_PTR)
+        return -EEPROM_ERROR_INSTANCE;
+
     uint8_t * bytes = data;
 
-    // Wait for completion of previous write
-    while(EEPROM0->eecr.bits.eepe);
+    eeprom_ll_wait_ready(self);
 
     for (unsigned int i = 0 ; i < length ; i++)
     {
-        EEPROM0->eear = addr++;
-        EEPROM0->eecr.bits.eere = 1;
-        bytes[i] = EEPROM0->eedr;
+        bytes[i] = eeprom_ll_read_byte(self, addr++);
     }
 
     return length;
+}
+
+int eeprom_erase(eeprom_t self, uint16_t addr, unsigned int length)
+{
+    if (self == NULL_PTR)
+        return -EEPROM_ERROR_INSTANCE;
+
+    return eeprom_memset(self, addr, EEPROM_ERASE_VALUE, length);
 }

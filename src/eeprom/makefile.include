@@ -3,4 +3,8 @@ INCLUDES += \
 	$(CFG_DIR)/eeprom \
 
 SOURCES += \
-	$(SRC_DIR)/eeprom/src/eeprom.c \
+	$(SRC_DIR)/eeprom/src/eeprom_ll.c \
+
+ifndef EEPROM_LL
+SOURCES += $(SRC_DIR)/eeprom/src/eeprom.c
+endif
