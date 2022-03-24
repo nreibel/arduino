@@ -82,12 +82,12 @@ typedef union {
 } timsk_t;
 
 typedef struct {
-    volatile tccra_t tccra;
-    volatile tccrb_t tccrb;
-    volatile uint8_t tcnt;
-    volatile uint8_t ocra;
-    volatile uint8_t ocrb;
-} * mem_timer_t;
+    tccra_t tccra;
+    tccrb_t tccrb;
+    uint8_t tcnt;
+    uint8_t ocra;
+    uint8_t ocrb;
+} volatile * mem_timer_t;
 
 // Interrupt handler
 extern void timer_interrupt(timer_t timer);

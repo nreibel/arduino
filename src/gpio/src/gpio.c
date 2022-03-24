@@ -4,50 +4,12 @@
 #include "bits.h"
 #include "types.h"
 
-/* Private data */
-
-#if GPIO_EXTINT
-static gpio_extint_cbk_t extint_cbk[NUMBER_OF_EXTINTS] = {0};
-static volatile void* extint_data[NUMBER_OF_EXTINTS] = {0};
-#endif // GPIO_EXTINT
-
-#if GPIO_PCINT
-static gpio_pcint_cbk_t pcint_cbk[NUMBER_OF_PCINTS] = {0};
-static volatile void* pcint_data[NUMBER_OF_PCINTS] = {0};
-#endif // GPIO_PCINT
-
-/* Interrupt routines */
-
-#if GPIO_EXTINT
-void gpio_extint_cbk(extint_t i)
-{
-    if (i < NUMBER_OF_EXTINTS && extint_cbk[i] != NULL_PTR)
-    {
-        (*extint_cbk[i])(i, extint_data[i]);
-    }
-}
-#endif // GPIO_EXTINT
-
-#if GPIO_PCINT
-void gpio_pcint_cbk(pcint_t i, uint8_t val)
-{
-    if (i < NUMBER_OF_PCINTS && pcint_cbk[i] != NULL_PTR)
-    {
-        (*pcint_cbk[i])(i, val, pcint_data[i]);
-    }
-}
-#endif // GPIO_PCINT
-
 /* External interrupts */
 
-#if GPIO_PCINT
-int gpio_enable_pcint(pcint_t port, uint8_t mask, gpio_pcint_cbk_t cbk, volatile void *data)
+int gpio_enable_pcint(pcint_t port, uint8_t mask)
 {
     if (port >= NUMBER_OF_PCINTS)
         return -GPIO_ERROR_PORT;
-
-    pcint_cbk[port] = cbk;
-    pcint_data[port] = data;
 
     gpio_ll_enable_pcint(port, mask);
 
@@ -61,15 +23,10 @@ int gpio_disable_pcint(pcint_t port)
 
     gpio_ll_disable_pcint(port);
 
-    pcint_cbk[port] = NULL_PTR;
-    pcint_data[port] = NULL_PTR;
-
     return GPIO_OK;
 }
-#endif // GPIO_PCINT
 
-#if GPIO_EXTINT
-int gpio_enable_extint(extint_t pin, gpio_edge_t edge, gpio_extint_cbk_t cbk, volatile void *data)
+int gpio_enable_extint(extint_t pin, gpio_edge_t edge)
 {
     if (pin >= NUMBER_OF_EXTINTS)
         return -GPIO_ERROR_INT;
@@ -96,9 +53,6 @@ int gpio_enable_extint(extint_t pin, gpio_edge_t edge, gpio_extint_cbk_t cbk, vo
             return -GPIO_ERROR_EDGE;
     }
 
-    extint_data[pin] = data;
-    extint_cbk[pin] = cbk;
-
     gpio_ll_enable_extint(pin);
 
     return GPIO_OK;
@@ -111,33 +65,16 @@ int gpio_disable_extint(extint_t pin)
 
     gpio_ll_disable_extint(pin);
 
-    extint_data[pin] = NULL_PTR;
-    extint_cbk[pin] = NULL_PTR;
-
     return GPIO_OK;
 }
-#endif // GPIO_EXTINT
 
 /* Public functions */
 
 #if OS_MALLOC
-gpio_t gpio_create(port_t port, uint8_t pin)
+gpio_t gpio_create()
 {
     gpio_t self = os_malloc(sizeof(*self));
-
-    if (self == NULL_PTR)
-        goto exit;
-
-    if (gpio_init(self, port, pin) != GPIO_OK)
-        goto cleanup;
-
     return self;
-
-    cleanup:
-        os_free(self);
-
-    exit:
-        return NULL_PTR;
 }
 
 void gpio_destroy(gpio_t self)
@@ -211,7 +148,7 @@ int gpio_get(gpio_t self, bool *state)
     {
         case GPIO_INPUT_HIGH_Z:
         case GPIO_INPUT_PULLUP:
-            gpio_ll_get(self->port, self->pin, state);
+            *state = gpio_ll_get(self->port, self->pin);
             return GPIO_OK;
 
         default:

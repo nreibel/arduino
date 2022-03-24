@@ -56,14 +56,14 @@ typedef union {
 } admux_t;
 
 typedef struct {
-    volatile union {
+    union {
         uint8_t b[2];
         uint16_t w;
     } adc;
-    volatile adcsra_t adcsra;
-    volatile adcsrb_t  adcsrb;
-    volatile admux_t  admux;
-} * adc_t;
+    adcsra_t adcsra;
+    adcsrb_t  adcsrb;
+    admux_t  admux;
+} volatile * adc_t;
 
 #define ADC0 TYPECAST(0x78, const adc_t)
 

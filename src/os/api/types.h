@@ -43,12 +43,6 @@ typedef const __flash char flstr_t[];
 #define VOID_PTR(var)       PTR(var, void)
 #define NULL_PTR            PTR(0, void)
 
-// Register access
-#define __MEM(addr, type)    TYPECAST(addr, type)
-#define __REG(addr, type)    (*TYPECAST(addr, volatile type *))
-#define __REG8(addr)        __REG(addr, uint8_t)
-#define __REG16(addr)       __REG(addr, uint16_t)
-
 #define READ_PTR(addr, type) (*PTR(addr, type))
 #define READ_PU8(addr)       READ_PTR(addr, uint8_t)
 #define READ_PU16(addr)      READ_PTR(addr, uint16_t)

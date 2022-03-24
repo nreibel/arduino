@@ -2,27 +2,22 @@
 #define PORT_LL_API_H__
 
 #include "types.h"
-#include "gpio_cfg.h"
 
 // TODO name clash with avr/io.h
 
 
-#if GPIO_EXTINT
 typedef enum {
     EXTINT0, // PD2
     EXTINT1, // PD3
     NUMBER_OF_EXTINTS
 } extint_t;
-#endif // GPIO_EXTINT
 
-#if GPIO_PCINT
 typedef enum {
     PCINTB, // PB0..7 => PCINT0..7
     PCINTC, // PC0..6 => PCINT8..14
     PCINTD, // PD0..7 => PCINT16..23
     NUMBER_OF_PCINTS
 } pcint_t;
-#endif // GPIO_PCINT
 
 typedef enum {
     PORT_B,
@@ -31,7 +26,7 @@ typedef enum {
     NUMBER_OF_PORTS
 } port_t;
 
-#define PORTS __MEM(0x23, mem_port_t*)
-#define PCMSK __MEM(0x6B, uint8_t*)
+#define PORTS TYPECAST(0x23, mem_port_t)
+#define PCMSK TYPECAST(0x6B, volatile uint8_t *)
 
 #endif // PORT_LL_API_H__

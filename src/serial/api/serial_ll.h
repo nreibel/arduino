@@ -94,13 +94,13 @@ typedef union {
 } ucsrc_t;
 
 typedef struct {
-    volatile ucsra_t  ucsra;
-    volatile ucsrb_t  ucsrb;
-    volatile ucsrc_t  ucsrc;
-    volatile uint8_t  __reserved;
-    volatile uint16_t ubrr;
-    volatile uint8_t  udr;
-} * mem_usart_t;
+    ucsra_t  ucsra;
+    ucsrb_t  ucsrb;
+    ucsrc_t  ucsrc;
+    uint8_t  __reserved;
+    uint16_t ubrr;
+    uint8_t  udr;
+} volatile * mem_usart_t;
 
 void serial_ll_reset(usart_t self);
 void serial_ll_power_enable(usart_t self);

@@ -6,7 +6,6 @@
 
 /* Interrupt handlers */
 
-#if GPIO_EXTINT
 ISR(INT0_vect)
 {
     gpio_extint_cbk(EXTINT0);
@@ -31,16 +30,12 @@ ISR(INT6_vect)
 {
     gpio_extint_cbk(EXTINT6);
 }
-#endif // GPIO_EXTINT
 
-#if GPIO_PCINT
 ISR(PCINT0_vect)
 {
     gpio_pcint_cbk(PCINTB, PORTS[PORT_B].pin);
 }
-#endif // GPIO_PCINT
 
-#if GPIO_EXTINT
 
 /* Registers */
 
@@ -80,7 +75,7 @@ static volatile union {
 
 /* Exported functions */
 
-int gpio_ll_set_edge(extint_t pin, uint8_t edge)
+void gpio_ll_set_edge(extint_t pin, uint8_t edge)
 {
     switch(pin)
     {
@@ -89,13 +84,11 @@ int gpio_ll_set_edge(extint_t pin, uint8_t edge)
         case EXTINT2: eicra->bits.isc2 = edge; break;
         case EXTINT3: eicra->bits.isc3 = edge; break;
         case EXTINT6: eicrb->bits.isc6 = edge; break;
-        default: return GPIO_LL_ERROR_PIN;;
+        default: break;
     }
-
-    return GPIO_LL_OK;
 }
 
-int gpio_ll_enable_extint(extint_t pin)
+void gpio_ll_enable_extint(extint_t pin)
 {
     switch(pin)
     {
@@ -104,13 +97,11 @@ int gpio_ll_enable_extint(extint_t pin)
         case EXTINT2: eimsk->bits.int2 = 1; break;
         case EXTINT3: eimsk->bits.int3 = 1; break;
         case EXTINT6: eimsk->bits.int6 = 1; break;
-        default: return GPIO_LL_ERROR_PIN;;
+        default: break;
     }
-
-    return GPIO_LL_OK;
 }
 
-int gpio_ll_disable_extint(extint_t pin)
+void gpio_ll_disable_extint(extint_t pin)
 {
     switch(pin)
     {
@@ -119,9 +110,6 @@ int gpio_ll_disable_extint(extint_t pin)
         case EXTINT2: eimsk->bits.int2 = 0; break;
         case EXTINT3: eimsk->bits.int3 = 0; break;
         case EXTINT6: eimsk->bits.int6 = 0; break;
-        default: return GPIO_LL_ERROR_PIN;;
+        default: break;
     }
-
-    return GPIO_LL_OK;
 }
-#endif // GPIO_EXTINT

@@ -4,7 +4,6 @@
 
 #include <avr/interrupt.h>
 
-#if GPIO_EXTINT
 ISR(INT0_vect)
 {
     gpio_extint_cbk(EXTINT0);
@@ -14,9 +13,7 @@ ISR(INT1_vect)
 {
     gpio_extint_cbk(EXTINT1);
 }
-#endif // GPIO_EXTINT
 
-#if GPIO_PCINT
 ISR(PCINT0_vect)
 {
     gpio_pcint_cbk(PCINTB, PORTS[PORT_B].pin);
@@ -31,10 +28,6 @@ ISR(PCINT2_vect)
 {
     gpio_pcint_cbk(PCINTD, PORTS[PORT_D].pin);
 }
-#endif // GPIO_PCINT
-
-
-#if GPIO_EXTINT
 
 static volatile union {
     struct {
@@ -54,39 +47,32 @@ static volatile union {
     uint8_t reg;
 } * eimsk = (volatile void *) 0x3D;
 
-int gpio_ll_set_edge(extint_t pin, uint8_t edge)
+void gpio_ll_set_edge(extint_t pin, uint8_t edge)
 {
     switch(pin)
     {
         case EXTINT0: eicra->bits.isc0 = edge; break;
         case EXTINT1: eicra->bits.isc1 = edge; break;
-        default: return -GPIO_LL_ERROR_PIN;
+        default: break;
     }
-
-    return GPIO_LL_OK;
 }
 
-int gpio_ll_enable_extint(extint_t pin)
+void gpio_ll_enable_extint(extint_t pin)
 {
     switch(pin)
     {
         case EXTINT0: eimsk->bits.int0 = 1; break;
         case EXTINT1: eimsk->bits.int1 = 1; break;
-        default: return -GPIO_LL_ERROR_PIN;
+        default: break;
     }
-
-    return GPIO_LL_OK;
 }
 
-int gpio_ll_disable_extint(extint_t pin)
+void gpio_ll_disable_extint(extint_t pin)
 {
     switch(pin)
     {
         case EXTINT0: eimsk->bits.int0 = 0; break;
         case EXTINT1: eimsk->bits.int1 = 0; break;
-        default: return -GPIO_LL_ERROR_PIN;
+        default: break;
     }
-
-    return GPIO_LL_OK;
 }
-#endif // GPIO_EXTINT

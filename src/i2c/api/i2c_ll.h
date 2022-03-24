@@ -40,15 +40,15 @@ typedef union {
 } twsr_t;
 
 typedef struct {
-    volatile uint8_t twbr;
-    volatile twsr_t  twsr;
-    volatile uint8_t twar;
-    volatile uint8_t twdr;
-    volatile twcr_t  twcr;
-    volatile uint8_t twamr;
-} * twi_t;
+    uint8_t twbr;
+    twsr_t  twsr;
+    uint8_t twar;
+    uint8_t twdr;
+    twcr_t  twcr;
+    uint8_t twamr;
+} volatile * twi_t;
 
-#define TWI0 __MEM(0xB8, const twi_t)
+#define TWI0 TYPECAST(0xB8, twi_t)
 
 int i2c_ll_init(twi_t bus, bool fast_mode);
 int i2c_ll_wait_int(twi_t bus, unsigned int ms);
