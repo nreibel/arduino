@@ -27,9 +27,9 @@ typedef uint16_t time_t;
 // When using OS_MALLOC_CHUNKS, increasing size of chunks decreases RAM usage, but increases fragmentation
 // #define OS_HEAP_CHUNK_SIZE 8
 
-// SLEEP_MODE_IDLE wakes up from most peripherals (Timer2, I2C, USART, ADC, IO...)
-// SLEEP_MODE_PWR_SAVE only wakes up from I2C and Timer2 interrupts
-#define OS_SLEEP_MODE SLEEP_MODE_IDLE
+// Let the CPU sleep when idle to reduce power consumption
+// If the ADC is enabled, entering idle mode triggers a conversion!
+#define OS_SLEEP_ON_IDLE ON
 
 #define OS_ENABLE_PRINTF ON
 

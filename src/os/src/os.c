@@ -116,7 +116,8 @@ uint8_t os_rand()
 
 void os_sleep()
 {
-    set_sleep_mode(OS_SLEEP_MODE);
+#if OS_SLEEP_ON_IDLE
+    set_sleep_mode(SLEEP_MODE_IDLE);
     sleep_enable();
     sleep_cpu();
 
@@ -125,6 +126,7 @@ void os_sleep()
     */
 
     sleep_disable();
+#endif
 }
 
 void os_wait_us(unsigned int us)
