@@ -101,7 +101,7 @@ int gpio_init(gpio_t self, port_t port, uint8_t pin)
     return GPIO_OK;
 }
 
-int gpio_set_data_direction(gpio_t self, gpio_data_direction_t direction)
+int gpio_configure(gpio_t self, gpio_data_direction_t direction)
 {
     // Set data direction
     switch(direction)

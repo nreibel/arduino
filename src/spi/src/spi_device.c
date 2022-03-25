@@ -36,7 +36,7 @@ int spi_device_init(spi_device_t self, spi_bus_t bus, gpio_t cs, spi_clock_t clo
     self->mode = mode;
     self->transaction_mode = FALSE;
 
-    gpio_set_data_direction(cs, GPIO_OUTPUT_ACTIVE_LOW);
+    gpio_configure(cs, GPIO_OUTPUT_ACTIVE_LOW);
 
     return SPI_OK;
 }

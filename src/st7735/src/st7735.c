@@ -70,7 +70,7 @@ void st7735_init_device(st7735_t self, spi_bus_t bus, gpio_t cs, gpio_t dc, unsi
     spi_device_set_transaction_mode(&self->dev, TRUE);
     spi_device_enable(&self->dev);
 
-    gpio_set_data_direction(dc, GPIO_OUTPUT_ACTIVE_LOW);
+    gpio_configure(dc, GPIO_OUTPUT_ACTIVE_LOW);
 
     self->width = w;
     self->height = h;

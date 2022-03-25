@@ -24,9 +24,9 @@ void hc165_destroy(hc165_t self)
 
 void hc165_init(hc165_t self, gpio_t serial, gpio_t clock, gpio_t latch)
 {
-    gpio_set_data_direction(serial, GPIO_INPUT_HIGH_Z);
-    gpio_set_data_direction(clock,  GPIO_OUTPUT_ACTIVE_HIGH);
-    gpio_set_data_direction(latch,  GPIO_OUTPUT_ACTIVE_LOW);
+    gpio_configure(serial, GPIO_INPUT_HIGH_Z);
+    gpio_configure(clock,  GPIO_OUTPUT_ACTIVE_HIGH);
+    gpio_configure(latch,  GPIO_OUTPUT_ACTIVE_LOW);
 
     self->serial = serial;
     self->clock = clock;

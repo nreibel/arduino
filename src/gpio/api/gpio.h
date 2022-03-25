@@ -42,7 +42,7 @@ void gpio_destroy(gpio_t self);
 #endif // OS_MALLOC
 
 int gpio_init(gpio_t self, port_t port, uint8_t pin);
-int gpio_set_data_direction(gpio_t self, gpio_data_direction_t direction);
+int gpio_configure(gpio_t self, gpio_data_direction_t direction);
 int gpio_set(gpio_t self);
 int gpio_reset(gpio_t self);
 int gpio_toggle(gpio_t self);
