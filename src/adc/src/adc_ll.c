@@ -29,7 +29,7 @@ void adc_ll_init(adc_t adc)
     power_adc_enable();
 
     adc->adcsra.reg = 0;
-    adc->adcsra.reg = 0;
+    adc->adcsrb.reg = 0;
     adc->admux.reg = 0;
 }
 
@@ -51,6 +51,16 @@ void adc_ll_set_prescaler(adc_t adc, uint8_t pscl)
 void adc_ll_set_vref(adc_t adc, uint8_t vref)
 {
     adc->admux.bits.refs = vref;
+}
+
+void adc_ll_set_auto_trigger(adc_t adc, bool enabled)
+{
+    adc->adcsra.bits.adate = enabled ? 1 : 0;
+}
+
+void adc_ll_set_trigger_source(adc_t adc, uint8_t source)
+{
+    adc->adcsrb.bits.adts = source;
 }
 
 void adc_ll_set_left_aligned(adc_t adc, bool left_aligned)
