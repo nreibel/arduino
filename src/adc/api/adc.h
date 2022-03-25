@@ -7,8 +7,10 @@ enum {
     ADC_OK,
     ADC_ERROR_INSTANCE,
     ADC_ERROR_NOT_CONFIGURED,
+    ADC_ERROR_BUSY,
     ADC_ERROR_CHANNEL,
     ADC_ERROR_VREF,
+    ADC_ERROR_TRIGGER,
     ADC_ERROR_PRESCALER
 };
 
@@ -39,13 +41,27 @@ typedef enum {
     ADC_CHANNEL_7
 } adc_channel_t;
 
+typedef enum {
+    ADC_TRIGGER_DISABLED,
+    ADC_TRIGGER_FREE_RUNNING,
+    ADC_TRIGGER_ANALOG_COMPARATOR,
+    ADC_TRIGGER_EXTERNAL_IRQ_0,
+    ADC_TRIGGER_TIMER0_COMPARE_MATCH_A,
+    ADC_TRIGGER_TIMER0_OVERFLOW,
+    ADC_TRIGGER_TIMER1_COMPARE_MATCH_B,
+    ADC_TRIGGER_TIMER1_OVERFLOW,
+    ADC_TRIGGER_TIMER1_CAPTURE_EVENT
+} adc_trigger_t;
+
 typedef struct adc_prv_s {
     adc_t dev;
     bool configured;
+    bool started;
 } * adc_handle_t;
 
 int adc_init(adc_handle_t self, adc_t dev);
 int adc_configure(adc_handle_t self, adc_vref_t vref, adc_prescaler_t pscl);
+int adc_setup_trigger(adc_handle_t self, adc_trigger_t trigger);
 int adc_read_word(adc_handle_t self, adc_channel_t channel, uint16_t * value);
 int adc_read_byte(adc_handle_t self, adc_channel_t channel, uint8_t * value);
 
