@@ -24,9 +24,7 @@ typedef struct st7735_prv_s {
     struct spi_device_prv_s dev;
     st7735_color_t background_color;
     st7735_color_t foreground_color;
-#if ST7735_SCALING_ENABLED
     unsigned int scale;
-#endif // ST7735_SCALING_ENABLED
     gpio_t dc;
     uint8_t width;
     uint8_t height;
