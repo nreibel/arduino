@@ -54,6 +54,8 @@ void HALT();
 void os_reset();
 void os_systick();
 
+uint32_t os_read_signature_row();
+
 #ifdef OS_RANDOM_SEED
 uint8_t os_rand();
 #endif // OS_RANDOM_SEED

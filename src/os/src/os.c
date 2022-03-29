@@ -10,6 +10,7 @@
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
 #include <avr/wdt.h>
+#include <avr/boot.h>
 
 #if OS_ENABLE_PRINTF
 #include <stdio.h>
@@ -55,6 +56,19 @@ void HALT()
         sleep_enable();
         sleep_cpu();
     }
+}
+
+uint32_t os_read_signature_row()
+{
+    uint32_t ret = 0;
+
+    ret += boot_signature_byte_get(0x0000);
+    ret <<= 8;
+    ret += boot_signature_byte_get(0x0002);
+    ret <<= 8;
+    ret += boot_signature_byte_get(0x0004);
+
+    return ret;
 }
 
 void os_interrupts_disable()

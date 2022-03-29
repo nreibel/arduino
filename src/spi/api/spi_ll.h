@@ -42,6 +42,10 @@ typedef struct {
 #define SPI0 TYPECAST(0x4C, spi_t)
 
 void spi_ll_init(spi_t spi);
+void spi_ll_enable(spi_t spi);
+void spi_ll_disable(spi_t spi);
+void spi_ll_set_master(spi_t spi);
+void spi_ll_set_slave(spi_t spi);
 void spi_ll_set_prescaler(spi_t spi, uint8_t prescaler);
 void spi_ll_set_double_speed(spi_t spi, bool dbl);
 void spi_ll_set_clock_polarity(spi_t spi, bool polarity);

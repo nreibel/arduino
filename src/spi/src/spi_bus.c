@@ -31,6 +31,8 @@ void spi_bus_destroy(spi_bus_t dev)
 int spi_bus_init(spi_bus_t self, spi_t bus)
 {
     spi_ll_init(bus);
+    spi_ll_set_master(bus);
+    spi_ll_enable(bus);
 
     self->bus = bus;
     self->clock = NUMBER_OF_SPI_CLOCK_DIVS;

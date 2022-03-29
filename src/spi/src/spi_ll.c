@@ -6,13 +6,6 @@
 
 void spi_ll_init(spi_t spi)
 {
-    const spcr_t spcr = {
-        .bits = {
-            .mstr = 1,
-            .spe = 1
-        }
-    };
-
     // Init GPIO
     gpio_ll_set_data_direction(PORT_B, 3, TRUE);  // MOSI
     gpio_ll_set_data_direction(PORT_B, 4, FALSE); // MISO
@@ -22,8 +15,28 @@ void spi_ll_init(spi_t spi)
     power_spi_enable();
 
     // Init device
-    spi->spcr = spcr;
+    spi->spcr.reg = 0;;
     spi->spsr.reg = 0;
+}
+
+void spi_ll_enable(spi_t spi)
+{
+    spi->spcr.bits.spe = 1;
+}
+
+void spi_ll_disable(spi_t spi)
+{
+    spi->spcr.bits.spe = 0;
+}
+
+void spi_ll_set_master(spi_t spi)
+{
+    spi->spcr.bits.mstr = 1;
+}
+
+void spi_ll_set_slave(spi_t spi)
+{
+    spi->spcr.bits.mstr = 0;
 }
 
 void spi_ll_set_double_speed(spi_t spi, bool dbl)

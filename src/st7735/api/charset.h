@@ -107,8 +107,6 @@ static const __flash uint8_t s_st7735_charset[][ST7735_CHARSET_WIDTH] = {
 
 #if ST7735_EXTENDED_ASCII
 
-#define ST7735_EXT_ASCII_START_IDX 0xB0
-
 typedef enum {
     E_EURO = 128, // € (Euro sign)
     E_SBQUO = 130, // ‚ (Single low-9 quotation mark)
@@ -235,9 +233,13 @@ typedef enum {
     E_YUML = 255, // ÿ (Latin small letter y with diaeresis)
 } iso_8859_1_e;
 
+// Save space for array indices < 128
+#define ST7735_EXT_ASCII_START_IDX E_DEG
+
 static const __flash uint8_t s_st7735_charset_ext[][ST7735_CHARSET_WIDTH] = {
     [E_DEG - ST7735_EXT_ASCII_START_IDX]  = {0x00, 0x06, 0x09, 0x09, 0x06}, // °
 };
+
 #endif // ST7735_EXTENDED_ASCII
 
 #endif // SRC_ST7735_API_CHARSET_H_

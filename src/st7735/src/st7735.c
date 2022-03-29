@@ -57,7 +57,6 @@ typedef struct {
     st7735_xbm_t *bits;
     st7735_color_t fg_color;
     st7735_color_t bg_color;
-    const int bw;
 } XbmRendererData;
 
 /*
@@ -79,10 +78,7 @@ void st7735_init_device(st7735_t self, spi_bus_t bus, gpio_t cs, gpio_t dc, unsi
     self->dc = dc;
     self->background_color = ST7735_COLOR_BLACK;
     self->foreground_color = ST7735_COLOR_WHITE;
-
-#if ST7735_SCALING_ENABLED
     self->scale = 1;
-#endif // ST7735_SCALING_ENABLED
 
     // TFT startup routine
     st7735_command(self, ST7735_SWRESET);
@@ -112,12 +108,10 @@ unsigned int st7735_get_height(st7735_t self)
     return self->height;
 }
 
-#if ST7735_SCALING_ENABLED
 void st7735_set_scale(st7735_t self, unsigned int scale)
 {
     self->scale = scale;
 }
-#endif // ST7735_SCALING_ENABLED
 
 static void st7735_data(st7735_t self, uint8_t data)
 {
@@ -267,18 +261,14 @@ void st7735_draw_char(st7735_t self, unsigned int x, unsigned int y, const char 
 
     for (unsigned int dy = 0 ; dy < ST7735_CHARSET_HEIGHT ; dy++)
     {
-#if ST7735_SCALING_ENABLED
         for (unsigned int i = 0 ; i < SCALE ; i++)
-#endif // ST7735_SCALING_ENABLED
         {
             for (unsigned int dx = 0 ; dx < ST7735_CHARSET_WIDTH ; dx++)
             {
                 uint8_t b = raw[dx];
                 st7735_color_t px = IS_SET_BIT(b, dy) ? self->foreground_color : self->background_color;
 
-#if ST7735_SCALING_ENABLED
                 for (unsigned int j = 0 ; j < SCALE ; j++)
-#endif // ST7735_SCALING_ENABLED
                 {
                     st7735_color(self, px);
                 }
@@ -326,6 +316,47 @@ void st7735_clear_chars(st7735_t self, unsigned int x, unsigned int y, int lengt
     }
 }
 
+static st7735_color_t ST7735_RenderXbm(unsigned int x, unsigned int y, unsigned int w, unsigned int h, void *data)
+{
+    UNUSED(h);
+    UNUSED(w);
+
+    XbmRendererData *d = TYPECAST(data, XbmRendererData*);
+    uint8_t bw = (w+7)/8; // Number of bytes per line
+    uint8_t b = d->bits[y*bw + x/8];
+    return IS_SET_BIT(b, x % 8) ? d->fg_color : d->bg_color;
+}
+
+void st7735_draw_xbm(st7735_t self, st7735_xbm_t *bits, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
+{
+    XbmRendererData data = { bits, self->foreground_color, self->background_color };
+    st7735_render(self, x, y, w, h, ST7735_RenderXbm, &data);
+}
+
+void st7735_render(st7735_t self, unsigned int x, unsigned int y, unsigned int w, unsigned int h, ST7735_Renderer renderer, void* param)
+{
+    //Set the drawing region
+    spi_device_enable(&self->dev);
+    st7735_set_draw_window(self, x, y, x+(SCALE*w)-1, y+(SCALE*h)-1);
+
+    for(unsigned int y = 0; y < h; y++)
+    {
+        for(unsigned int i = 0; i < SCALE; i++)
+        {
+            for(unsigned int x = 0; x < w; x++)
+            {
+                st7735_color_t c = renderer(x, y, w, h, param);
+
+                for(unsigned int j = 0; j < SCALE; j++)
+                {
+                    st7735_color(self, c);
+                }
+            }
+        }
+    }
+
+    spi_device_disable(&self->dev);
+}
 
 // Std_ReturnType ST7735_DrawXPM(st7735_xpm_t *xpm, int xPos, int yPos)
 // {
@@ -393,52 +424,7 @@ void st7735_clear_chars(st7735_t self, unsigned int x, unsigned int y, int lengt
 //
 //     return Status_OK;
 // }
-
-static st7735_color_t ST7735_RenderXbm(unsigned int x, unsigned int y, unsigned int w, unsigned int h, void *data)
-{
-    UNUSED(h);
-    UNUSED(w);
-
-    XbmRendererData *d = TYPECAST(data, XbmRendererData*);
-    uint8_t b = d->bits[y*d->bw + x/8];
-    return IS_SET_BIT(b, x % 8) ? d->fg_color : d->bg_color;
-}
-
-void st7735_draw_xbm(st7735_t self, st7735_xbm_t *bits, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
-{
-    XbmRendererData data = { bits, self->foreground_color, self->background_color, (w+7)/8 };
-    st7735_render(self, x, y, w, h, ST7735_RenderXbm, &data);
-}
-
-void st7735_render(st7735_t self, unsigned int x, unsigned int y, unsigned int w, unsigned int h, ST7735_Renderer renderer, void* param)
-{
-    //Set the drawing region
-    spi_device_enable(&self->dev);
-    st7735_set_draw_window(self, x, y, x+(SCALE*w)-1, y+(SCALE*h)-1);
-
-    for(unsigned int y = 0; y < h; y++)
-    {
-#if ST7735_SCALING_ENABLED
-        for(unsigned int i = 0; i < SCALE; i++)
-#endif // ST7735_SCALING_ENABLED
-        {
-            for(unsigned int x = 0; x < w; x++)
-            {
-                st7735_color_t c = renderer(x, y, w, h, param);
-
-#if ST7735_SCALING_ENABLED
-                for(unsigned int j = 0; j < SCALE; j++)
-#endif // ST7735_SCALING_ENABLED
-                {
-                    st7735_color(self, c);
-                }
-            }
-        }
-    }
-
-    spi_device_disable(&self->dev);
-}
-
+//
 // void ST7735_DrawLine(int x1, int y1, int x2, int y2, st7735_color_t c)
 // {
 //     // Integer only implementation of Bresenham's algorythm
