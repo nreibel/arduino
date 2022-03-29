@@ -55,13 +55,13 @@ void os_cyclic_tasks()
 
 int os_background_tasks()
 {
-    int retval = 0;
+    int retval = EOK;
 
-    for ( int i = 0 ; i < NUMBER_OF_BACKGROUND_TASKS ; i++ )
+    for(int i = 0; i < NUMBER_OF_BACKGROUND_TASKS; i++)
     {
         if (background_tasks_list[i]() < 0)
         {
-            retval = -1;
+            retval = -EPENDING;
         }
         // TODO : handle task failed
     }

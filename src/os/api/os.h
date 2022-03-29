@@ -8,6 +8,15 @@
 #include "stdio.h"
 #endif // OS_ENABLE_PRINTF
 
+#define HALT for(;;){}
+
+enum {
+    EOK,
+    EDONE,
+    EPENDING,
+    EFAILED
+};
+
 typedef enum {
     OS_WATCHDOG_15MS,
     OS_WATCHDOG_30MS,
@@ -52,7 +61,7 @@ int os_watchdog_enable(os_watchdog_t wd);
 void os_watchdog_trigger();
 
 // OS Functions
-void HALT();
+void os_powerdown();
 void os_reset();
 void os_systick();
 
