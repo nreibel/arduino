@@ -1,8 +1,27 @@
 #include "serial_ll.h"
-#include "serial_cfg.h"
 #include "os_cfg.h"
 
 extern const mem_usart_t instances[NUMBER_OF_USART];
+
+/*
+ * Weak interrupt handlers
+ */
+
+__attribute((weak))
+void serial_tx_irq_handler(usart_t usart)
+{
+    UNUSED(usart);
+}
+
+__attribute((weak))
+void serial_rx_irq_handler(usart_t usart)
+{
+    UNUSED(usart);
+}
+
+/*
+ * Public functions
+ */
 
 void serial_ll_init(usart_t self, uint32_t baudrate)
 {
@@ -21,15 +40,16 @@ void serial_ll_init(usart_t self, uint32_t baudrate)
     // Enable transmitter
     instances[self]->ucsrb.bits.rxen = 1;
     instances[self]->ucsrb.bits.txen = 1;
+}
 
-    // Enable interrupts
-#if SERIAL_ASYNC_RX
-    instances[self]->ucsrb.bits.rxcie = 1;
-#endif
+void serial_ll_set_tx_interrupts(usart_t usart, bool enabled)
+{
+    instances[usart]->ucsrb.bits.txcie = enabled ? 1 : 0;
+}
 
-#if SERIAL_ASYNC_TX
-    instances[self]->ucsrb.bits.txcie = 1;
-#endif
+void serial_ll_set_rx_interrupts(usart_t usart, bool enabled)
+{
+    instances[usart]->ucsrb.bits.rxcie = enabled ? 1 : 0;
 }
 
 void serial_ll_wait_tx(usart_t usart)

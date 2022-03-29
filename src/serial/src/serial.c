@@ -24,28 +24,8 @@ static struct {
 } instances[NUMBER_OF_USART];
 
 /*
- * Public functions
+ * Weak interrupt handlers
  */
-
-int serial_init(usart_t usart, uint32_t baudrate)
-{
-#if SERIAL_ASYNC_RX
-    instances[usart].rx_sz = 0;
-#endif
-
-#if SERIAL_ASYNC_TX
-    instances[usart].tx_buf = NULL_PTR;
-    instances[usart].tx_sz = 0;
-#endif
-
-    serial_ll_init(usart, baudrate);
-
-    instances[usart].init = TRUE;
-
-    return SERIAL_OK;
-}
-
-#if SERIAL_ASYNC_RX
 
 __attribute((weak))
 void serial_rx_callback(usart_t usart, const char *buffer, unsigned int length)
@@ -60,6 +40,32 @@ void serial_rx_overflow(usart_t usart)
 {
     UNUSED(usart);
 }
+
+/*
+ * Public functions
+ */
+
+int serial_init(usart_t usart, uint32_t baudrate)
+{
+    serial_ll_init(usart, baudrate);
+
+#if SERIAL_ASYNC_RX
+    instances[usart].rx_sz = 0;
+    serial_ll_set_rx_interrupts(usart, TRUE);
+#endif
+
+#if SERIAL_ASYNC_TX
+    instances[usart].tx_buf = NULL_PTR;
+    instances[usart].tx_sz = 0;
+    serial_ll_set_tx_interrupts(usart, TRUE);
+#endif
+
+    instances[usart].init = TRUE;
+
+    return SERIAL_OK;
+}
+
+#if SERIAL_ASYNC_RX
 
 void serial_rx_irq_handler(usart_t usart)
 {
@@ -85,9 +91,11 @@ void serial_rx_irq_handler(usart_t usart)
         instances[usart].rx_buf[instances[usart].rx_sz++] = data;
     }
 }
+
 #endif
 
 #if SERIAL_ASYNC_TX
+
 void serial_tx_irq_handler(usart_t usart)
 {
     if (instances[usart].tx_sz > 0)
@@ -126,6 +134,7 @@ int serial_write_async(usart_t usart, const void *buffer, unsigned int length)
 
     return SERIAL_OK;
 }
+
 #endif
 
 int serial_write_byte(usart_t usart, uint8_t chr)

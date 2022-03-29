@@ -4,11 +4,6 @@
 #include "types.h"
 #include "usart.h"
 
-enum {
-    SERIAL_LL_OK,
-    SERIAL_LL_ERROR_INSTANCE,
-};
-
 #define COLOR(c)    "\33[" #c "m"
 #define C_END       COLOR(0)
 #define C_BOLD      COLOR(1)
@@ -102,12 +97,17 @@ typedef struct {
     uint8_t  udr;
 } volatile * mem_usart_t;
 
-void serial_ll_reset(usart_t self);
-void serial_ll_power_enable(usart_t self);
+extern void serial_tx_irq_handler(usart_t self);
+extern void serial_rx_irq_handler(usart_t self);
+
 void serial_ll_init(usart_t self, uint32_t baudrate);
+void serial_ll_power_enable(usart_t self);
+void serial_ll_reset(usart_t self);
+void serial_ll_set_tx_interrupts(usart_t self, bool enabled);
+void serial_ll_set_rx_interrupts(usart_t self, bool enabled);
 void serial_ll_wait_tx(usart_t self);
 void serial_ll_wait_rx(usart_t self);
 void serial_ll_write(usart_t self, uint8_t byte);
-uint8_t serial_ll_read(usart_t usart);
+uint8_t serial_ll_read(usart_t self);
 
 #endif // SERIAL_LL_API_H__
