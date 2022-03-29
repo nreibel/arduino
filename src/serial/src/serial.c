@@ -1,7 +1,12 @@
+#include "os.h"
 #include "serial.h"
 #include "serial_cfg.h"
 #include "serial_ll.h"
 #include "types.h"
+
+#ifdef SERIAL_ASYNC_TX_DEFERRED_TASK
+static int deferred_task_rx_cbk(void* data);
+#endif
 
 /*
  * Private data
@@ -60,6 +65,11 @@ int serial_init(usart_t usart, uint32_t baudrate)
     serial_ll_set_tx_interrupts(usart, TRUE);
 #endif
 
+#ifdef SERIAL_ASYNC_TX_DEFERRED_TASK
+    os_task_setup(SERIAL_ASYNC_TX_DEFERRED_TASK, 1, deferred_task_rx_cbk, &usart);
+    os_task_disable(SERIAL_ASYNC_TX_DEFERRED_TASK);
+#endif
+
     instances[usart].init = TRUE;
 
     return SERIAL_OK;
@@ -80,11 +90,14 @@ void serial_rx_irq_handler(usart_t usart)
         // Terminate string
         instances[usart].rx_buf[instances[usart].rx_sz++] = 0;
 
-        // Call user callback
+#ifdef SERIAL_ASYNC_TX_DEFERRED_TASK
+        // Signal the deferred routine to execute
+        os_task_enable(DEFFERED_TASK_RX_CBK);
+#else
+        // Call user callback from interrupt context
         serial_rx_callback(usart, instances[usart].rx_buf, instances[usart].rx_sz);
-
-        // Reset buffer
         instances[usart].rx_sz = 0;
+#endif
     }
     else
     {
@@ -234,3 +247,19 @@ int serial_read_bytes(usart_t usart, void *buffer, unsigned int length)
 
     return received;
 }
+
+/*
+ * Private functions
+ */
+
+#ifdef SERIAL_ASYNC_TX_DEFERRED_TASK
+
+static int deferred_task_rx_cbk(void* data)
+{
+    usart_t * usart = data;
+    serial_rx_callback(*usart, instances[*usart].rx_buf, instances[*usart].rx_sz);
+    instances[*usart].rx_sz = 0;
+    return -EDONE;
+}
+
+#endif

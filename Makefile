@@ -22,11 +22,11 @@ SOURCES := app/app.c
 # LIBS := printf_flt m
 
 # Enable selected modules
-MODULES := os timer serial gpio
+MODULES := os timer serial gpio adc eeprom
 
 # Use only LL API to save on memory
-GPIO_LL=1
-SERIAL_LL=1
+# GPIO_LL=1
+# SERIAL_LL=1
 TIMER_LL=1
 SPI_LL=1
 ADC_LL=1

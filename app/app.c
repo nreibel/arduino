@@ -1,7 +1,7 @@
 #include "stdio.h"
 #include "os.h"
 #include "app.h"
-#include "serial_ll.h"
+#include "serial.h"
 
 #if defined __AVR_ATmega32U4__ // Leonardo
 static const usart_t usart = USART1;
@@ -14,18 +14,24 @@ static const usart_t usart = USART0;
 int os_putc(char chr, FILE *stream)
 {
     UNUSED(stream);
-    serial_ll_write(usart, chr);
-    serial_ll_wait_tx(usart);
+    serial_write_byte(usart, chr);
     return chr;
+}
+
+void serial_rx_callback(usart_t usart, const char *buffer, unsigned int length)
+{
+    UNUSED(usart);
+    printf("received %u bytes: %s\r\n", length, buffer);
 }
 
 // App entry point
 void app_init()
 {
-    serial_ll_init(usart, 19200);
+    serial_init(usart, 19200);
 
     // Init tasks
     printf( C_RED "Start!" C_END "\r\n");
+
     os_task_setup(TASK_MAIN, 1000, task_main, NULL_PTR);
 }
 
@@ -38,5 +44,5 @@ int task_main(void * data)
     if (cpt++ & 1) printf( C_GREY "Tock" C_END "\r\n" );
     else printf( C_GREY "Tick" C_END "\r\n" );
 
-    return 0;
+    return EOK;
 }
