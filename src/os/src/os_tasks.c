@@ -5,7 +5,7 @@
  * Private data
  */
 
-static struct {
+static volatile struct {
     bool   enabled;
     time_t interval;
     time_t last;
@@ -46,8 +46,9 @@ void os_cyclic_tasks()
 
         if(elapsed >= tasks[i].interval)
         {
-            tasks[i].callback(tasks[i].param);
+            int ret = tasks[i].callback(tasks[i].param);
             tasks[i].last = os_millis();
+            if (ret < 0) tasks[i].enabled = FALSE;
         }
     }
 }
