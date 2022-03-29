@@ -44,6 +44,8 @@ time_t os_millis();
 
 // OS Tasks
 void os_task_setup(os_task_t task, time_t interval, callback_t callback, void* param);
+void os_task_enable(os_task_t task);
+void os_task_disable(os_task_t task);
 
 // HW Watchdog
 int os_watchdog_enable(os_watchdog_t wd);
