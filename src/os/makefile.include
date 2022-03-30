@@ -8,6 +8,5 @@ SOURCES += \
 	$(SRC_DIR)/os/src/os_tasks.c \
 	$(SRC_DIR)/os/src/os_mem.c \
 	$(SRC_DIR)/os/src/mem/simple_alloc.c \
-	$(SRC_DIR)/os/src/mem/chunks_alloc.c \
 	$(SRC_DIR)/os/src/mem/stdlib_alloc.c \
 	$(CFG_DIR)/os/os_cfg.c \

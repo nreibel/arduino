@@ -18,7 +18,7 @@ int os_putc(char chr, FILE *stream)
     return chr;
 }
 
-void serial_rx_callback(usart_t usart, const char *buffer, unsigned int length)
+void serial_rx_callback(usart_t usart, volatile const char *buffer, unsigned int length)
 {
     UNUSED(usart);
     printf("received %u bytes: %s\r\n", length, buffer);

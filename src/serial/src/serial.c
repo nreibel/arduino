@@ -65,6 +65,10 @@ int serial_init(usart_t usart, uint32_t baudrate)
     serial_ll_set_tx_irq(usart, TRUE);
 #endif
 
+#ifdef SERIAL_WORKER_TASK
+        os_task_setup(SERIAL_WORKER_TASK, 1, deferred_task_rx_cbk, NULL_PTR);
+        os_task_disable(SERIAL_WORKER_TASK);
+#endif // SERIAL_WORKER_TASK
     return SERIAL_OK;
 }
 
@@ -86,7 +90,7 @@ void serial_rx_irq_handler(usart_t usart)
 #ifdef SERIAL_WORKER_TASK
         // Signal the deferred routine to execute
         rx[usart].ready = TRUE;
-        os_task_setup(SERIAL_WORKER_TASK, 1, deferred_task_rx_cbk, NULL_PTR);
+        os_task_enable(SERIAL_WORKER_TASK);
 #else
         // Call user callback from interrupt context
         serial_rx_callback(usart, rx[usart].buf, rx[usart].sz-1);
