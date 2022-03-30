@@ -13,7 +13,7 @@ enum {
 
 #if SERIAL_ASYNC_RX
 extern void serial_rx_overflow(usart_t usart);
-extern void serial_rx_callback(usart_t usart, const char *buffer, unsigned int length);
+extern void serial_rx_callback(usart_t usart, volatile const char *buffer, unsigned int length);
 #endif
 
 #if SERIAL_ASYNC_TX

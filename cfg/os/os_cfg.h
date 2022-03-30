@@ -46,7 +46,7 @@ typedef enum {
 
 typedef enum {
     TASK_MAIN,
-    // DEFFERED_TASK_RX_CBK,
+    // TASK_SERIAL_WORKER,
     NUMBER_OF_OS_TASKS
 } os_task_t;
 

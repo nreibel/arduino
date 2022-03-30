@@ -42,12 +42,12 @@ void serial_ll_init(usart_t self, uint32_t baudrate)
     instances[self]->ucsrb.bits.txen = 1;
 }
 
-void serial_ll_set_tx_interrupts(usart_t usart, bool enabled)
+void serial_ll_set_tx_irq(usart_t usart, bool enabled)
 {
     instances[usart]->ucsrb.bits.txcie = enabled ? 1 : 0;
 }
 
-void serial_ll_set_rx_interrupts(usart_t usart, bool enabled)
+void serial_ll_set_rx_irq(usart_t usart, bool enabled)
 {
     instances[usart]->ucsrb.bits.rxcie = enabled ? 1 : 0;
 }

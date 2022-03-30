@@ -4,7 +4,7 @@
 #include "serial_ll.h"
 #include "types.h"
 
-#ifdef SERIAL_ASYNC_TX_DEFERRED_TASK
+#ifdef SERIAL_WORKER_TASK
 static int deferred_task_rx_cbk(void* data);
 #endif
 
@@ -12,28 +12,27 @@ static int deferred_task_rx_cbk(void* data);
  * Private data
  */
 
-static struct {
+#if SERIAL_ASYNC_RX
+static volatile struct {
+    bool ready;
+    char buf[SERIAL_RECEIVE_BUFFER_LENGTH];
+    unsigned int sz;
+} rx[NUMBER_OF_USART];
+#endif // SERIAL_ASYNC_RX
 
-    bool init;
-
-    #if SERIAL_ASYNC_TX
-    volatile const void  *tx_buf;
-    volatile unsigned int tx_sz;
-    #endif
-
-    #if SERIAL_ASYNC_RX
-    char rx_buf[SERIAL_RECEIVE_BUFFER_LENGTH];
-    unsigned int rx_sz;
-    #endif
-
-} instances[NUMBER_OF_USART];
+#if SERIAL_ASYNC_TX
+static volatile struct {
+    const void *buf;
+    unsigned int sz;
+} tx[NUMBER_OF_USART];
+#endif // SERIAL_ASYNC_TX
 
 /*
  * Weak interrupt handlers
  */
 
 __attribute((weak))
-void serial_rx_callback(usart_t usart, const char *buffer, unsigned int length)
+void serial_rx_callback(usart_t usart, volatile const char *buffer, unsigned int length)
 {
     UNUSED(usart);
     UNUSED(buffer);
@@ -55,22 +54,16 @@ int serial_init(usart_t usart, uint32_t baudrate)
     serial_ll_init(usart, baudrate);
 
 #if SERIAL_ASYNC_RX
-    instances[usart].rx_sz = 0;
-    serial_ll_set_rx_interrupts(usart, TRUE);
+    rx[usart].sz = 0;
+    rx[usart].ready = FALSE;
+    serial_ll_set_rx_irq(usart, TRUE);
 #endif
 
 #if SERIAL_ASYNC_TX
-    instances[usart].tx_buf = NULL_PTR;
-    instances[usart].tx_sz = 0;
-    serial_ll_set_tx_interrupts(usart, TRUE);
+    tx[usart].buf = NULL_PTR;
+    tx[usart].sz = 0;
+    serial_ll_set_tx_irq(usart, TRUE);
 #endif
-
-#ifdef SERIAL_ASYNC_TX_DEFERRED_TASK
-    os_task_setup(SERIAL_ASYNC_TX_DEFERRED_TASK, 1, deferred_task_rx_cbk, &usart);
-    os_task_disable(SERIAL_ASYNC_TX_DEFERRED_TASK);
-#endif
-
-    instances[usart].init = TRUE;
 
     return SERIAL_OK;
 }
@@ -81,65 +74,67 @@ void serial_rx_irq_handler(usart_t usart)
 {
     uint8_t data = serial_ll_read(usart);
 
-    if (instances[usart].rx_sz >= SERIAL_RECEIVE_BUFFER_LENGTH)
+    if ( rx[usart].sz >= SERIAL_RECEIVE_BUFFER_LENGTH )
     {
         serial_rx_overflow(usart);
     }
     else if (data == SERIAL_LINE_TERMINATOR)
     {
         // Terminate string
-        instances[usart].rx_buf[instances[usart].rx_sz++] = 0;
+        rx[usart].buf[rx[usart].sz++] = 0;
 
-#ifdef SERIAL_ASYNC_TX_DEFERRED_TASK
+#ifdef SERIAL_WORKER_TASK
         // Signal the deferred routine to execute
-        os_task_enable(DEFFERED_TASK_RX_CBK);
+        rx[usart].ready = TRUE;
+        os_task_setup(SERIAL_WORKER_TASK, 1, deferred_task_rx_cbk, NULL_PTR);
 #else
         // Call user callback from interrupt context
-        serial_rx_callback(usart, instances[usart].rx_buf, instances[usart].rx_sz);
-        instances[usart].rx_sz = 0;
-#endif
+        serial_rx_callback(usart, rx[usart].buf, rx[usart].sz-1);
+        rx[usart].sz = 0;
+#endif // SERIAL_WORKER_TASK
+
     }
     else
     {
-        instances[usart].rx_buf[instances[usart].rx_sz++] = data;
+        rx[usart].buf[rx[usart].sz++] = data;
     }
 }
 
-#endif
+#endif // SERIAL_ASYNC_RX
 
 #if SERIAL_ASYNC_TX
 
 void serial_tx_irq_handler(usart_t usart)
 {
-    if (instances[usart].tx_sz > 0)
+    if (tx[usart].sz > 0)
     {
-        uint8_t byte = READ_PU8(instances[usart].tx_buf++);
+        uint8_t byte = READ_PU8(tx[usart].buf++);
         serial_ll_write(usart, byte);
-        instances[usart].tx_sz--;
+        tx[usart].sz--;
     }
     else
     {
-        instances[usart].tx_buf = NULL_PTR;
-        instances[usart].tx_sz = 0;
+        tx[usart].buf = NULL_PTR;
+        tx[usart].sz = 0;
     }
 }
 
 bool serial_tx_ready(usart_t usart)
 {
-    if ( usart >= NUMBER_OF_USART || !instances[usart].init ) return FALSE; // TODO
-    return instances[usart].tx_buf == NULL_PTR && instances[usart].tx_sz == 0;
+    if ( usart >= NUMBER_OF_USART ) return FALSE; // TODO
+    return tx[usart].buf == NULL_PTR && tx[usart].sz == 0;
 }
 
 int serial_write_async(usart_t usart, const void *buffer, unsigned int length)
 {
-    if (usart >= NUMBER_OF_USART || !instances[usart].init)
+    if (usart >= NUMBER_OF_USART)
         return -SERIAL_ERROR_INSTANCE;
 
-    if (instances[usart].tx_buf != NULL_PTR || instances[usart].tx_sz > 0)
+    if (tx[usart].buf != NULL_PTR || tx[usart].sz > 0)
         return -SERIAL_ERROR_BUSY;
 
-    instances[usart].tx_buf = buffer+1;
-    instances[usart].tx_sz = length-1;
+    tx[usart].buf = buffer+1;
+    tx[usart].sz = length-1;
 
     // Kickstart transmission
     uint8_t b = READ_PU8(buffer);
@@ -148,11 +143,11 @@ int serial_write_async(usart_t usart, const void *buffer, unsigned int length)
     return SERIAL_OK;
 }
 
-#endif
+#endif // SERIAL_ASYNC_TX
 
 int serial_write_byte(usart_t usart, uint8_t chr)
 {
-    if (usart >= NUMBER_OF_USART || !instances[usart].init)
+    if (usart >= NUMBER_OF_USART)
         return -SERIAL_ERROR_INSTANCE;
 
     serial_ll_write(usart, chr);
@@ -163,7 +158,7 @@ int serial_write_byte(usart_t usart, uint8_t chr)
 
 int serial_write_bytes(usart_t usart, const void *buffer, unsigned int length)
 {
-    if (usart >= NUMBER_OF_USART || !instances[usart].init)
+    if (usart >= NUMBER_OF_USART)
         return -SERIAL_ERROR_INSTANCE;
 
     int written = 0;
@@ -176,7 +171,7 @@ int serial_write_bytes(usart_t usart, const void *buffer, unsigned int length)
 
 int serial_new_line(usart_t usart)
 {
-    if (usart >= NUMBER_OF_USART || !instances[usart].init)
+    if (usart >= NUMBER_OF_USART)
         return -SERIAL_ERROR_INSTANCE;
 
     static const uint8_t data[2] = {'\r', '\n'};
@@ -185,7 +180,7 @@ int serial_new_line(usart_t usart)
 
 int serial_print(usart_t usart, const char * string)
 {
-    if (usart >= NUMBER_OF_USART || !instances[usart].init)
+    if (usart >= NUMBER_OF_USART)
         return -SERIAL_ERROR_INSTANCE;
 
     int written = 0;
@@ -197,7 +192,7 @@ int serial_print(usart_t usart, const char * string)
 
 int serial_println(usart_t usart, const char * string)
 {
-    if (usart >= NUMBER_OF_USART || !instances[usart].init)
+    if (usart >= NUMBER_OF_USART)
         return -SERIAL_ERROR_INSTANCE;
 
     return serial_print(usart, string) + serial_new_line(usart);
@@ -205,7 +200,7 @@ int serial_println(usart_t usart, const char * string)
 
 int serial_print_P(usart_t usart, const __flash char * string)
 {
-    if (usart >= NUMBER_OF_USART || !instances[usart].init)
+    if (usart >= NUMBER_OF_USART)
         return -SERIAL_ERROR_INSTANCE;
 
     int written = 0;
@@ -217,7 +212,7 @@ int serial_print_P(usart_t usart, const __flash char * string)
 
 int serial_println_P(usart_t usart, const __flash char * string)
 {
-    if (usart >= NUMBER_OF_USART || !instances[usart].init)
+    if (usart >= NUMBER_OF_USART)
         return -SERIAL_ERROR_INSTANCE;
 
     return serial_print_P(usart, string) + serial_new_line(usart);
@@ -225,7 +220,7 @@ int serial_println_P(usart_t usart, const __flash char * string)
 
 int serial_read_byte(usart_t usart, uint8_t *byte)
 {
-    if (usart >= NUMBER_OF_USART || !instances[usart].init)
+    if (usart >= NUMBER_OF_USART)
         return -SERIAL_ERROR_INSTANCE;
 
     serial_ll_wait_rx(usart);
@@ -237,7 +232,7 @@ int serial_read_byte(usart_t usart, uint8_t *byte)
 
 int serial_read_bytes(usart_t usart, void *buffer, unsigned int length)
 {
-    if (usart >= NUMBER_OF_USART || !instances[usart].init)
+    if (usart >= NUMBER_OF_USART)
         return -SERIAL_ERROR_INSTANCE;
 
     int received = 0;
@@ -252,13 +247,21 @@ int serial_read_bytes(usart_t usart, void *buffer, unsigned int length)
  * Private functions
  */
 
-#ifdef SERIAL_ASYNC_TX_DEFERRED_TASK
+#ifdef SERIAL_WORKER_TASK
 
 static int deferred_task_rx_cbk(void* data)
 {
-    usart_t * usart = data;
-    serial_rx_callback(*usart, instances[*usart].rx_buf, instances[*usart].rx_sz);
-    instances[*usart].rx_sz = 0;
+    UNUSED(data);
+
+    for (usart_t u = 0 ; u < NUMBER_OF_USART ; u++)
+    {
+        if (rx[u].ready)
+        {
+            serial_rx_callback(u, rx[u].buf, rx[u].sz-1);
+            rx[u].ready = FALSE;
+            rx[u].sz = 0;
+        }
+    }
     return -EDONE;
 }
 
