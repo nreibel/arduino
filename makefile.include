@@ -75,10 +75,10 @@ W=-W
 D=-D
 
 # Font colors
-C_RED     = $(shell tput setaf 1)
-C_GREEN   = $(shell tput setaf 2)
-C_MAGENTA = $(shell tput setaf 5)
-C_RESET   = $(shell tput sgr0)
+C_RED     = $(shell [ -z "${TERM}" ] || tput setaf 1)
+C_GREEN   = $(shell [ -z "${TERM}" ] || tput setaf 2)
+C_MAGENTA = $(shell [ -z "${TERM}" ] || tput setaf 5)
+C_RESET   = $(shell [ -z "${TERM}" ] || tput sgr0)
 
 # Printing macros
 print_error = $(error $(C_RED)$1$(C_RESET))
