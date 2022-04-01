@@ -223,13 +223,13 @@ void st7735_draw_pixel(st7735_t self, unsigned int x, unsigned int y)
     st7735_fill_rectangle(self, x, y, 1, 1);
 }
 
-void st7735_fill_rectangle(st7735_t self, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
+void st7735_fill_rectangle(st7735_t self, unsigned int px, unsigned int py, unsigned int w, unsigned int h)
 {
     spi_device_enable(&self->dev);
 
-    st7735_set_draw_window(self, x, y, x+w-1, y+h-1);
+    st7735_set_draw_window(self, px, py, px+w-1, py+h-1);
 
-    for(unsigned int x = 0; x < w*h; x++)
+    for(unsigned int i = 0; i < w*h; i++)
     {
         st7735_color(self, self->foreground_color);
     }
@@ -333,11 +333,11 @@ void st7735_draw_xbm(st7735_t self, st7735_xbm_t *bits, unsigned int x, unsigned
     st7735_render(self, x, y, w, h, ST7735_RenderXbm, &data);
 }
 
-void st7735_render(st7735_t self, unsigned int x, unsigned int y, unsigned int w, unsigned int h, ST7735_Renderer renderer, void* param)
+void st7735_render(st7735_t self, unsigned int px, unsigned int py, unsigned int w, unsigned int h, ST7735_Renderer renderer, void* param)
 {
     //Set the drawing region
     spi_device_enable(&self->dev);
-    st7735_set_draw_window(self, x, y, x+(SCALE*w)-1, y+(SCALE*h)-1);
+    st7735_set_draw_window(self, px, py, px+(SCALE*w)-1, py+(SCALE*h)-1);
 
     for(unsigned int y = 0; y < h; y++)
     {

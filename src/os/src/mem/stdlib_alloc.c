@@ -70,14 +70,14 @@ static unsigned int my_get_used()
 
 static unsigned int my_get_free()
 {
-    uint8_t v, *stack_end = &v;
+    uint8_t v = 0, *stack_end = &v;
     unsigned int heap_end = __brkval == NULL_PTR ? ADDR(__heap_start) : ADDR(*__brkval);
     return (unsigned int) stack_end - heap_end;
 }
 
 static unsigned int my_get_total()
 {
-    uint8_t v, *stack_end = &v;
+    uint8_t v = 0, *stack_end = &v;
     return (unsigned int) stack_end - ADDR(__heap_start);
 }
 

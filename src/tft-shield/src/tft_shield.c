@@ -126,13 +126,13 @@ int tft_shield_backlight(tft_shield_t self, uint8_t val)
 
 int tft_shield_read_keys(tft_shield_t self, tft_shield_key_t *key)
 {
-    int res;
+    int res = 0;
     uint8_t gpio[4] = {MODULE_GPIO, GPIO_GPIO, 0, 0};
 
     // TODO : Must read twice to avoid false readings ?!?
-    res = i2c_device_transaction(&self->seesaw, gpio, 2, 4, 1);
-    res = i2c_device_transaction(&self->seesaw, gpio, 2, 4, 1);
-    if (res != 4) return -1;
+    res += i2c_device_transaction(&self->seesaw, gpio, 2, 4, 1);
+    res += i2c_device_transaction(&self->seesaw, gpio, 2, 4, 1);
+    if (res != 8) return -1;
 
     switch(~gpio[2] & 0x4F)
     {

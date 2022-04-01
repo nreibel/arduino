@@ -325,10 +325,9 @@ int max31790_read_tachy(max31790_t self, max31790_tach_t tachy, unsigned int *va
     }
 
     // Swap bytes and shift result
-    word w = {
-        .bytes[0] = read[1],
-        .bytes[1] = read[0]
-    };
+    word w;
+    w.bytes[0] = read[1];
+    w.bytes[1] = read[0];
 
     *value = w.value >> 5;
 

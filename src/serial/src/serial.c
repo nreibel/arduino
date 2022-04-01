@@ -22,7 +22,7 @@ static volatile struct {
 
 #if SERIAL_ASYNC_TX
 static volatile struct {
-    const void *buf;
+    const uint8_t *buf;
     unsigned int sz;
 } tx[NUMBER_OF_USART];
 #endif // SERIAL_ASYNC_TX
@@ -131,17 +131,19 @@ bool serial_tx_ready(usart_t usart)
 
 int serial_write_async(usart_t usart, const void *buffer, unsigned int length)
 {
+    uint8_t * bytes = buffer;
+
     if (usart >= NUMBER_OF_USART)
         return -SERIAL_ERROR_INSTANCE;
 
     if (tx[usart].buf != NULL_PTR || tx[usart].sz > 0)
         return -SERIAL_ERROR_BUSY;
 
-    tx[usart].buf = buffer+1;
+    tx[usart].buf = bytes+1;
     tx[usart].sz = length-1;
 
     // Kickstart transmission
-    uint8_t b = READ_PU8(buffer);
+    uint8_t b = READ_PU8(bytes);
     serial_ll_write(usart, b);
 
     return SERIAL_OK;

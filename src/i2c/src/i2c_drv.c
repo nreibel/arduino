@@ -97,15 +97,15 @@ static int transaction(i2c_bus_t self, uint8_t addr, void *data, const unsigned 
     i2c_atmega_bus_t bus = (i2c_atmega_bus_t) self;
 
     int err = 0;
-    unsigned int written = 0;
-    unsigned int read = 0;
+    unsigned int nb_written = 0;
+    unsigned int nb_read = 0;
     uint8_t *bytes = data;
 
     err += i2c_ll_start_condition(bus->instance);
     err += i2c_ll_slave_write(bus->instance, addr);
 
-    while(written < wr)
-        written += i2c_ll_write(bus->instance, bytes[written]);
+    while(nb_written < wr)
+        nb_written += i2c_ll_write(bus->instance, bytes[nb_written]);
 
     if (rd > 0)
     {
@@ -115,15 +115,15 @@ static int transaction(i2c_bus_t self, uint8_t addr, void *data, const unsigned 
         err += i2c_ll_restart_condition(bus->instance);
         err += i2c_ll_slave_read(bus->instance, addr);
 
-        while(read < rd-1)
-            read += i2c_ll_read_ack(bus->instance, &bytes[read]);
+        while(nb_read < rd-1)
+            nb_read += i2c_ll_read_ack(bus->instance, &bytes[nb_read]);
 
-        read += i2c_ll_read_nack(bus->instance, &bytes[read]);
+        nb_read += i2c_ll_read_nack(bus->instance, &bytes[nb_read]);
     }
 
     err += i2c_ll_stop_condition(bus->instance);
 
-    if (err != 0 || written != wr || read != rd)
+    if (err != 0 || nb_written != wr || nb_read != rd)
         return -I2C_SEQ_FAIL;
 
     return rd;

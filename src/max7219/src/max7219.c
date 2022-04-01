@@ -51,6 +51,8 @@ int MAX7219_InitStringBuffer(void *buffer, char* str, int len)
 {
     int pos = 0;
 
+    uint8_t * bytes = buffer;
+
     for (int idx = 0 ; idx < len ; idx++)
     {
         uint8_t chr = str[idx];
@@ -60,7 +62,7 @@ int MAX7219_InitStringBuffer(void *buffer, char* str, int len)
             if (data != 0)
             {
                 uint8_t b = data << (8-MAX7219_CHARSET_HEIGHT);
-                WRITE_PU8(buffer+pos, b);
+                WRITE_PU8(bytes+pos, b);
                 pos++;
             }
         }
