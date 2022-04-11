@@ -5,7 +5,7 @@
 #include "i2c.h"
 #include "os_cfg.h"
 
-enum tc74_addr_e {
+enum {
     TC74A0 = 0x48,
     TC74A1,
     TC74A2,
@@ -13,7 +13,7 @@ enum tc74_addr_e {
     TC74A4,
     TC74A5,
     TC74A6,
-    TC74A7,
+    TC74A7
 };
 
 typedef struct tc74_prv_s {
