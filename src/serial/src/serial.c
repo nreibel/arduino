@@ -69,6 +69,7 @@ int serial_init(usart_t usart, uint32_t baudrate)
         os_task_setup(SERIAL_WORKER_TASK, 1, deferred_task_rx_cbk, NULL_PTR);
         os_task_disable(SERIAL_WORKER_TASK);
 #endif // SERIAL_WORKER_TASK
+
     return SERIAL_OK;
 }
 

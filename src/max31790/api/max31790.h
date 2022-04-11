@@ -5,14 +5,14 @@
 #include "i2c.h"
 #include "os_cfg.h"
 
-typedef enum {
+enum {
     MAX31790_OK,
     MAX31790_ERROR,
     MAX31790_INVALID_MODE,
     MAX31790_INVALID_ARGUMENT,
     MAX31790_FAN_FAULT,
     MAX31790_HW_ERROR
-} max31790_error_t;
+};
 
 typedef enum {
     MAX31790_FAN_1,

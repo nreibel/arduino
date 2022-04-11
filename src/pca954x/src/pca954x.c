@@ -90,7 +90,7 @@ i2c_bus_t pca9544_get_bus(pca9544_t self, unsigned int bus)
     if (bus >= PCA9544_NBR_OF_CHANNELS)
         return NULL_PTR;
 
-    return (i2c_bus_t) &self->bus[bus];
+    return &self->bus[bus].super;
 }
 
 /*
