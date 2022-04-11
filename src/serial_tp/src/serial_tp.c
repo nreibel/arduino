@@ -35,7 +35,7 @@ void serial_rx_callback(usart_t bus, volatile const char *data, unsigned int len
     {
         rsp.status = SERIAL_TP_RETCODE_INVALID_HEADER;
     }
-    else if ( req->data_len != len - sizeof(serial_tp_request_t) - 1 )
+    else if ( req->data_len != len - sizeof(serial_tp_request_t) )
     {
         rsp.status = SERIAL_TP_RETCODE_INVALID_DATA_LEN;
     }

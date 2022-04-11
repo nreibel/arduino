@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "serial.h"
+#include "serial_tp_cfg.h"
 
 #if SERIAL_ASYNC_RX != ON
 #error "Serial TP needs SERIAL_ASYNC_RX enabled!"
