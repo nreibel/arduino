@@ -31,7 +31,7 @@ $(error SERIAL_BAUDRATE is not set)
 endif
 
 ifndef MODULES
-$(error MODULES is not set)
+$(warning Building with no modules enabled)
 # MODULES = os timer serial spi st7735 i2c port
 endif
 
@@ -45,8 +45,6 @@ CC = avr-gcc
 OBJCOPY = avr-objcopy
 OBJDUMP = avr-objdump
 SIZE = avr-size
-UPLOAD = avrdude
-MONITOR = picocom
 
 include $(TARGET)
 include $(MODULES:%=$(SRC_DIR)/%/makefile.include)
@@ -105,11 +103,11 @@ clean:
 
 upload: $(HEX)
 	$(call print_info,Uploading to target)
-	$(UPLOAD) -b $(UPLOAD_BAUD_RATE) -c $(PROGRAMMER) -p $(ARCH) -P $(SERIAL_TTY) -U flash:w:"$<"
+	avrdude -P $(SERIAL_TTY) -c $(PROGRAMMER_TYPE) -p $(PROGRAMMER_TARGET) $(PROGRAMMER_FLAGS) -U flash:w:"$<"
 
 monitor:
 	$(call print_info,Start serial monitor)
-	$(MONITOR) -b $(SERIAL_BAUDRATE) $(SERIAL_TTY)
+	picocom -b $(SERIAL_BAUDRATE) $(SERIAL_TTY)
 
 %/.dir:
 	mkdir -p "$(@D)"

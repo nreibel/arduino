@@ -1,3 +1,7 @@
-ARCH=atmega328p
-PROGRAMMER=arduino
-UPLOAD_BAUD_RATE=115200
+# Compiler options
+ARCH = atmega328p
+
+# Programmer options
+PROGRAMMER_TYPE = arduino
+PROGRAMMER_TARGET = atmega328p
+PROGRAMMER_FLAGS =
