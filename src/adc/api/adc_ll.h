@@ -67,12 +67,12 @@ typedef union {
 } admux_t;
 
 typedef struct {
-    union {
+    const union {
         uint8_t b[2];
         uint16_t w;
     } adc;
     adcsra_t adcsra;
-    adcsrb_t  adcsrb;
+    adcsrb_t adcsrb;
     admux_t  admux;
 } volatile * adc_t;
 

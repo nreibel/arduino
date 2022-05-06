@@ -5,3 +5,4 @@ bin/
 .project
 .settings
 __pycache__
+compile_commands.json
