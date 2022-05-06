@@ -58,11 +58,23 @@ MAP = $(OUT)/$(APP).map
 DMP = $(OUT)/$(APP).dump
 
 # Compilation options and flags
-WARNINGS += all extra undef
-DEFINES +=
-CFLAGS += -MMD -O2 -flto -g0 -mmcu=$(ARCH)
-LDFLAGS += -gc-sections --relax -Map,$(MAP)
+WARNINGS += all
+WARNINGS += extra
+WARNINGS += undef
 
+CFLAGS += -MMD
+CFLAGS += -O2
+CFLAGS += -flto
+CFLAGS += -g0
+CFLAGS += -mmcu=$(ARCH)
+CFLAGS += -fdata-sections
+CFLAGS += -ffunction-sections
+
+LDFLAGS += --gc-sections
+LDFLAGS += --relax
+LDFLAGS += -Map,$(MAP)
+
+# Compilation artifacts
 OBJECTS = $(SOURCES:%.c=$(OBJ)/%.o)
 DEPENDS = $(SOURCES:%.c=$(OBJ)/%.d)
 
@@ -91,7 +103,7 @@ ifndef VERBOSE
 .SILENT:
 endif
 
-all: $(HEX) $(ELF) $(DMP)
+all: $(HEX) $(ELF) $(DMP) $(OBJECTS)
 	$(call print_info,Done)
 	@echo "Output is : $(HEX)"
 	$(SIZE) -C --mcu=$(ARCH) "$(ELF)"

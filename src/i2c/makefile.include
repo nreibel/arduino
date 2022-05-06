@@ -1,8 +1,8 @@
-INCLUDES += \
-	$(SRC_DIR)/i2c/api \
-	$(CFG_DIR)/i2c \
+INCLUDES += $(SRC_DIR)/i2c/api
+INCLUDES += $(CFG_DIR)/i2c
 
-SOURCES += \
-	$(SRC_DIR)/i2c/src/i2c.c \
-	$(SRC_DIR)/i2c/src/i2c_ll.c \
-	$(SRC_DIR)/i2c/src/i2c_drv.c \
+SOURCES += $(SRC_DIR)/i2c/src/i2c_ll.c
+
+ifndef I2C_LL
+SOURCES += $(SRC_DIR)/i2c/src/i2c.c
+endif

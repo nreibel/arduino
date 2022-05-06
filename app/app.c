@@ -2,6 +2,7 @@
 #include "os.h"
 #include "app.h"
 #include "serial.h"
+#include "i2c_ll.h"
 
 #if defined __AVR_ATmega32U4__ // Leonardo
 static const usart_t usart = USART1;
@@ -18,16 +19,35 @@ int os_putc(char chr, FILE *stream)
     return chr;
 }
 
+void i2c_ll_cbk_rx(uint8_t *buffer, unsigned int length)
+{
+    printf("received %u bytes on I2C:", length);
+
+    for (unsigned int i = 0 ; i < length ; i++)
+        printf(" 0x%02x", buffer[i]);
+
+    printf("\r\n");
+}
+
+uint8_t i2c_ll_cbk_tx(unsigned int offset)
+{
+    uint8_t tx = offset | 0xA0;
+    printf("write 0x%02X\r\n", tx);
+    return tx;
+}
+
 void serial_rx_callback(usart_t usart, volatile const char *buffer, unsigned int length)
 {
     UNUSED(usart);
-    printf("received %u bytes: %s\r\n", length, buffer);
+    printf("received %u bytes on USART: %s\r\n", length, buffer);
 }
 
 // App entry point
 void app_init()
 {
     serial_init(usart, 19200);
+
+    i2c_ll_init_slave(TWI0, 0x20);
 
     // Init tasks
     printf( C_RED "Start!" C_END "\r\n");

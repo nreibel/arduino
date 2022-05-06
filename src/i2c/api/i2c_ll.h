@@ -6,7 +6,8 @@
 enum {
     I2C_LL_OK = 0,
     I2C_LL_FAIL,
-    I2C_LL_TIMEOUT
+    I2C_LL_TIMEOUT,
+    I2C_LL_SLAVE_ADDRESS
 };
 
 enum {
@@ -50,7 +51,14 @@ typedef struct {
 
 #define TWI0 TYPECAST(0xB8, twi_t)
 
-int i2c_ll_init(twi_t bus, bool fast_mode);
+// RX callbacks
+extern void i2c_ll_cbk_rx(uint8_t *buffer, unsigned int length);
+extern uint8_t i2c_ll_cbk_tx(unsigned int offset);
+extern void i2c_ll_cbk_seq_error();
+
+int i2c_ll_init_master(twi_t bus, bool fast_mode);
+int i2c_ll_init_slave(twi_t twi, uint8_t addr);
+
 int i2c_ll_wait_int(twi_t bus, unsigned int ms);
 int i2c_ll_wait_stop(twi_t bus, unsigned int ms);
 int i2c_ll_start_condition(twi_t bus);

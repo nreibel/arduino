@@ -1,3 +1,4 @@
+#include "os.h"
 #include "os_cfg.h"
 #include "os_mem.h"
 #include "i2c.h"
@@ -8,29 +9,100 @@
  * I2C Bus
  */
 
-int i2c_bus_init(i2c_bus_t self, i2c_driver_t drv)
+int i2c_bus_init(i2c_bus_t self, twi_t twi, bool fast_mode)
 {
-    self->drv = drv;
-    if (drv->init == NULL_PTR) return I2C_OK;
-    else return drv->init(self);
+    int err = 0;
+
+    err += i2c_ll_init_master(twi, fast_mode);
+
+    if (err != 0)
+        return I2C_FAIL;
+
+    self->instance = twi;
+    self->fast_mode = fast_mode;
+
+    return I2C_OK;
 }
 
 int i2c_bus_write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, unsigned int length)
 {
-    if (self->drv->write == NULL_PTR) return -I2C_NOT_IMPLEMENTED;
-    else return self->drv->write(self, addr, reg, data, length);
+    int err = 0;
+    unsigned int written = 0;
+    const uint8_t *bytes = data;
+
+    err += i2c_ll_start_condition(self->instance);
+    err += i2c_ll_slave_write(self->instance, addr);
+    written += i2c_ll_write(self->instance, reg);
+
+    for(unsigned int i = 0 ; i < length ; i++)
+        written += i2c_ll_write(self->instance, bytes[i]);
+
+    err += i2c_ll_stop_condition(self->instance);
+
+    if (err != 0 || written != length+1)
+        return -I2C_SEQ_FAIL;
+
+    return length;
 }
 
 int i2c_bus_read(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length)
 {
-    if (self->drv->read == NULL_PTR) return -I2C_NOT_IMPLEMENTED;
-    else return self->drv->read(self, addr, reg, data, length);
+    int err = 0;
+    unsigned int written = 0;
+    unsigned int read = 0;
+    uint8_t *bytes = data;
+
+    err += i2c_ll_start_condition(self->instance);
+    err += i2c_ll_slave_write(self->instance, addr);
+    written += i2c_ll_write(self->instance, reg);
+    err += i2c_ll_restart_condition(self->instance);
+    err += i2c_ll_slave_read(self->instance, addr);
+
+    while(read < length-1)
+        read += i2c_ll_read_ack(self->instance, &bytes[read]);
+
+    read += i2c_ll_read_nack(self->instance, &bytes[read]);
+    err += i2c_ll_stop_condition(self->instance);
+
+    if (err != 0 || written != 1 || read != length)
+        return -I2C_SEQ_FAIL;
+
+    return length;
 }
 
 int i2c_bus_transaction(i2c_bus_t self, uint8_t addr, void *data, unsigned int wr, unsigned int rd, unsigned int delay)
 {
-    if (self->drv->transaction == NULL_PTR) return -I2C_NOT_IMPLEMENTED;
-    else return self->drv->transaction(self, addr, data, wr, rd, delay);
+    int err = 0;
+    unsigned int nb_written = 0;
+    unsigned int nb_read = 0;
+    uint8_t *bytes = data;
+
+    err += i2c_ll_start_condition(self->instance);
+    err += i2c_ll_slave_write(self->instance, addr);
+
+    while(nb_written < wr)
+        nb_written += i2c_ll_write(self->instance, bytes[nb_written]);
+
+    if (rd > 0)
+    {
+        if (delay > 0)
+            os_wait(delay);
+
+        err += i2c_ll_restart_condition(self->instance);
+        err += i2c_ll_slave_read(self->instance, addr);
+
+        while(nb_read < rd-1)
+            nb_read += i2c_ll_read_ack(self->instance, &bytes[nb_read]);
+
+        nb_read += i2c_ll_read_nack(self->instance, &bytes[nb_read]);
+    }
+
+    err += i2c_ll_stop_condition(self->instance);
+
+    if (err != 0 || nb_written != wr || nb_read != rd)
+        return -I2C_SEQ_FAIL;
+
+    return rd;
 }
 
 /*
