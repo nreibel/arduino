@@ -37,7 +37,7 @@ typedef struct gpio_prv_s {
 
 
 #if OS_MALLOC
-gpio_t gpio_create();
+gpio_t gpio_create(port_t port, uint8_t pin);
 void gpio_destroy(gpio_t self);
 #endif // OS_MALLOC
 
