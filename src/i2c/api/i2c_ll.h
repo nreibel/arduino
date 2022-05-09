@@ -52,9 +52,9 @@ typedef struct {
 #define TWI0 TYPECAST(0xB8, twi_t)
 
 // RX callbacks
-extern void i2c_ll_cbk_rx(uint8_t *buffer, unsigned int length);
-extern uint8_t i2c_ll_cbk_tx(unsigned int offset);
-extern void i2c_ll_cbk_seq_error();
+extern void i2c_ll_cbk_rx(twi_t bus, uint8_t *buffer, unsigned int length);
+extern uint8_t i2c_ll_cbk_tx(twi_t bus, unsigned int offset);
+extern void i2c_ll_cbk_err(twi_t bus, uint8_t status);
 
 int i2c_ll_init_master(twi_t bus, bool fast_mode);
 int i2c_ll_init_slave(twi_t twi, uint8_t addr);

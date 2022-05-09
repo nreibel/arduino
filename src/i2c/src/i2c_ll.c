@@ -10,6 +10,8 @@
 #include <avr/interrupt.h>
 #include <util/twi.h>
 
+#define DBG_PRINT(x) // printf x
+
 #if F_CPU != 16000000
 #error "F_CPU not supported"
 #endif
@@ -26,29 +28,34 @@
  */
 
 __attribute__((weak))
-void i2c_ll_cbk_rx(uint8_t *buffer, unsigned int length)
+void i2c_ll_cbk_rx(twi_t bus, uint8_t *buffer, unsigned int length)
 {
+    UNUSED(bus);
     UNUSED(buffer);
     UNUSED(length);
 }
 
 __attribute__((weak))
-uint8_t i2c_ll_cbk_tx(unsigned int offset)
+uint8_t i2c_ll_cbk_tx(twi_t bus, unsigned int offset)
 {
+    UNUSED(bus);
     UNUSED(offset);
+
     return 0;
 }
 
 __attribute__((weak))
-void i2c_ll_cbk_seq_error()
+void i2c_ll_cbk_err(twi_t bus, uint8_t status)
 {
+    UNUSED(bus);
+    UNUSED(status);
 }
-
-uint8_t buffer[30];
-unsigned int idx = 0;
 
 ISR(TWI_vect)
 {
+    static uint8_t buffer[I2C_RX_BUFFER_LENGTH];
+    static unsigned int idx = 0;
+
     static enum {
         STATE_IDLE,
         STATE_RX,
@@ -65,19 +72,21 @@ ISR(TWI_vect)
             {
                 // Received SLA+W
                 case TW_SR_SLA_ACK:
+                    DBG_PRINT(("sla+w\r\n"));
                     idx = 0;
                     state = STATE_RX;
                     break;
 
                 // Received SLA+R
                 case TW_ST_SLA_ACK:
+                    DBG_PRINT(("sla+r\r\n"));
                     idx = 0;
-                    TWI0->twdr = i2c_ll_cbk_tx(idx++);
+                    TWI0->twdr = i2c_ll_cbk_tx(TWI0, idx++);
                     state = STATE_TX;
                     break;
 
                 default:
-                    i2c_ll_cbk_seq_error();
+                    i2c_ll_cbk_err(TWI0, status);
                     state = STATE_IDLE;
                     break;
             }
@@ -91,17 +100,20 @@ ISR(TWI_vect)
             {
                 // Received DATA
                 case TW_SR_DATA_ACK:
-                    buffer[idx++] = TWI0->twdr;
+                    DBG_PRINT(("rx ack\r\n"));
+                    if (idx < I2C_RX_BUFFER_LENGTH) buffer[idx++] = TWI0->twdr;
+                    else i2c_ll_cbk_err(TWI0, status);
                     break;
 
                 // Receive STOP
                 case TW_SR_STOP:
-                    i2c_ll_cbk_rx(buffer, idx);
+                    DBG_PRINT(("stop\r\n"));
+                    i2c_ll_cbk_rx(TWI0, buffer, idx);
                     state = STATE_IDLE;
                     break;
 
                 default:
-                    i2c_ll_cbk_seq_error();
+                    i2c_ll_cbk_err(TWI0, status);
                     state = STATE_IDLE;
                     break;
             }
@@ -115,16 +127,18 @@ ISR(TWI_vect)
             {
                 // Sending DATA
                 case TW_ST_DATA_ACK:
-                    TWI0->twdr = i2c_ll_cbk_tx(idx++);
+                    DBG_PRINT(("tx ack\r\n"));
+                    TWI0->twdr = i2c_ll_cbk_tx(TWI0, idx++);
                     break;
 
                 // Transmit STOP
                 case TW_ST_DATA_NACK:
+                    DBG_PRINT(("tx nack\r\n"));
                     state = STATE_IDLE;
                     break;
 
                 default:
-                    i2c_ll_cbk_seq_error();
+                    i2c_ll_cbk_err(TWI0, status);
                     state = STATE_IDLE;
                     break;
             }
@@ -170,10 +184,10 @@ int i2c_ll_init_master(twi_t twi, bool fast_mode)
 
 int i2c_ll_init_slave(twi_t twi, uint8_t addr)
 {
-    power_twi_enable();
-
     if (addr > 0x7f)
         return -I2C_LL_SLAVE_ADDRESS;
+
+    power_twi_enable();
 
     twcr_t twcr = {
         .bits = {
