@@ -4,15 +4,58 @@
 #include "types.h"
 #include "i2c.h"
 
-#define PMBUS_MFR_MODEL_MAX_LENGTH 16
-
-typedef enum
-{
+enum {
     PMBUS_OK,
     PMBUS_ERROR,
     PMBUS_NOT_SUPPORTED,
     PMBUS_ERROR_IO,
-} pmbus_error_t;
+};
+
+enum {
+    CMD_VOUT_MODE = 0x20,
+    /* ... */
+    CMD_STATUS_WORD = 0x79,
+    CMD_STATUS_VOUT,
+    CMD_STATUS_IOUT,
+    CMD_STATUS_INPUT,
+    CMD_STATUS_TEMPERATURE,
+    CMD_STATUS_CML,
+    CMD_STATUS_MFR_SPEC,
+    CMD_STATUS_FANS_1_2,
+    /* ... */
+    CMD_READ_VIN = 0x88,
+    CMD_READ_IIN,
+    CMD_READ_VCAP,
+    CMD_READ_VOUT,
+    CMD_READ_IOUT,
+    CMD_READ_TEMPERATURE_1,
+    CMD_READ_TEMPERATURE_2,
+    CMD_READ_TEMPERATURE_3,
+    CMD_READ_FAN_SPEED_1,
+    CMD_READ_FAN_SPEED_2,
+    CMD_READ_FAN_SPEED_3,
+    CMD_READ_FAN_SPEED_4,
+    CMD_READ_DUTY_CYCLE,
+    CMD_READ_FREQUENCY,
+    CMD_READ_POUT,
+    CMD_READ_PIN,
+    CMD_PMBUS_REVISION,
+    CMD_MFR_ID,
+    CMD_MFR_MODEL,
+    /* ... */
+    CMD_MFR_BLACKBOX = 0xDC,
+    CMD_MFR_REAL_TIME_BLACK_BOX,
+    CMD_MFR_SYSTEM_BLACK_BOX,
+    CMD_MFR_BLACKBOX_CONFIG
+};
+
+typedef union {
+    struct {
+        uint8_t p : 5;
+        uint8_t m : 3;
+    } decoded;
+    uint8_t raw;
+} vout_mode_t;
 
 typedef struct pmbus_prv_s {
     struct i2c_device_prv_s dev;
@@ -197,7 +240,7 @@ void pmbus_destroy(pmbus_t self);
 #endif
 
 // Object methods
-int pmbus_read_mfr_model   (pmbus_t self, char *buffer);
+int pmbus_read_mfr_model   (pmbus_t self, char *buffer, unsigned int len);
 int pmbus_read_temperature (pmbus_t self, double *temperature);
 int pmbus_read_fanspeed    (pmbus_t self, unsigned int *fanspeed);
 int pmbus_read_vin         (pmbus_t self, double *vin);
