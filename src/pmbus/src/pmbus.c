@@ -316,19 +316,38 @@ static int pmbus_read_word_linear11(pmbus_t self, uint8_t reg, double *value)
 
 static int pmbus_read_string(pmbus_t self, uint8_t reg, char *buf, unsigned int sz)
 {
-    int res = i2c_device_read_bytes(&self->dev, reg, buf, sz+1);
-    if (res < 0) return -PMBUS_ERROR_IO;
+    const twi_t twi = self->dev.bus->instance;
+    const uint8_t addr = self->dev.addr;
+
+    unsigned int wr = 0, rd = 0, len = 0;
+    uint8_t *bytes = UINT8_PTR(buf);
+    int err = 0;
+
+    err += i2c_ll_start_condition(twi);
+    err += i2c_ll_slave_write(twi, addr);
+    wr += i2c_ll_write(twi, reg);
+    err += i2c_ll_restart_condition(twi);
+    err += i2c_ll_slave_read(twi, addr);
 
     // First byte is string length
-    unsigned int len = TYPECAST(buf[0], unsigned int);
-    if (len > sz) return -PMBUS_ERROR;
+    rd += i2c_ll_read_ack(twi, bytes);
+    len = READ_PU8(bytes);
 
-    // Shift all characters
-    for (unsigned int i = 0 ; i < len ; i++)
-        buf[i] = buf[i+1];
+    if (len > sz-1)
+        return -PMBUS_ERROR;
+
+    while(rd < len)
+        rd += i2c_ll_read_ack(twi, bytes++);
+
+    rd += i2c_ll_read_nack(twi, bytes++);
+
+    err += i2c_ll_stop_condition(twi);
 
     // Terminate string
-    buf[len] = '\0';
+    *bytes = '\0';
+
+    if (err != I2C_OK || wr != 1 || rd != len+1)
+        return -PMBUS_ERROR_IO;
 
     return len;
 }
