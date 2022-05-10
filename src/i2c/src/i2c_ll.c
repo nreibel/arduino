@@ -25,6 +25,8 @@
  * Interrupt callbacks
  */
 
+#if I2C_RX_BUFFER_LENGTH > 0
+
 __attribute__((weak))
 void i2c_ll_cbk_rx(twi_t bus, uint8_t *buffer, unsigned int length)
 {
@@ -49,8 +51,6 @@ void i2c_ll_cbk_err(twi_t bus, uint8_t status)
     UNUSED(status);
 }
 
-#define DBG_PRINT(x) // printf x
-
 ISR(TWI_vect)
 {
     static uint8_t buffer[I2C_RX_BUFFER_LENGTH];
@@ -72,22 +72,16 @@ ISR(TWI_vect)
             {
                 // Received SLA+W
                 case TW_SR_SLA_ACK:
-                    DBG_PRINT(("sla+w\r\n"));
                     idx = 0;
                     state = STATE_RX;
                     break;
 
                 // Received SLA+R
                 case TW_ST_SLA_ACK:
-                {
-                    DBG_PRINT(("sla+r\r\n"));
                     idx = 0;
-                    uint8_t data = i2c_ll_cbk_tx(TWI0, idx++);
-                    DBG_PRINT((">%02X\r\n", data));
-                    TWI0->twdr = data;
+                    TWI0->twdr = i2c_ll_cbk_tx(TWI0, idx++);
                     state = STATE_TX;
                     break;
-                }
 
                 default:
                     i2c_ll_cbk_err(TWI0, status);
@@ -104,22 +98,15 @@ ISR(TWI_vect)
             {
                 // Received DATA
                 case TW_SR_DATA_ACK:
-                {
-                    uint8_t rcvd = TWI0->twdr;
-                    DBG_PRINT(("<%02X\r\n", rcvd));
-                    if (idx < I2C_RX_BUFFER_LENGTH) buffer[idx++] = rcvd;
+                    if (idx < I2C_RX_BUFFER_LENGTH) buffer[idx++] = TWI0->twdr;
                     else i2c_ll_cbk_err(TWI0, status);
                     break;
-                }
 
                 // Receive STOP
                 case TW_SR_STOP:
-                {
-                    DBG_PRINT(("sto\r\n"));
                     i2c_ll_cbk_rx(TWI0, buffer, idx);
                     state = STATE_IDLE;
                     break;
-                }
 
                 default:
                     i2c_ll_cbk_err(TWI0, status);
@@ -136,16 +123,11 @@ ISR(TWI_vect)
             {
                 // Sending DATA
                 case TW_ST_DATA_ACK:
-                {
-                    uint8_t data = i2c_ll_cbk_tx(TWI0, idx++);
-                    DBG_PRINT((">%02X\r\n", data));
-                    TWI0->twdr = data;
+                    TWI0->twdr = i2c_ll_cbk_tx(TWI0, idx++);
                     break;
-                }
 
                 // Transmit STOP
                 case TW_ST_DATA_NACK:
-                    DBG_PRINT(("nack\r\n"));
                     state = STATE_IDLE;
                     break;
 
@@ -173,6 +155,8 @@ ISR(TWI_vect)
 
     TWI0->twcr = twcr;
 }
+
+#endif // I2C_RX_BUFFER_LENGTH > 0
 
 /*
  * Exported functions
