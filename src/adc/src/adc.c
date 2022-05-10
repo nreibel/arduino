@@ -6,8 +6,8 @@ int adc_init(adc_handle_t self, adc_t adc)
     adc_ll_init(adc);
 
     self->dev = adc;
-    self->configured = FALSE;
-    self->started = FALSE;
+    self->configured = false;
+    self->started = false;
 
     return ADC_OK;
 }
@@ -70,7 +70,7 @@ int adc_configure(adc_handle_t self, adc_vref_t vref, adc_prescaler_t pscl)
             return -ADC_ERROR_PRESCALER;
     }
 
-    self->configured = TRUE;
+    self->configured = true;
 
     return ADC_OK;
 }
@@ -103,14 +103,14 @@ int adc_read_word(adc_handle_t self, adc_channel_t channel, uint16_t * value)
             return -ADC_ERROR_CHANNEL;
     }
 
-    adc_ll_set_left_aligned(self->dev, FALSE);
-    adc_ll_set_enabled(self->dev, TRUE);
+    adc_ll_set_left_aligned(self->dev, false);
+    adc_ll_set_enabled(self->dev, true);
     adc_ll_start_conversion(self->dev);
     adc_ll_wait_conversion(self->dev);
 
     *value = adc_ll_read_word(self->dev);
 
-    adc_ll_set_enabled(self->dev, FALSE);
+    adc_ll_set_enabled(self->dev, false);
 
     return ADC_OK;
 }
@@ -143,14 +143,14 @@ int adc_read_byte(adc_handle_t self, adc_channel_t channel, uint8_t * value)
             return -ADC_ERROR_CHANNEL;
     }
 
-    adc_ll_set_left_aligned(self->dev, TRUE);
-    adc_ll_set_enabled(self->dev, TRUE);
+    adc_ll_set_left_aligned(self->dev, true);
+    adc_ll_set_enabled(self->dev, true);
     adc_ll_start_conversion(self->dev);
     adc_ll_wait_conversion(self->dev);
 
     *value = adc_ll_read_byte(self->dev);
 
-    adc_ll_set_enabled(self->dev, FALSE);
+    adc_ll_set_enabled(self->dev, false);
 
     return ADC_OK;
 }
@@ -182,17 +182,17 @@ int adc_setup_trigger(adc_handle_t self, adc_trigger_t trigger)
 
     if(trigger == ADC_TRIGGER_DISABLED)
     {
-        adc_ll_set_auto_trigger(self->dev, FALSE);
-        adc_ll_set_interrupts_enabled(self->dev, FALSE);
-        adc_ll_set_enabled(self->dev, FALSE);
-        self->started = FALSE;
+        adc_ll_set_auto_trigger(self->dev, false);
+        adc_ll_set_interrupts_enabled(self->dev, false);
+        adc_ll_set_enabled(self->dev, false);
+        self->started = false;
     }
     else
     {
-        adc_ll_set_auto_trigger(self->dev, TRUE);
-        adc_ll_set_interrupts_enabled(self->dev, TRUE);
-        adc_ll_set_enabled(self->dev, TRUE);
-        self->started = TRUE;
+        adc_ll_set_auto_trigger(self->dev, true);
+        adc_ll_set_interrupts_enabled(self->dev, true);
+        adc_ll_set_enabled(self->dev, true);
+        self->started = true;
     }
 
     return ADC_OK;

@@ -2,14 +2,7 @@
 #define OS_API_TYPES_H_
 
 #include <stdint.h>
-
-typedef enum {
-    FALSE = 0,
-    TRUE = !FALSE
-} bool;
-
-typedef void (*Interrupt)(volatile void*);
-typedef int (*callback_t)(void*);
+#include <stdbool.h>
 
 typedef union {
     uint16_t value;
@@ -22,14 +15,12 @@ typedef union {
     uint8_t  bytes[4];
 } dword;
 
-typedef void* buffer_t;
-
 // String stored in flash memory
 typedef const __flash char flstr_t[];
 
 #define UNUSED(x) (void)(x)
 
-#define NOT(b) ((b) == FALSE ? TRUE : FALSE)
+#define NOT(b) (b ? false : true)
 
 #define ON  1
 #define OFF 0

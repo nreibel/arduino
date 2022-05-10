@@ -7,9 +7,9 @@
 void spi_ll_init(spi_t spi)
 {
     // Init GPIO
-    gpio_ll_set_data_direction(PORT_B, 3, TRUE);  // MOSI
-    gpio_ll_set_data_direction(PORT_B, 4, FALSE); // MISO
-    gpio_ll_set_data_direction(PORT_B, 5, TRUE);  // SCK
+    gpio_ll_set_data_direction(PORT_B, 3, true);  // MOSI
+    gpio_ll_set_data_direction(PORT_B, 4, false); // MISO
+    gpio_ll_set_data_direction(PORT_B, 5, true);  // SCK
 
     // Enable peripheral
     power_spi_enable();

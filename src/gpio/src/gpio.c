@@ -122,12 +122,12 @@ int gpio_configure(gpio_t self, gpio_data_direction_t direction)
     {
         case GPIO_OUTPUT_ACTIVE_HIGH:
         case GPIO_OUTPUT_ACTIVE_LOW:
-            gpio_ll_set_data_direction(self->port, self->pin, TRUE);
+            gpio_ll_set_data_direction(self->port, self->pin, true);
             break;
 
         case GPIO_INPUT_HIGH_Z:
         case GPIO_INPUT_PULLUP:
-            gpio_ll_set_data_direction(self->port, self->pin, FALSE);
+            gpio_ll_set_data_direction(self->port, self->pin, false);
             break;
 
         default:

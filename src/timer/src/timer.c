@@ -75,11 +75,11 @@ int timer_init(timer_t timer, timer_config_t * config)
     switch(config->oca_mode)
     {
         case TIMER_OCA_MODE_TOP:
-            timer_ll_set_oca_mode(timer, TRUE);
+            timer_ll_set_oca_mode(timer, true);
             break;
 
         case TIMER_OCA_MODE_PWM:
-            timer_ll_set_oca_mode(timer, FALSE);
+            timer_ll_set_oca_mode(timer, false);
             break;
 
         default:
@@ -185,7 +185,7 @@ int timer_init(timer_t timer, timer_config_t * config)
     timer_ll_set_imask(timer, imask);
 
     instances[timer].prescaler = __timer_prescaler_table[timer][config->prescaler];
-    instances[timer].init = TRUE;
+    instances[timer].init = true;
 
     return TIMER_OK;
 }

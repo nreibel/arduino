@@ -8,7 +8,7 @@
 
 ISR(TWI_vect)
 {
-    static bool init = FALSE;
+    static bool init = false;
     static unsigned int offset = 0;
 
     uint8_t status = TW_STATUS;
@@ -17,7 +17,7 @@ ISR(TWI_vect)
         case TW_SR_SLA_ACK: // Received SLA+W
             I2C_Slave_StartCallback();
             offset = 0;
-            init = TRUE;
+            init = true;
             break;
         case TW_ST_SLA_ACK: // Received SLA+R
         case TW_ST_DATA_ACK: // Sent data, received ACK
@@ -28,7 +28,7 @@ ISR(TWI_vect)
             if (init)
             {
                 offset = TWDR;
-                init = FALSE;
+                init = false;
             }
             else
             {

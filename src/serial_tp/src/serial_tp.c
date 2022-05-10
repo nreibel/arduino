@@ -19,7 +19,6 @@ struct rsp_s {
  */
 
 static struct rsp_s rsp;
-static const __flash char STR_READY[] = "READY";
 
 /*
  * Public functions
@@ -55,5 +54,6 @@ void serial_rx_callback(usart_t bus, volatile const char *data, unsigned int len
 
 void serial_tp_init(usart_t bus)
 {
-    serial_print_P(bus, STR_READY);
+    flstr_t ready = "READY";
+    serial_print_P(bus, ready);
 }

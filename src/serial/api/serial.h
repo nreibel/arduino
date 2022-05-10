@@ -33,7 +33,7 @@ int serial_print(usart_t usart, const char * string);
 int serial_println(usart_t usart, const char * string);
 int serial_new_line(usart_t usart);
 
-int serial_print_P(usart_t usart, const __flash char * string);
-int serial_println_P(usart_t usart, const __flash char * string);
+int serial_print_P(usart_t usart, flstr_t string);
+int serial_println_P(usart_t usart, flstr_t string);
 
 #endif /* __SERIAL_API_H__ */

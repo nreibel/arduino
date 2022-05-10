@@ -8,8 +8,8 @@ typedef struct {
 } pwm_config_t;
 
 static pwm_config_t config[NUMBER_OF_PWM_CHANNELS] = {
-    { FALSE },
-    { FALSE }
+    { false },
+    { false }
 };
 
 void pwm_init(pwm_mode_t mode, pwm_prescaler_t cs)
@@ -75,13 +75,13 @@ bool pwm_start(pwm_t self, uint8_t duty_cycle, bool inverted)
         {
             if (inverted)
             {
-                config[self].inverted = TRUE;
+                config[self].inverted = true;
                 SET_BIT(tccr0a, COM0B0);
                 OCR0B = 0xff - duty_cycle;
             }
             else
             {
-                config[self].inverted = FALSE;
+                config[self].inverted = false;
                 RESET_BIT(tccr0a, COM0B0);
                 OCR0B = duty_cycle;
             }
@@ -95,13 +95,13 @@ bool pwm_start(pwm_t self, uint8_t duty_cycle, bool inverted)
         {
             if (inverted)
             {
-                config[self].inverted = TRUE;
+                config[self].inverted = true;
                 SET_BIT(tccr0a, COM0A0);
                 OCR0A = 0xff - duty_cycle;
             }
             else
             {
-                config[self].inverted = FALSE;
+                config[self].inverted = false;
                 RESET_BIT(tccr0a, COM0A0);
                 OCR0A = duty_cycle;
             }
@@ -111,13 +111,13 @@ bool pwm_start(pwm_t self, uint8_t duty_cycle, bool inverted)
             break;
         }
 
-        default: return FALSE;
+        default: return false;
     }
 
     DDRD = ddrd;
     TCCR0A = tccr0a;
 
-    return TRUE;
+    return true;
 }
 
 bool pwm_set_duty_cycle(pwm_t self, uint8_t duty_cycle)
@@ -128,10 +128,10 @@ bool pwm_set_duty_cycle(pwm_t self, uint8_t duty_cycle)
     {
         case PWM_5: OCR0B = regval; break;
         case PWM_6: OCR0A = regval; break;
-        default: return FALSE;
+        default: return false;
     }
 
-    return TRUE;
+    return true;
 }
 
 bool pwm_stop(pwm_t self)
@@ -140,8 +140,8 @@ bool pwm_stop(pwm_t self)
     {
         case PWM_5: RESET_BIT(TCCR0A, COM0B1); break;
         case PWM_6: RESET_BIT(TCCR0A, COM0A1); break;
-        default: return FALSE;
+        default: return false;
     }
 
-    return TRUE;
+    return true;
 }

@@ -51,14 +51,14 @@ int spi_bus_configure(spi_bus_t self, spi_clock_t clock, spi_mode_t mode)
             case SPI_CLOCK_DIV_2:
             case SPI_CLOCK_DIV_8:
             case SPI_CLOCK_DIV_32:
-                spi_ll_set_double_speed(self->bus, TRUE);
+                spi_ll_set_double_speed(self->bus, true);
                 break;
 
             case SPI_CLOCK_DIV_4:
             case SPI_CLOCK_DIV_16:
             case SPI_CLOCK_DIV_64:
             case SPI_CLOCK_DIV_128:
-                spi_ll_set_double_speed(self->bus, FALSE);
+                spi_ll_set_double_speed(self->bus, false);
                 break;
 
             default:
@@ -98,23 +98,23 @@ int spi_bus_configure(spi_bus_t self, spi_clock_t clock, spi_mode_t mode)
         switch(mode)
         {
             case SPI_MODE_0:
-                spi_ll_set_clock_polarity(self->bus, FALSE);
-                spi_ll_set_clock_phase(self->bus, FALSE);
+                spi_ll_set_clock_polarity(self->bus, false);
+                spi_ll_set_clock_phase(self->bus, false);
                 break;
 
             case SPI_MODE_1:
-                spi_ll_set_clock_polarity(self->bus, FALSE);
-                spi_ll_set_clock_phase(self->bus, TRUE);
+                spi_ll_set_clock_polarity(self->bus, false);
+                spi_ll_set_clock_phase(self->bus, true);
                 break;
 
             case SPI_MODE_2:
-                spi_ll_set_clock_polarity(self->bus, TRUE);
-                spi_ll_set_clock_phase(self->bus, FALSE);
+                spi_ll_set_clock_polarity(self->bus, true);
+                spi_ll_set_clock_phase(self->bus, false);
                 break;
 
             case SPI_MODE_3:
-                spi_ll_set_clock_polarity(self->bus, TRUE);
-                spi_ll_set_clock_phase(self->bus, TRUE);
+                spi_ll_set_clock_polarity(self->bus, true);
+                spi_ll_set_clock_phase(self->bus, true);
                 break;
 
             default:

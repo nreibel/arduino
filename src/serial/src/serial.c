@@ -55,14 +55,14 @@ int serial_init(usart_t usart, uint32_t baudrate)
 
 #if SERIAL_ASYNC_RX
     rx[usart].sz = 0;
-    rx[usart].ready = FALSE;
-    serial_ll_set_rx_irq(usart, TRUE);
+    rx[usart].ready = false;
+    serial_ll_set_rx_irq(usart, true);
 #endif
 
 #if SERIAL_ASYNC_TX
     tx[usart].buf = NULL_PTR;
     tx[usart].sz = 0;
-    serial_ll_set_tx_irq(usart, TRUE);
+    serial_ll_set_tx_irq(usart, true);
 #endif
 
 #ifdef SERIAL_WORKER_TASK
@@ -90,7 +90,7 @@ void serial_rx_irq_handler(usart_t usart)
 
 #ifdef SERIAL_WORKER_TASK
         // Signal the deferred routine to execute
-        rx[usart].ready = TRUE;
+        rx[usart].ready = true;
         os_task_enable(SERIAL_WORKER_TASK);
 #else
         // Call user callback from interrupt context
@@ -126,7 +126,7 @@ void serial_tx_irq_handler(usart_t usart)
 
 bool serial_tx_ready(usart_t usart)
 {
-    if ( usart >= NUMBER_OF_USART ) return FALSE; // TODO
+    if ( usart >= NUMBER_OF_USART ) return false; // TODO
     return tx[usart].buf == NULL_PTR && tx[usart].sz == 0;
 }
 
@@ -205,7 +205,7 @@ int serial_println(usart_t usart, const char * string)
     return serial_print(usart, string) + serial_new_line(usart);
 }
 
-int serial_print_P(usart_t usart, const __flash char * string)
+int serial_print_P(usart_t usart, flstr_t string)
 {
     if (usart >= NUMBER_OF_USART)
         return -SERIAL_ERROR_INSTANCE;
@@ -217,7 +217,7 @@ int serial_print_P(usart_t usart, const __flash char * string)
     return written;
 }
 
-int serial_println_P(usart_t usart, const __flash char * string)
+int serial_println_P(usart_t usart, flstr_t string)
 {
     if (usart >= NUMBER_OF_USART)
         return -SERIAL_ERROR_INSTANCE;
@@ -265,7 +265,7 @@ static int deferred_task_rx_cbk(void* data)
         if (rx[u].ready)
         {
             serial_rx_callback(u, rx[u].buf, rx[u].sz-1);
-            rx[u].ready = FALSE;
+            rx[u].ready = false;
             rx[u].sz = 0;
         }
     }

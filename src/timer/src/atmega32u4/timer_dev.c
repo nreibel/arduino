@@ -53,7 +53,7 @@ int timer_ll_enable_oca(timer_t timer)
 {
     switch(timer)
     {
-        case TIMER0: gpio_ll_set_data_direction(PORT_B, 7, TRUE); break;
+        case TIMER0: gpio_ll_set_data_direction(PORT_B, 7, true); break;
         default: return -TIMER_LL_ERROR_INSTANCE;
     }
 
@@ -64,7 +64,7 @@ int timer_ll_enable_ocb(timer_t timer)
 {
     switch(timer)
     {
-        case TIMER0: gpio_ll_set_data_direction(PORT_D, 0, TRUE); break;
+        case TIMER0: gpio_ll_set_data_direction(PORT_D, 0, true); break;
         default: return -TIMER_LL_ERROR_INSTANCE;
     }
 

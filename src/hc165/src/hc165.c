@@ -47,7 +47,7 @@ int hc165_read(hc165_t self, void * data, int len)
 
         for (int j = 7 ; j >= 0 ; j--)
         {
-            bool ser = FALSE;
+            bool ser = false;
             gpio_get(self->serial, &ser);
             if (ser) SET_BIT(byte, j);
 

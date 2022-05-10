@@ -17,14 +17,14 @@
  * Shoud read 200Hz and 127 (50%) duty cycle
  */
 
-const __flash char STR_ERROR[] = "Error %d\r\n";
-const __flash char STR_OVERFLOW[] = "Overflow\r\n";
-const __flash char STR_NO_INPUT[] = "No input\r\n";
-const __flash char STR_FREQUENCY[] = "Frequency = %uHz\r\n";
-const __flash char STR_DUTY_CYCLE[] = "Duty cycle = %u\r\n";
-const __flash char STR_ERROR_ICP_INIT[] = "INIT ICP FAILED\r\n";
-const __flash char STR_ERROR_TIMER_INIT[] = "INIT TIMER FAILED\r\n";
-const __flash char STR_ERROR_TIMER_START[] = "START TIMER FAILED\r\n";
+flstr_t STR_ERROR = "Error %d\r\n";
+flstr_t STR_OVERFLOW = "Overflow\r\n";
+flstr_t STR_NO_INPUT = "No input\r\n";
+flstr_t STR_FREQUENCY = "Frequency = %uHz\r\n";
+flstr_t STR_DUTY_CYCLE = "Duty cycle = %u\r\n";
+flstr_t STR_ERROR_ICP_INIT = "INIT ICP FAILED\r\n";
+flstr_t STR_ERROR_TIMER_INIT = "INIT TIMER FAILED\r\n";
+flstr_t STR_ERROR_TIMER_START = "START TIMER FAILED\r\n";
 
 void serial_rx_callback(serial_bus_t bus, const char *buffer, unsigned int length)
 {
@@ -67,7 +67,7 @@ void app_init()
     }
 
     /* Use non-blocking mode */
-    if (icp_init(ICP1, ICP_PRESCALER_256, TRUE) < 0)
+    if (icp_init(ICP1, ICP_PRESCALER_256, true) < 0)
     {
         printf_P(STR_ERROR_ICP_INIT);
         HALT();

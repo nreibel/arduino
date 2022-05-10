@@ -66,7 +66,7 @@ typedef struct {
 void st7735_init_device(st7735_t self, spi_bus_t bus, gpio_t cs, gpio_t dc, unsigned int w, unsigned int h)
 {
     spi_device_init(&self->dev, bus, cs, SPI_CLOCK_DIV_2, SPI_MODE_0);
-    spi_device_set_transaction_mode(&self->dev, TRUE);
+    spi_device_set_transaction_mode(&self->dev, true);
     spi_device_enable(&self->dev);
 
     gpio_configure(dc, GPIO_OUTPUT_ACTIVE_LOW);

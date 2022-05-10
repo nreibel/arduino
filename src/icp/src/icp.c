@@ -70,7 +70,7 @@ int icp_init(icp_handle_t self, icp_t icp, icp_prescaler_t prescaler)
     power_timer1_enable();
 
     // Set ICR1 (PB0) as input
-    gpio_ll_set_data_direction(PORT_B, 0, FALSE);
+    gpio_ll_set_data_direction(PORT_B, 0, false);
 
     // Reset device
     icp_ll_init(icp);
@@ -86,8 +86,8 @@ int icp_get_frequency(icp_handle_t self, uint16_t * frequency)
     icp_ll_reset(self->instance);
     icp_ll_clear_ovf(self->instance);
     icp_ll_set_prescaler(self->instance, self->prescaler);
-    uint16_t t1 = icp_ll_capture_edge(self->instance, TRUE);
-    uint16_t t2 = icp_ll_capture_edge(self->instance, TRUE);
+    uint16_t t1 = icp_ll_capture_edge(self->instance, true);
+    uint16_t t2 = icp_ll_capture_edge(self->instance, true);
     icp_ll_set_prescaler(self->instance, ICP_PRESCALER_NONE);
 
     if ( icp_ll_is_ovf(self->instance) ) return -ICP_ERROR_OVERFLOW;
@@ -103,9 +103,9 @@ int icp_get_duty_cycle(icp_handle_t self, uint8_t * duty_cycle)
     icp_ll_reset(self->instance);
     icp_ll_clear_ovf(self->instance);
     icp_ll_set_prescaler(self->instance, self->prescaler);
-    uint16_t t1 = icp_ll_capture_edge(self->instance, TRUE);
-    uint16_t t2 = icp_ll_capture_edge(self->instance, FALSE);
-    uint16_t t3 = icp_ll_capture_edge(self->instance, TRUE);
+    uint16_t t1 = icp_ll_capture_edge(self->instance, true);
+    uint16_t t2 = icp_ll_capture_edge(self->instance, false);
+    uint16_t t3 = icp_ll_capture_edge(self->instance, true);
     icp_ll_set_prescaler(self->instance, ICP_PRESCALER_NONE);
 
     if ( icp_ll_is_ovf(self->instance) ) return -ICP_ERROR_OVERFLOW;

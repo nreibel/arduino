@@ -34,7 +34,7 @@ int spi_device_init(spi_device_t self, spi_bus_t bus, gpio_t cs, spi_clock_t clo
     self->cs = cs;
     self->clock = clock;
     self->mode = mode;
-    self->transaction_mode = FALSE;
+    self->transaction_mode = false;
 
     gpio_configure(cs, GPIO_OUTPUT_ACTIVE_LOW);
 

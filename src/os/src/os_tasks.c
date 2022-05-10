@@ -19,7 +19,7 @@ static volatile struct {
 
 void os_task_setup(os_task_t task, time_t interval, callback_t callback, void* param)
 {
-    tasks[task].enabled  = TRUE;
+    tasks[task].enabled  = true;
     tasks[task].interval = interval;
     tasks[task].callback = callback;
     tasks[task].param = param;
@@ -28,12 +28,12 @@ void os_task_setup(os_task_t task, time_t interval, callback_t callback, void* p
 
 void os_task_enable(os_task_t task)
 {
-    tasks[task].enabled = TRUE;
+    tasks[task].enabled = true;
 }
 
 void os_task_disable(os_task_t task)
 {
-    tasks[task].enabled = FALSE;
+    tasks[task].enabled = false;
 }
 
 void os_cyclic_tasks()
@@ -48,7 +48,7 @@ void os_cyclic_tasks()
         {
             int ret = tasks[i].callback(tasks[i].param);
             tasks[i].last = os_millis();
-            if (ret < 0) tasks[i].enabled = FALSE;
+            if (ret < 0) tasks[i].enabled = false;
         }
     }
 }

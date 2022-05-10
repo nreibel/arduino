@@ -17,7 +17,7 @@ static struct {
 void os_timer_start(os_timer_t timer)
 {
     timers[timer].value = os_millis();
-    timers[timer].running = TRUE;
+    timers[timer].running = true;
 }
 
 void os_timer_reset(os_timer_t timer)
@@ -28,13 +28,13 @@ void os_timer_reset(os_timer_t timer)
 void os_timer_stop(os_timer_t timer)
 {
     timers[timer].value = os_millis() - timers[timer].value;
-    timers[timer].running = FALSE;
+    timers[timer].running = false;
 }
 
 void os_timer_resume(os_timer_t timer)
 {
     timers[timer].value = os_millis() - timers[timer].value;
-    timers[timer].running = TRUE;
+    timers[timer].running = true;
 }
 
 time_t os_timer_value(os_timer_t timer)

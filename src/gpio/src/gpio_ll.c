@@ -68,7 +68,7 @@ void gpio_ll_set_data_direction(port_t port, uint8_t pin, bool output)
 
 bool gpio_ll_get(port_t port, uint8_t pin)
 {
-    return IS_SET_BIT(PORTS[port].pin, pin) ? TRUE : FALSE;
+    return IS_SET_BIT(PORTS[port].pin, pin) ? true : false;
 }
 
 void gpio_ll_set(port_t port, uint8_t pin)

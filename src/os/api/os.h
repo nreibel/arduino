@@ -10,6 +10,8 @@
 
 #define HALT for(;;){}
 
+typedef int (*callback_t)(void*);
+
 enum {
     EOK,
     EDONE,

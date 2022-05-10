@@ -9,7 +9,7 @@
 int max31865_init(max31865_t *self, gpio_t *cs, max31865_mode_t mode, max31865_filter_t filter)
 {
     spi_device_init(&self->dev, cs, SPI_CLOCK_DIV_16 , SPI_MODE_3);
-    spi_device_set_transaction_mode(&self->dev, TRUE);
+    spi_device_set_transaction_mode(&self->dev, true);
 
     // VBIAS = On, Conversion mode = Auto
     uint8_t configuration = BIT(7) | BIT(6);
@@ -76,7 +76,7 @@ int max31865_read_rtd(max31865_t *self, double *rtd, bool *fault)
         return -1;
     }
 
-    *fault = IS_SET_BIT(lsb, 0) ? TRUE : FALSE;
+    *fault = IS_SET_BIT(lsb, 0) ? true : false;
 
     uint16_t w = (msb << 8) | lsb;
     *rtd = (MAX31865_RES_REF * TYPECAST(w >> 1, double)) / MAX31865_ADC_RESOLUTION;
