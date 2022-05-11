@@ -228,7 +228,6 @@ typedef union
 {
     struct __attribute__((packed))
     {
-        uint8_t length;
         uint8_t system_top_assembly_number[10];
         uint8_t system_serial_number[10];
         uint8_t motherboard_assembly_number[10];

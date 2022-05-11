@@ -23,7 +23,7 @@
  */
 
 static int pmbus_read_word_linear11(pmbus_t self, uint8_t reg, double *value);
-static int pmbus_read_string(pmbus_t self, uint8_t reg, char *buf, unsigned int sz);
+static int pmbus_read_block(pmbus_t self, uint8_t reg, void * buf, unsigned int sz);
 static int twos_complement(unsigned int n, unsigned int b);
 
 /*
@@ -115,8 +115,14 @@ int pmbus_read_fanspeed(pmbus_t self, unsigned int *fanspeed)
 
 int pmbus_read_mfr_model(pmbus_t self, char *buffer, unsigned int len)
 {
-    int ret = pmbus_read_string(self, CMD_MFR_MODEL, buffer, len);
-    if (ret < 0) return -PMBUS_ERROR_IO;
+    int ret = pmbus_read_block(self, CMD_MFR_MODEL, buffer, len-1);
+
+    if (ret < 0)
+        return -PMBUS_ERROR_IO;
+
+    // Terminate string
+    buffer[ret] = '\0';
+
     return PMBUS_OK;
 }
 
@@ -158,11 +164,10 @@ int pmbus_read_vout(pmbus_t self, double *vout)
 
 int pmbus_read_blackbox(pmbus_t self, pmbus_blackbox_t * data)
 {
-    int res = i2c_device_read_bytes(&self->dev, CMD_MFR_BLACKBOX, data, sizeof(pmbus_blackbox_t));
+    int res = pmbus_read_block(self, CMD_MFR_BLACKBOX, data, sizeof(pmbus_blackbox_t));
     if (res != sizeof(pmbus_blackbox_t)) return -PMBUS_ERROR_IO;
     return PMBUS_OK;
 }
-
 
 int pmbus_read_status_word(pmbus_t self, pmbus_status_word_t *value)
 {
@@ -270,7 +275,7 @@ static int pmbus_read_word_linear11(pmbus_t self, uint8_t reg, double *value)
     return PMBUS_OK;
 }
 
-static int pmbus_read_string(pmbus_t self, uint8_t reg, char *buf, unsigned int sz)
+static int pmbus_read_block(pmbus_t self, uint8_t reg, void * buf, unsigned int sz)
 {
     const twi_t twi = self->dev.bus->instance;
     const uint8_t addr = self->dev.addr;
@@ -289,7 +294,10 @@ static int pmbus_read_string(pmbus_t self, uint8_t reg, char *buf, unsigned int 
     rd += i2c_ll_read_ack(twi, bytes);
     len = READ_PU8(bytes);
 
-    if (len > sz-1)
+    if (err != I2C_OK)
+        return -PMBUS_ERROR_IO;
+
+    if (len > sz)
         return -PMBUS_ERROR;
 
     while(rd < len)
@@ -298,9 +306,6 @@ static int pmbus_read_string(pmbus_t self, uint8_t reg, char *buf, unsigned int 
     rd += i2c_ll_read_nack(twi, bytes++);
 
     err += i2c_ll_stop_condition(twi);
-
-    // Terminate string
-    *bytes = '\0';
 
     if (err != I2C_OK || wr != 1 || rd != len+1)
         return -PMBUS_ERROR_IO;
