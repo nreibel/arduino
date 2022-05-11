@@ -229,6 +229,40 @@ double pmbus_linear11_decode(uint16_t data)
     return power2(y, n);
 }
 
+uint16_t pmbus_linear11_encode(double value)
+{
+    int8_t exp = 0;
+
+    if (ABS(value) > 1023)
+    {
+        // Encode big values (discard decimals)
+        while(ABS(value) > 1023 && exp < 15)
+        {
+            value /= 2;
+            exp++;
+        }
+    }
+    else if (ABS(value) < 512)
+    {
+        // Encode smaller values (preserve decimals)
+        while(ABS(value) < 512 && exp > -15)
+        {
+            value *= 2;
+            exp--;
+        }
+    }
+
+    linear11_t data = {
+        .decoded = {
+            // two's complement
+            .exponent = exp > 0 ? exp : (1 << 5) + exp,
+            .mantissa = value > 0 ? value : (1 << 11) + value
+        }
+    };
+
+    return data.raw;
+}
+
 int pmbus_vout_decode(pmbus_t self, uint16_t raw, double *value)
 {
     if (self->vout_mode == 0xFF)
