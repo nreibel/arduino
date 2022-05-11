@@ -1,7 +1,6 @@
 #include "pmbus.h"
 #include "i2c.h"
 #include "bits.h"
-#include "math.h"
 #include "os_mem.h"
 
 /*
@@ -24,6 +23,8 @@
 
 static int pmbus_read_word_linear11(pmbus_t self, uint8_t reg, double *value);
 static int pmbus_read_block(pmbus_t self, uint8_t reg, void * buf, unsigned int sz);
+
+static double power2(int y, int n);
 static int twos_complement(unsigned int n, unsigned int b);
 
 /*
@@ -230,7 +231,41 @@ double pmbus_linear11_decode(uint16_t data)
     int y = twos_complement(l.decoded.mantissa, 11);
     int n = twos_complement(l.decoded.exponent, 5);
 
-    return y * pow(2, n);
+    return power2(y, n);
+}
+
+uint16_t pmbus_linear11_encode(double value)
+{
+    int8_t exp = 0;
+
+    if (ABS(value) > 1023)
+    {
+        // Encode big values (discard decimals)
+        while(ABS(value) > 1023 && exp < 15)
+        {
+            value /= 2;
+            exp++;
+        }
+    }
+    else if (ABS(value) < 512)
+    {
+        // Encode smaller values (preserve decimals)
+        while(ABS(value) < 512 && exp > -15)
+        {
+            value *= 2;
+            exp--;
+        }
+    }
+
+    linear11_t data = {
+        .decoded = {
+            // two's complement
+            .exponent = exp > 0 ? exp : (1 << 5) + exp,
+            .mantissa = value > 0 ? value : (1 << 11) + value
+        }
+    };
+
+    return data.raw;
 }
 
 int pmbus_vout_decode(pmbus_t self, uint16_t raw, double *value)
@@ -248,7 +283,7 @@ int pmbus_vout_decode(pmbus_t self, uint16_t raw, double *value)
         case VOUT_MODE_LINEAR:
         {
             int exponent = twos_complement(vout_mode.decoded.p, 5);
-            *value = raw * pow(2, exponent);
+            *value = power2(raw, exponent);
             return PMBUS_OK;
         }
 
@@ -322,4 +357,11 @@ static int pmbus_read_block(pmbus_t self, uint8_t reg, void * buf, unsigned int 
 static int twos_complement(unsigned int n, unsigned int b)
 {
     return IS_SET_BIT(n, b-1) ? (int) n - (int) BIT(b) : (int) n;
+}
+
+// Compute y * 2^n
+static double power2(int y, int n)
+{
+    if (n >= 0) return y * 1 << n;
+    else return TYPECAST(y, double) / (1 << -n);
 }

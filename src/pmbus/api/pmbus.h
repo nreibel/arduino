@@ -272,6 +272,7 @@ int pmbus_read_status_fans_1_2    (pmbus_t self, pmbus_status_fans_t *value);
 
 // Class methods
 double pmbus_linear11_decode(uint16_t data);
+uint16_t pmbus_linear11_encode(double value);
 
 // Manufacturer specific
 int pmbus_gw_read_page(pmbus_t self, unsigned int *page);
