@@ -215,13 +215,12 @@ int pmbus_read_status_fans_1_2(pmbus_t self, pmbus_status_fans_t *value)
 
 double pmbus_linear11_decode(uint16_t data)
 {
-    int16_t y = data & 0x7FF;         // 11 lowest bits
-    int16_t n = (data >> 11 ) & 0x1F; // 5 highest bits
+    linear11_t l = { .raw = data };
 
-    int y2 = twos_complement(y, 11);
-    int n2 = twos_complement(n, 5);
+    int y = twos_complement(l.decoded.mantissa, 11);
+    int n = twos_complement(l.decoded.exponent, 5);
 
-    return y2 * pow(2, n2);
+    return y * pow(2, n);
 }
 
 int pmbus_vout_decode(pmbus_t self, uint16_t raw, double *value)

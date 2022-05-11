@@ -12,6 +12,8 @@ enum {
 };
 
 enum {
+    CMD_PAGE = 0x00,
+    /* ... */
     CMD_VOUT_MODE = 0x20,
     /* ... */
     CMD_STATUS_WORD = 0x79,
@@ -56,6 +58,14 @@ typedef union {
     } decoded;
     uint8_t raw;
 } vout_mode_t;
+
+typedef union {
+    struct {
+        uint16_t mantissa : 11;
+        uint16_t exponent : 5;
+    } decoded;
+    uint16_t raw;
+} linear11_t;
 
 typedef struct pmbus_prv_s {
     struct i2c_device_prv_s dev;
