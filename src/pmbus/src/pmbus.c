@@ -21,7 +21,7 @@
  * Private functions declaration
  */
 
-static int pmbus_read_word_linear11(pmbus_t self, uint8_t reg, double *value);
+static int pmbus_read_linear11(pmbus_t self, uint8_t reg, double *value);
 static int pmbus_read_block(pmbus_t self, uint8_t reg, void * buf, unsigned int sz);
 
 static double power2(int y, int n);
@@ -108,7 +108,7 @@ int pmbus_init(pmbus_t self, i2c_bus_t bus, uint8_t addr)
 int pmbus_read_fanspeed(pmbus_t self, unsigned int *fanspeed)
 {
     double data;
-    int ret = pmbus_read_word_linear11(self, CMD_READ_FAN_SPEED_1, &data);
+    int ret = pmbus_read_linear11(self, CMD_READ_FAN_SPEED_1, &data);
     if (ret < 0) return -PMBUS_ERROR_IO;
     *fanspeed = data;
     return PMBUS_OK;
@@ -129,27 +129,27 @@ int pmbus_read_mfr_model(pmbus_t self, char *buffer, unsigned int len)
 
 int pmbus_read_temperature(pmbus_t self, double *temperature)
 {
-    return pmbus_read_word_linear11(self, CMD_READ_TEMPERATURE_1, temperature);
+    return pmbus_read_linear11(self, CMD_READ_TEMPERATURE_1, temperature);
 }
 
 int pmbus_read_vin(pmbus_t self, double *vin)
 {
-    return pmbus_read_word_linear11(self, CMD_READ_VIN, vin);
+    return pmbus_read_linear11(self, CMD_READ_VIN, vin);
 }
 
-int pmbus_read_iin(pmbus_t self, double *vin)
+int pmbus_read_iin(pmbus_t self, double *iin)
 {
-    return pmbus_read_word_linear11(self, CMD_READ_IIN, vin);
+    return pmbus_read_linear11(self, CMD_READ_IIN, iin);
 }
 
-int pmbus_read_pin(pmbus_t self, double *vin)
+int pmbus_read_pin(pmbus_t self, double *pin)
 {
-    return pmbus_read_word_linear11(self, CMD_READ_PIN, vin);
+    return pmbus_read_linear11(self, CMD_READ_PIN, pin);
 }
 
 int pmbus_read_iout(pmbus_t self, double *iout)
 {
-    return pmbus_read_word_linear11(self, CMD_READ_IOUT, iout);
+    return pmbus_read_linear11(self, CMD_READ_IOUT, iout);
 }
 
 int pmbus_read_vout(pmbus_t self, double *vout)
@@ -161,6 +161,11 @@ int pmbus_read_vout(pmbus_t self, double *vout)
     if (res != 2) return -PMBUS_ERROR_IO;
 
     return pmbus_vout_decode(self, data, vout);
+}
+
+int pmbus_read_pout(pmbus_t self, double *pout)
+{
+    return pmbus_read_linear11(self, CMD_READ_POUT, pout);
 }
 
 int pmbus_read_blackbox(pmbus_t self, pmbus_blackbox_t * data)
@@ -301,7 +306,7 @@ int pmbus_vout_decode(pmbus_t self, uint16_t raw, double *value)
  * Private methods
  */
 
-static int pmbus_read_word_linear11(pmbus_t self, uint8_t reg, double *value)
+static int pmbus_read_linear11(pmbus_t self, uint8_t reg, double *value)
 {
     uint16_t data = 0;
     int res = i2c_device_read_bytes(&self->dev, reg, &data, 2);

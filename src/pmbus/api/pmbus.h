@@ -255,10 +255,11 @@ int pmbus_read_mfr_model   (pmbus_t self, char *buffer, unsigned int len);
 int pmbus_read_temperature (pmbus_t self, double *temperature);
 int pmbus_read_fanspeed    (pmbus_t self, unsigned int *fanspeed);
 int pmbus_read_vin         (pmbus_t self, double *vin);
-int pmbus_read_iin         (pmbus_t self, double *vin);
-int pmbus_read_pin         (pmbus_t self, double *vin);
+int pmbus_read_iin         (pmbus_t self, double *iin);
+int pmbus_read_pin         (pmbus_t self, double *pin);
 int pmbus_read_vout        (pmbus_t self, double *vout);
-int pmbus_read_iout        (pmbus_t self, double *vout);
+int pmbus_read_iout        (pmbus_t self, double *iout);
+int pmbus_read_pout        (pmbus_t self, double *pout);
 int pmbus_read_blackbox    (pmbus_t self, pmbus_blackbox_t *data);
 int pmbus_vout_decode      (pmbus_t self, uint16_t raw, double *value);
 
