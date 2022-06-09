@@ -47,7 +47,7 @@ void os_cyclic_tasks()
         if(elapsed >= tasks[i].interval)
         {
             int ret = tasks[i].callback(tasks[i].param);
-            tasks[i].last = os_millis();
+            tasks[i].last += tasks[i].interval;
             if (ret < 0) tasks[i].enabled = false;
         }
     }
