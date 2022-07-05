@@ -14,13 +14,13 @@ typedef enum {
 } tim16_edge_t;
 
 typedef enum {
-    TIM16_LL_PRESCALER_NONE,
-    TIM16_LL_PRESCALER_1,
-    TIM16_LL_PRESCALER_8,
-    TIM16_LL_PRESCALER_64,
-    TIM16_LL_PRESCALER_256,
-    TIM16_LL_PRESCALER_1024,
-} tim16_prescaler_t;
+    TIM16_LL_PSCL_NONE,
+    TIM16_LL_PSCL_1,
+    TIM16_LL_PSCL_8,
+    TIM16_LL_PSCL_64,
+    TIM16_LL_PSCL_256,
+    TIM16_LL_PSCL_1024,
+} tim16_ll_pscl_t;
 
 typedef union {
     struct {
@@ -66,6 +66,19 @@ typedef union {
     uint8_t raw;
 } volatile * tim16_tifr_t;
 
+typedef union {
+    struct {
+        uint8_t toie  : 1;
+        uint8_t ociea : 1;
+        uint8_t ocieb : 1;
+        uint8_t ociec : 1;
+        uint8_t       : 1;
+        uint8_t icie  : 1;
+        uint8_t       : 2;
+    } b;
+    uint8_t raw;
+} volatile * tim16_timsk_t;
+
 typedef struct {
     tim16_tccra_t tccra;
     tim16_tccrb_t tccrb;
@@ -78,15 +91,22 @@ typedef struct {
     uint16_t ocrc;
 } volatile * mem_tim16_t;
 
-#define TIM1 TYPECAST(0x80, const mem_tim16_t)
-#define TIM3 TYPECAST(0x90, const mem_tim16_t)
+#define _TIM1 TYPECAST(0x80, const mem_tim16_t)
+#define _TIM3 TYPECAST(0x90, const mem_tim16_t)
 
 #define _TIFR1 TYPECAST(0x036, const tim16_tifr_t)
 #define _TIFR3 TYPECAST(0x038, const tim16_tifr_t)
 
+#define _TIMSK1 TYPECAST(0x06F, const tim16_timsk_t)
+#define _TIMSK3 TYPECAST(0x071, const tim16_timsk_t)
+
+extern void tim16_ll_icp_cbk(mem_tim16_t timer, tim16_edge_t edge, uint16_t value);
+extern void tim16_ll_ovf_cbk(mem_tim16_t timer);
+
+void tim16_ll_enable_interrupts(tim16_timsk_t timsk);
 void tim16_ll_reset_value(mem_tim16_t tim);
-int tim16_ll_set_prescaler(mem_tim16_t tim, tim16_prescaler_t pscl);
-int tim16_ll_select_input_capture_edge(mem_tim16_t tim, tim16_edge_t edge);
+void tim16_ll_set_prescaler(mem_tim16_t tim, tim16_ll_pscl_t pscl);
+void tim16_ll_select_input_capture_edge(mem_tim16_t tim, tim16_edge_t edge);
 
 uint16_t tim16_ll_get_input_capture(mem_tim16_t tim);
 uint16_t tim16_ll_get_value(mem_tim16_t tim);

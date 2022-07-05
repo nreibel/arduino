@@ -1,9 +1,0 @@
-INCLUDES += \
-	$(SRC_DIR)/timer16/api \
-
-SOURCES += \
-	$(SRC_DIR)/timer16/src/timer16_ll.c \
-
-ifndef TIM16_LL
-SOURCES += $(SRC_DIR)/timer16/src/timer16.c
-endif

@@ -1,0 +1,9 @@
+INCLUDES += \
+	$(SRC_DIR)/tim16/api \
+
+SOURCES += \
+	$(SRC_DIR)/tim16/src/tim16_ll.c \
+
+ifndef TIM16_LL
+SOURCES += $(SRC_DIR)/tim16/src/tim16.c
+endif
