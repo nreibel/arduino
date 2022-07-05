@@ -102,6 +102,7 @@ int tim16_init(tim16_t timer, tim16_prescaler_t pscl)
     _timers[timer].ovf   = 0;
     _timers[timer].cpt   = 0;
 
+    tim16_ll_select_input_capture_edge(_timers[timer].tim, TIM16_LL_RISING_EDGE);
     tim16_ll_enable_interrupts(_timers[timer].timsk);
 
     return TIM16_OK;

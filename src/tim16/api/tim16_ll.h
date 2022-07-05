@@ -3,23 +3,18 @@
 
 #include "types.h"
 
-enum {
-    TIMER16_LL_OK,
-    TIMER16_LL_ERROR_EDGE
-};
-
 typedef enum {
-    TIM16_LL_RISING_EDGE,
-    TIM16_LL_FALLING_EDGE
+    TIM16_LL_FALLING_EDGE = 0x0,
+    TIM16_LL_RISING_EDGE  = 0x1,
 } tim16_edge_t;
 
 typedef enum {
-    TIM16_LL_PSCL_NONE,
-    TIM16_LL_PSCL_1,
-    TIM16_LL_PSCL_8,
-    TIM16_LL_PSCL_64,
-    TIM16_LL_PSCL_256,
-    TIM16_LL_PSCL_1024,
+    TIM16_LL_PSCL_NONE = 0x0,
+    TIM16_LL_PSCL_1    = 0x1,
+    TIM16_LL_PSCL_8    = 0x2,
+    TIM16_LL_PSCL_64   = 0x3,
+    TIM16_LL_PSCL_256  = 0x4,
+    TIM16_LL_PSCL_1024 = 0x5,
 } tim16_ll_pscl_t;
 
 typedef union {
@@ -110,11 +105,5 @@ void tim16_ll_select_input_capture_edge(mem_tim16_t tim, tim16_edge_t edge);
 
 uint16_t tim16_ll_get_input_capture(mem_tim16_t tim);
 uint16_t tim16_ll_get_value(mem_tim16_t tim);
-
-bool tim16_ll_check_ovf(tim16_tifr_t tifr);
-bool tim16_ll_check_icf(tim16_tifr_t tifr);
-
-void tim16_ll_reset_ovf(tim16_tifr_t tifr);
-void tim16_ll_reset_icf(tim16_tifr_t tifr);
 
 #endif /* __TIMER16_LL_API_H__ */

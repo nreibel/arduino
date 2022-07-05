@@ -63,19 +63,7 @@ void tim16_ll_set_prescaler(mem_tim16_t tim, tim16_ll_pscl_t pscl)
 
 void tim16_ll_select_input_capture_edge(mem_tim16_t tim, tim16_edge_t edge)
 {
-    switch(edge)
-    {
-        case TIM16_LL_RISING_EDGE:
-            tim->tccrb.b.ices = 1;
-            break;
-
-        case TIM16_LL_FALLING_EDGE:
-            tim->tccrb.b.ices = 0;
-            break;
-
-        default:
-            break;
-    }
+    tim->tccrb.b.ices = edge;
 }
 
 void tim16_ll_enable_interrupts(tim16_timsk_t timsk)
@@ -97,24 +85,4 @@ uint16_t tim16_ll_get_value(mem_tim16_t tim)
 uint16_t tim16_ll_get_input_capture(mem_tim16_t tim)
 {
     return tim->icr;
-}
-
-bool tim16_ll_check_ovf(tim16_tifr_t tifr)
-{
-    return tifr->b.tov == 1 ? true : false;
-}
-
-bool tim16_ll_check_icf(tim16_tifr_t tifr)
-{
-    return tifr->b.icf == 1 ? true : false;
-}
-
-void tim16_ll_reset_ovf(tim16_tifr_t tifr)
-{
-    tifr->b.tov = 1;
-}
-
-void tim16_ll_reset_icf(tim16_tifr_t tifr)
-{
-    tifr->b.icf = 1;
 }
