@@ -54,6 +54,6 @@ void serial_rx_callback(usart_t bus, volatile const char *data, unsigned int len
 
 void serial_tp_init(usart_t bus)
 {
-    flstr_t ready = "READY";
+    static flstr_t ready = "READY";
     serial_print_P(bus, ready);
 }

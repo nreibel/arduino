@@ -59,7 +59,7 @@ int pca954x_init(pca954x_t self, i2c_bus_t parent, uint8_t addr)
     return I2C_OK;
 }
 
-int pca954x_select_channel(pca954x_t self, uint8_t bus)
+int pca954x_select(pca954x_t self, uint8_t bus)
 {
     if (self->current == bus)
         return I2C_OK;
