@@ -98,12 +98,10 @@ typedef struct {
 extern void tim16_ll_icp_cbk(mem_tim16_t timer, tim16_edge_t edge, uint16_t value);
 extern void tim16_ll_ovf_cbk(mem_tim16_t timer);
 
-void tim16_ll_enable_interrupts(tim16_timsk_t timsk);
-void tim16_ll_reset_value(mem_tim16_t tim);
+void tim16_ll_reset(mem_tim16_t tim);
 void tim16_ll_set_prescaler(mem_tim16_t tim, tim16_ll_pscl_t pscl);
 void tim16_ll_select_input_capture_edge(mem_tim16_t tim, tim16_edge_t edge);
 
-uint16_t tim16_ll_get_input_capture(mem_tim16_t tim);
-uint16_t tim16_ll_get_value(mem_tim16_t tim);
+void tim16_ll_enable_interrupts(tim16_timsk_t timsk);
 
 #endif /* __TIMER16_LL_API_H__ */
