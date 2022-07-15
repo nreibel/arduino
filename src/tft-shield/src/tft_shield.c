@@ -101,13 +101,13 @@ int tft_shield_init(tft_shield_t self, spi_bus_t spi, i2c_bus_t i2c, st7735_orie
     uint8_t buf[6] = { MODULE_GPIO, 0, 0, 0, 0x4F, 0xE0 };
 
     buf[1] = GPIO_DIRCLR;
-    err += i2c_device_transaction(&self->seesaw, buf, 6, 0, 10);
+    err += i2c_device_transaction(&self->seesaw, buf, 6, NULL_PTR, 0, 10);
 
     buf[1] = GPIO_PULLENSET;
-    err += i2c_device_transaction(&self->seesaw, buf, 6, 0, 10);
+    err += i2c_device_transaction(&self->seesaw, buf, 6, NULL_PTR, 0, 10);
 
     buf[1] = GPIO_SET;
-    err += i2c_device_transaction(&self->seesaw, buf, 6, 0, 10);
+    err += i2c_device_transaction(&self->seesaw, buf, 6, NULL_PTR, 0, 10);
 
     if (err != I2C_OK)
         return -TFT_SHIELD_ERR_BUS;
@@ -124,7 +124,7 @@ int tft_shield_backlight(tft_shield_t self, uint8_t val)
 {
     uint8_t cmd[4] = { MODULE_PWM, PWM_VAL, 0, val };
 
-    int ret = i2c_device_transaction(&self->seesaw, cmd, 4, 0, 10);
+    int ret = i2c_device_transaction(&self->seesaw, cmd, 4, NULL_PTR, 0, 10);
 
     if (ret != I2C_OK)
         return -TFT_SHIELD_ERR_BUS;
@@ -137,7 +137,7 @@ int tft_shield_read_keys(tft_shield_t self, tft_shield_key_t *key)
     int res = I2C_OK;
     uint8_t gpio[4] = { MODULE_GPIO, GPIO_GPIO, 0, 0 };
 
-    res += i2c_device_transaction(&self->seesaw, gpio, 2, 4, 10);
+    res += i2c_device_transaction(&self->seesaw, gpio, 2, gpio, 4, 10);
 
     if (res != I2C_OK)
         return -TFT_SHIELD_ERR_BUS;
