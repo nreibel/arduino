@@ -1,3 +1,4 @@
+#include "i2c_ll.h"
 #include "os.h"
 #include "os_cfg.h"
 #include "os_mem.h"
@@ -16,7 +17,7 @@ int i2c_bus_init(i2c_bus_t self, twi_t twi, bool fast_mode)
     err += i2c_ll_init_master(twi, fast_mode);
 
     if (err != 0)
-        return I2C_FAIL;
+        return -I2C_ERR;
 
     self->instance = twi;
     self->fast_mode = fast_mode;
@@ -24,6 +25,7 @@ int i2c_bus_init(i2c_bus_t self, twi_t twi, bool fast_mode)
     return I2C_OK;
 }
 
+#if 0
 int i2c_bus_write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, unsigned int length)
 {
     int err = 0;
@@ -40,12 +42,12 @@ int i2c_bus_write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, u
     err += i2c_ll_stop_condition(self->instance);
 
     if (err != 0 || written != length+1)
-        return -I2C_SEQ_FAIL;
+        return -I2C_ERR_SEQ;
 
     return length;
 }
 
-int i2c_bus_read(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length)
+int i2c_bus_read(i2c_bus_t self, uint8_t addr, uint8_t reg, void * data, unsigned int length)
 {
     int err = 0;
     unsigned int written = 0;
@@ -65,44 +67,103 @@ int i2c_bus_read(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned
     err += i2c_ll_stop_condition(self->instance);
 
     if (err != 0 || written != 1 || read != length)
-        return -I2C_SEQ_FAIL;
+        return -I2C_ERR_SEQ;
 
     return length;
 }
+#endif
 
-int i2c_bus_transaction(i2c_bus_t self, uint8_t addr, void *data, unsigned int wr, unsigned int rd, unsigned int delay)
+int i2c_bus_transaction(i2c_bus_t self, uint8_t addr, const void * out, unsigned int wr, void * in, unsigned int rd, unsigned int timeout)
 {
-    int err = 0;
+    int err = I2C_LL_OK;
     unsigned int nb_written = 0;
     unsigned int nb_read = 0;
-    uint8_t *bytes = data;
+    uint8_t * b_in = in;
+    const uint8_t * b_out = out;
 
-    err += i2c_ll_start_condition(self->instance);
-    err += i2c_ll_slave_write(self->instance, addr);
+    if (wr > 0 && out == NULL_PTR)
+        return -I2C_ERR_PARAM;
 
-    while(nb_written < wr)
-        nb_written += i2c_ll_write(self->instance, bytes[nb_written]);
+    if (rd > 0 && in == NULL_PTR)
+        return -I2C_ERR_PARAM;
 
-    if (rd > 0)
+    enum {
+        STATE_STA,
+        STATE_SLA_W,
+        STATE_WR,
+        STATE_WR_COMPLETE,
+        STATE_REP,
+        STATE_SLA_R,
+        STATE_RD,
+        STATE_RD_NACK,
+        STATE_STO,
+        STATE_COMPLETE
+    } state = STATE_STA;
+
+    time_t tbeg = os_millis();
+
+    while(os_millis() - tbeg < timeout)
     {
-        if (delay > 0)
-            os_wait(delay);
+        switch(state)
+        {
+            case STATE_STA:
+                err += i2c_ll_start_condition(self->instance);
+                state = STATE_SLA_W;
+                break;
 
-        err += i2c_ll_restart_condition(self->instance);
-        err += i2c_ll_slave_read(self->instance, addr);
+            case STATE_SLA_W:
+                err += i2c_ll_slave_write(self->instance, addr);
+                state = STATE_WR;
+                break;
 
-        while(nb_read < rd-1)
-            nb_read += i2c_ll_read_ack(self->instance, &bytes[nb_read]);
+            case STATE_WR:
+                err += i2c_ll_write(self->instance, b_out[nb_written++]);
+                if (nb_written >= wr) state = STATE_WR_COMPLETE;
+                break;
 
-        nb_read += i2c_ll_read_nack(self->instance, &bytes[nb_read]);
+            case STATE_WR_COMPLETE:
+                if (rd > 0) state = STATE_REP;
+                else state = STATE_STO;
+                break;
+
+            case STATE_REP:
+                err += i2c_ll_restart_condition(self->instance);
+                state = STATE_SLA_R;
+                break;
+
+            case STATE_SLA_R:
+                err += i2c_ll_slave_read(self->instance, addr);
+                state = STATE_RD;
+                break;
+
+            case STATE_RD:
+                if (nb_read < rd - 1)
+                    err += i2c_ll_read_ack(self->instance, &b_in[nb_read++]);
+                else state = STATE_RD_NACK;
+                break;
+
+            case STATE_RD_NACK:
+                err += i2c_ll_read_nack(self->instance, &b_in[nb_read++]);
+                state = STATE_STO;
+                break;
+
+            case STATE_STO:
+                err += i2c_ll_stop_condition(self->instance);
+                state = STATE_COMPLETE;
+                break;
+
+            case STATE_COMPLETE:
+                return I2C_OK;
+
+            default:
+                return -I2C_ERR_SEQ;
+        }
+
+        if (err != I2C_LL_OK)
+            return -I2C_ERR_SEQ;
     }
 
-    err += i2c_ll_stop_condition(self->instance);
-
-    if (err != 0 || nb_written != wr || nb_read != rd)
-        return -I2C_SEQ_FAIL;
-
-    return rd;
+    return -I2C_ERR_TIMEOUT;
 }
 
 /*
@@ -139,6 +200,7 @@ int i2c_device_init(i2c_device_t dev, i2c_bus_t bus, uint8_t addr)
     return I2C_OK;
 }
 
+#if 0
 int i2c_device_write_byte(i2c_device_t self, uint8_t reg, const uint8_t byte)
 {
     return i2c_device_write_bytes(self, reg, &byte, 1);
@@ -158,8 +220,9 @@ int i2c_device_read_bytes(i2c_device_t self, uint8_t reg, void *data, unsigned i
 {
     return i2c_bus_read(self->bus, self->addr, reg, data, length);
 }
+#endif
 
-int i2c_device_transaction(i2c_device_t self, void *data, unsigned int wr, unsigned int rd, unsigned int delay)
+int i2c_device_transaction(i2c_device_t self, const void * out, unsigned int wr, void * in, unsigned int rd, unsigned int timeout)
 {
-    return i2c_bus_transaction(self->bus, self->addr, data, wr, rd, delay);
+    return i2c_bus_transaction(self->bus, self->addr, out, wr, in, rd, timeout);
 }

@@ -7,6 +7,12 @@
 #include "st7735.h"
 #include "os_cfg.h"
 
+enum {
+    TFT_SHIELD_OK,
+    TFT_SHIELD_ERR,
+    TFT_SHIELD_ERR_BUS,
+};
+
 typedef struct tft_shield_prv_s {
     struct i2c_device_prv_s seesaw;
     struct st7735_prv_s tft;

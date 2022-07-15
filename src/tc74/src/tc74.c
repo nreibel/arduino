@@ -9,8 +9,8 @@
  * Private constants
  */
 
-#define TC74_REG_RTR  0x0
-#define TC74_REG_RWCR 0x1
+static const uint8_t TC74_REG_RTR = 0x0;
+static const uint8_t TC74_REG_RWCR = 0x1;
 
 /*
  * Public functions
@@ -47,29 +47,53 @@ void tc74_destroy(tc74_t self)
 
 int tc74_init(tc74_t self, i2c_bus_t bus, uint8_t addr)
 {
-    return i2c_device_init(&self->dev, bus, addr);
+    int err = I2C_OK;
+
+    err += i2c_device_init(&self->dev, bus, addr);
+
+    if (err != I2C_OK)
+        return -TC74_ERR_BUS;
+
+    return TC74_OK;
 }
 
-int tc74_set_standby(tc74_t self, bool stdby)
+int tc74_set_standby(tc74_t self, bool stdby, unsigned int timeout)
 {
-    uint8_t regval = 0;
+    int err = I2C_OK;
 
-    i2c_device_read_byte(&self->dev, TC74_REG_RWCR, &regval);
+    uint8_t cr = TC74_REG_RWCR;
+    err += i2c_device_transaction(&self->dev, &cr, 1, &cr, 1, timeout);
 
-    if (stdby) SET_BIT(regval, 7);
-    else RESET_BIT(regval, 7);
+    if (err != I2C_OK)
+        return -TC74_ERR_BUS;
 
-    return i2c_device_write_byte(&self->dev, TC74_REG_RWCR, regval);
+    if (stdby) SET_BIT(cr, 7);
+    else RESET_BIT(cr, 7);
+
+    uint8_t buf[2] = { TC74_REG_RWCR, cr };
+    err += i2c_device_transaction(&self->dev, buf, 2, NULL_PTR, 0, timeout);
+
+    if (err != I2C_OK)
+        return -TC74_ERR_BUS;
+
+    return TC74_OK;
 }
 
-int tc74_read_temperature(tc74_t self, int *temp)
+int tc74_read_temperature(tc74_t self, int * temp, unsigned int timeout)
 {
-    uint8_t reg = 0;
-    int retval = i2c_device_read_byte(&self->dev, TC74_REG_RTR, &reg);
-    if (retval == 1)
-    {
-        *temp = (int) reg;
-        if (reg >= 0x80) *temp -= 256; // two's complement
-    }
-    return retval;
+    int err = I2C_OK;
+    uint8_t buf = TC74_REG_RTR;
+
+    err += i2c_device_transaction(&self->dev, &buf, 1, &buf, 1, timeout);
+
+    if (err != I2C_OK)
+        return -TC74_ERR_BUS;
+
+    *temp = (int) buf;
+
+    // two's complement
+    if (buf >= 0x80)
+        *temp -= 256;
+
+    return TC74_OK;
 }

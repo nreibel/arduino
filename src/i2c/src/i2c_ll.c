@@ -361,7 +361,7 @@ int i2c_ll_write(twi_t twi, uint8_t data)
         // TODO
         case TW_MT_DATA_ACK:
         case TW_MT_DATA_NACK:
-            return 1;
+            return I2C_LL_OK;
 
         default:
             return -I2C_LL_FAIL;
@@ -387,7 +387,7 @@ int i2c_ll_read_ack(twi_t twi, uint8_t *data)
     {
         case TW_MR_DATA_ACK:
             *data = twi->twdr;
-            return 1;
+            return I2C_LL_OK;
 
         default:
             return -I2C_LL_FAIL;
@@ -412,7 +412,7 @@ int i2c_ll_read_nack(twi_t twi, uint8_t *data)
     {
         case TW_MR_DATA_NACK:
             *data = twi->twdr;
-            return 1;
+            return I2C_LL_OK;
 
         default:
             return -I2C_LL_FAIL;

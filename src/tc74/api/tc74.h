@@ -6,6 +6,12 @@
 #include "os_cfg.h"
 
 enum {
+    TC74_OK,
+    TC74_ERR,
+    TC74_ERR_BUS
+};
+
+enum {
     TC74A0 = 0x48,
     TC74A1,
     TC74A2,
@@ -26,7 +32,7 @@ void tc74_destroy(tc74_t self);
 #endif // OS_MALLOC
 
 int tc74_init(tc74_t self, i2c_bus_t bus, uint8_t addr);
-int tc74_set_standby(tc74_t self, bool stdby);
-int tc74_read_temperature(tc74_t self, int *temp);
+int tc74_set_standby(tc74_t self, bool stdby, unsigned int timeout);
+int tc74_read_temperature(tc74_t self, int *temp, unsigned int timeout);
 
 #endif /* __TC74_API_H__ */
