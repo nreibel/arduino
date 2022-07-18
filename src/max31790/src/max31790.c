@@ -73,7 +73,8 @@ int max31790_init(max31790_t self, i2c_bus_t bus, uint8_t addr)
         self->mode[i] = MAX31790_MODE_PWM;
 
     // Write new config
-    ret = i2c_device_write_byte(&self->dev, MAX31790_REG_GLOBAL_CONFIGURATION, cfg);
+    uint8_t data[2] = { MAX31790_REG_GLOBAL_CONFIGURATION, cfg };
+    ret = i2c_device_transaction(&self->dev, data, 2, NULL_PTR, 0, 10);
     if (ret < 0) return ret;
 
     return MAX31790_OK;
@@ -81,26 +82,26 @@ int max31790_init(max31790_t self, i2c_bus_t bus, uint8_t addr)
 
 int max31790_set_frequency(max31790_t self, max31790_frequency_t freq)
 {
-    uint8_t regval = 0;
+    uint8_t data[2] = { MAX31790_REG_PWM_FREQUENCY, 0 };
 
     switch(freq)
     {
-        case MAX31790_FREQUENCY_25_HZ:    regval = 0x00; break;
-        case MAX31790_FREQUENCY_30_HZ:    regval = 0x11; break;
-        case MAX31790_FREQUENCY_35_HZ:    regval = 0x22; break;
-        case MAX31790_FREQUENCY_100_HZ:   regval = 0x33; break;
-        case MAX31790_FREQUENCY_125_HZ:   regval = 0x44; break;
-        case MAX31790_FREQUENCY_149_7_HZ: regval = 0x55; break;
-        case MAX31790_FREQUENCY_1_25_KHZ: regval = 0x66; break;
-        case MAX31790_FREQUENCY_1_47_KHZ: regval = 0x77; break;
-        case MAX31790_FREQUENCY_3_57_KHZ: regval = 0x88; break;
-        case MAX31790_FREQUENCY_5_KHZ:    regval = 0x99; break;
-        case MAX31790_FREQUENCY_12_5_KHZ: regval = 0xAA; break;
-        case MAX31790_FREQUENCY_25_KHZ:   regval = 0xBB; break;
+        case MAX31790_FREQUENCY_25_HZ:    data[1] = 0x00; break;
+        case MAX31790_FREQUENCY_30_HZ:    data[1] = 0x11; break;
+        case MAX31790_FREQUENCY_35_HZ:    data[1] = 0x22; break;
+        case MAX31790_FREQUENCY_100_HZ:   data[1] = 0x33; break;
+        case MAX31790_FREQUENCY_125_HZ:   data[1] = 0x44; break;
+        case MAX31790_FREQUENCY_149_7_HZ: data[1] = 0x55; break;
+        case MAX31790_FREQUENCY_1_25_KHZ: data[1] = 0x66; break;
+        case MAX31790_FREQUENCY_1_47_KHZ: data[1] = 0x77; break;
+        case MAX31790_FREQUENCY_3_57_KHZ: data[1] = 0x88; break;
+        case MAX31790_FREQUENCY_5_KHZ:    data[1] = 0x99; break;
+        case MAX31790_FREQUENCY_12_5_KHZ: data[1] = 0xAA; break;
+        case MAX31790_FREQUENCY_25_KHZ:   data[1] = 0xBB; break;
         default: return -MAX31790_INVALID_ARGUMENT;
     }
 
-    int ret = i2c_device_write_byte(&self->dev, MAX31790_REG_PWM_FREQUENCY, regval);
+    int ret = i2c_device_transaction(&self->dev, data, 2, NULL_PTR, 0, 10);
     if (ret < 0) return ret;
 
     return MAX31790_OK;
@@ -108,37 +109,41 @@ int max31790_set_frequency(max31790_t self, max31790_frequency_t freq)
 
 int max31790_set_watchdog(max31790_t self, max31790_watchdog_t watchdog)
 {
-    uint8_t reg = 0;
+    int res = 0;
 
-    int ret = i2c_device_read_byte(&self->dev, MAX31790_REG_GLOBAL_CONFIGURATION, &reg);
-    if (ret < 0) return ret;
+    uint8_t cfg = MAX31790_REG_GLOBAL_CONFIGURATION;
+    res = i2c_device_transaction(&self->dev, &cfg, 1, &cfg, 1, 10);
+    if (res < 0) return res;
 
     switch(watchdog)
     {
-        case MAX31790_WATCHDOG_DISABLED:   SET_BITS(reg, 0x00, 0x6); break;
-        case MAX31790_WATCHDOG_5_SECONDS:  SET_BITS(reg, 0x02, 0x6); break;
-        case MAX31790_WATCHDOG_10_SECONDS: SET_BITS(reg, 0x04, 0x6); break;
-        case MAX31790_WATCHDOG_30_SECONDS: SET_BITS(reg, 0x06, 0x6); break;
+        case MAX31790_WATCHDOG_DISABLED:   SET_BITS(cfg, 0x00, 0x6); break;
+        case MAX31790_WATCHDOG_5_SECONDS:  SET_BITS(cfg, 0x02, 0x6); break;
+        case MAX31790_WATCHDOG_10_SECONDS: SET_BITS(cfg, 0x04, 0x6); break;
+        case MAX31790_WATCHDOG_30_SECONDS: SET_BITS(cfg, 0x06, 0x6); break;
         default: return -MAX31790_INVALID_ARGUMENT;
     }
 
-    ret = i2c_device_write_byte(&self->dev, MAX31790_REG_GLOBAL_CONFIGURATION, reg);
-    if (ret < 0) return ret;
+    uint8_t data[2] = { MAX31790_REG_GLOBAL_CONFIGURATION, cfg };
+    res = i2c_device_transaction(&self->dev, data, 2, NULL_PTR, 0, 10);
+    if (res < 0) return res;
 
     return MAX31790_OK;
 }
 
 int max31790_clear_watchdog(max31790_t self)
 {
-    uint8_t reg = 0;
+    int res = 0;
 
-    int ret = i2c_device_read_byte(&self->dev, MAX31790_REG_GLOBAL_CONFIGURATION, &reg);
-    if (ret < 0) return ret;
+    uint8_t cfg = MAX31790_REG_GLOBAL_CONFIGURATION;
+    res = i2c_device_transaction(&self->dev, &cfg, 1, &cfg, 1, 10);
+    if (res < 0) return res;
 
-    RESET_BIT(reg, 0);
+    RESET_BIT(cfg, 0);
 
-    ret = i2c_device_write_byte(&self->dev, MAX31790_REG_GLOBAL_CONFIGURATION, reg);
-    if (ret < 0) return ret;
+    uint8_t data[2] = { MAX31790_REG_GLOBAL_CONFIGURATION, cfg };
+    res = i2c_device_transaction(&self->dev, data, 2, NULL_PTR, 0, 10);
+    if (res < 0) return res;
 
     return MAX31790_OK;
 }
@@ -163,40 +168,29 @@ int max31790_get_fan_mode(max31790_t self, max31790_fan_t fan, max31790_mode_t *
 
 int max31790_set_fan_mode(max31790_t self, max31790_fan_t fan, max31790_mode_t mode)
 {
-    uint8_t reg = 0;
-    uint8_t val = 0;
+    uint8_t data[2] = {0, 0};
 
     switch(fan)
     {
-        case MAX31790_FAN_1: reg = 0x02; break;
-        case MAX31790_FAN_2: reg = 0x03; break;
-        case MAX31790_FAN_3: reg = 0x04; break;
-        case MAX31790_FAN_4: reg = 0x05; break;
-        case MAX31790_FAN_5: reg = 0x06; break;
-        case MAX31790_FAN_6: reg = 0x07; break;
+        case MAX31790_FAN_1: data[0] = 0x02; break;
+        case MAX31790_FAN_2: data[0] = 0x03; break;
+        case MAX31790_FAN_3: data[0] = 0x04; break;
+        case MAX31790_FAN_4: data[0] = 0x05; break;
+        case MAX31790_FAN_5: data[0] = 0x06; break;
+        case MAX31790_FAN_6: data[0] = 0x07; break;
         default: return -MAX31790_INVALID_ARGUMENT;
     }
 
     switch(mode)
     {
-        case MAX31790_MODE_PWM:
-            val = 0b0001000; // PWM Mode, TACH Input Enable
-            break;
-
-        case MAX31790_MODE_RPM:
-            val = 0b1001000; // RPM Mode, TACH Input Enable
-            break;
-
-        case MAX31790_MODE_TACHY:
-            val = 0b0001001; // TACH Mode, TACH Input Enable
-            break;
-
-        default:
-            return -MAX31790_INVALID_ARGUMENT;
+        case MAX31790_MODE_PWM:   data[1] = 0b0001000; break; // PWM Mode, TACH Input Enable
+        case MAX31790_MODE_RPM:   data[1] = 0b1001000; break; // RPM Mode, TACH Input Enable
+        case MAX31790_MODE_TACHY: data[1] = 0b0001001; break; // TACH Mode, TACH Input Enable
+        default: return -MAX31790_INVALID_ARGUMENT;
     }
 
-    int ret = i2c_device_write_byte(&self->dev, reg, val);
-    if (ret < 0) return ret;
+    int res = i2c_device_transaction(&self->dev, data, 2, NULL_PTR, 0, 10);
+    if (res < 0) return res;
 
     self->mode[fan] = mode;
 
@@ -221,51 +215,51 @@ int max31790_read_rpm(max31790_t self, max31790_tach_t tachy, unsigned int *rpm)
 
 int max31790_set_target_rpm(max31790_t self, max31790_fan_t fan, unsigned int rpm)
 {
-    uint8_t reg = 0;
-
-    if(self->mode[fan] != MAX31790_MODE_RPM) return -MAX31790_INVALID_MODE;
+    uint8_t data[3];
 
     switch(fan)
     {
-        case MAX31790_FAN_1: reg = 0x50; break;
-        case MAX31790_FAN_2: reg = 0x52; break;
-        case MAX31790_FAN_3: reg = 0x54; break;
-        case MAX31790_FAN_4: reg = 0x56; break;
-        case MAX31790_FAN_5: reg = 0x58; break;
-        case MAX31790_FAN_6: reg = 0x5A; break;
+        case MAX31790_FAN_1: data[0] = 0x50; break;
+        case MAX31790_FAN_2: data[0] = 0x52; break;
+        case MAX31790_FAN_3: data[0] = 0x54; break;
+        case MAX31790_FAN_4: data[0] = 0x56; break;
+        case MAX31790_FAN_5: data[0] = 0x58; break;
+        case MAX31790_FAN_6: data[0] = 0x5A; break;
         default: return -MAX31790_INVALID_ARGUMENT;
     }
 
-    uint8_t bytes[2] = {
-        rpm >> 3,
-        rpm << 5
-    };
+    if(self->mode[fan] != MAX31790_MODE_RPM)
+        return -MAX31790_INVALID_MODE;
 
-    int ret = i2c_device_write_bytes(&self->dev, reg, bytes, 2);
-    if (ret < 0) return ret;
+    data[1] = rpm >> 3;
+    data[2] = rpm << 5;
+
+    int res = i2c_device_transaction(&self->dev, data, 3, NULL_PTR, 0, 10);
+    if (res < 0) return res;
 
     return MAX31790_OK;
 }
 
 int max31790_set_target_pwm(max31790_t self, max31790_fan_t fan, uint8_t pwm)
 {
-    uint8_t reg = 0;
-
-    if(self->mode[fan] != MAX31790_MODE_PWM) return -MAX31790_INVALID_MODE;
+    uint8_t data[2] = { 0, pwm };
 
     switch(fan)
     {
-        case MAX31790_FAN_1: reg = 0x40; break;
-        case MAX31790_FAN_2: reg = 0x42; break;
-        case MAX31790_FAN_3: reg = 0x44; break;
-        case MAX31790_FAN_4: reg = 0x46; break;
-        case MAX31790_FAN_5: reg = 0x48; break;
-        case MAX31790_FAN_6: reg = 0x4A; break;
+        case MAX31790_FAN_1: data[0] = 0x40; break;
+        case MAX31790_FAN_2: data[0] = 0x42; break;
+        case MAX31790_FAN_3: data[0] = 0x44; break;
+        case MAX31790_FAN_4: data[0] = 0x46; break;
+        case MAX31790_FAN_5: data[0] = 0x48; break;
+        case MAX31790_FAN_6: data[0] = 0x4A; break;
         default: return -MAX31790_INVALID_ARGUMENT;
     }
 
-    int ret = i2c_device_write_bytes(&self->dev, reg, &pwm, 1);
-    if (ret < 0) return ret;
+    if(self->mode[fan] != MAX31790_MODE_PWM)
+        return -MAX31790_INVALID_MODE;
+
+    int res = i2c_device_transaction(&self->dev, data, 2, NULL_PTR, 0, 10);
+    if (res < 0) return res;
 
     return MAX31790_OK;
 }
@@ -308,9 +302,10 @@ int max31790_read_tachy(max31790_t self, max31790_tach_t tachy, unsigned int *va
             break;
     }
 
+    // TODO : read uint16_t
     uint8_t read[2];
 
-    int ret = i2c_device_read_bytes(&self->dev, reg, &read, 2);
+    int ret = i2c_device_transaction(&self->dev, &reg, 1, read, 2, 10);
     if (ret < 0 || read[1] & 0x1F)
     {
         // Lower 5 bits always return zeros

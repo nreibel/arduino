@@ -9,6 +9,11 @@
  * Public constants
  */
 
+enum {
+    PCA954X_OK,
+    PCA954X_ERR,
+};
+
 #define PCA9544_NBR_OF_CHANNELS 4
 
 /*
@@ -30,6 +35,6 @@ void pca954x_destroy(pca954x_t self);
 #endif // OS_MALLOC
 
 int pca954x_init(pca954x_t self, i2c_bus_t parent, uint8_t addr);
-int pca954x_select(pca954x_t self, uint8_t bus);
+int pca954x_select(pca954x_t self, uint8_t bus, unsigned int timeout);
 
 #endif // __PCA954X_API_H__

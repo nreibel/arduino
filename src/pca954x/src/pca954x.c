@@ -56,25 +56,25 @@ int pca954x_init(pca954x_t self, i2c_bus_t parent, uint8_t addr)
 
     self->current = 0xFF;
 
-    return I2C_OK;
+    return PCA954X_OK;
 }
 
-int pca954x_select(pca954x_t self, uint8_t bus)
+int pca954x_select(pca954x_t self, uint8_t bus, unsigned int timeout)
 {
     if (self->current == bus)
-        return I2C_OK;
+        return PCA954X_OK;
 
-    uint8_t reg = BIT(PCA9544_BIT_EN) | MASK(bus, PCA9544_MSK_CH_SEL);
-    int retval = i2c_device_write_bytes(&self->super, reg, NULL_PTR, 0);
+    uint8_t data = BIT(PCA9544_BIT_EN) | MASK(bus, PCA9544_MSK_CH_SEL);
+    int retval = i2c_device_transaction(&self->super, &data, 1, NULL_PTR, 0, timeout);
 
     if (retval < 0)
     {
         self->current = 0xFF;
-        return retval;
+        return -PCA954X_ERR;
     }
     else
     {
         self->current = bus;
-        return I2C_OK;
+        return PCA954X_OK;
     }
 }
