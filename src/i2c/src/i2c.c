@@ -161,7 +161,10 @@ int i2c_bus_transaction(i2c_bus_t self, uint8_t addr, const void * out, unsigned
         }
 
         if (err != I2C_LL_OK)
+        {
+            i2c_ll_reset_bus(self->instance);
             return -I2C_ERR_SEQ;
+        }
     }
 
     if (nb_read != rd && nb_written != wr)

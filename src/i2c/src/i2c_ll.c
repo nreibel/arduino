@@ -226,6 +226,12 @@ int i2c_ll_wait_stop(twi_t twi, unsigned int ms)
     return I2C_LL_OK;
 }
 
+int i2c_ll_reset_bus(twi_t twi)
+{
+    twi->twcr.reg = 0;
+    return I2C_LL_OK;
+}
+
 int i2c_ll_start_condition(twi_t twi)
 {
     twcr_t twcr = {

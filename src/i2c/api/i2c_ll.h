@@ -69,5 +69,6 @@ int i2c_ll_slave_read(twi_t bus, uint8_t addr);
 int i2c_ll_write(twi_t bus, uint8_t data);
 int i2c_ll_read_ack(twi_t bus, uint8_t *data);
 int i2c_ll_read_nack(twi_t bus, uint8_t *data);
+int i2c_ll_reset_bus(twi_t twi);
 
 #endif // I2C_LL_API_H__
