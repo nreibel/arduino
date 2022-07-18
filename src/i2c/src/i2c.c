@@ -81,7 +81,8 @@ int i2c_bus_transaction(i2c_bus_t self, uint8_t addr, const void * out, unsigned
     uint8_t * b_in = in;
     const uint8_t * b_out = out;
 
-    if (wr > 0 && out == NULL_PTR)
+    // TODO handle read only operations
+    if (wr < 1 || out == NULL_PTR)
         return -I2C_ERR_PARAM;
 
     if (rd > 0 && in == NULL_PTR)
@@ -117,7 +118,7 @@ int i2c_bus_transaction(i2c_bus_t self, uint8_t addr, const void * out, unsigned
                 break;
 
             case STATE_WR:
-                err += i2c_ll_write(self->instance, b_out[nb_written++]);
+                nb_written += i2c_ll_write(self->instance, b_out[nb_written]);
                 if (nb_written >= wr) state = STATE_WR_COMPLETE;
                 break;
 
@@ -138,12 +139,12 @@ int i2c_bus_transaction(i2c_bus_t self, uint8_t addr, const void * out, unsigned
 
             case STATE_RD:
                 if (nb_read < rd - 1)
-                    err += i2c_ll_read_ack(self->instance, &b_in[nb_read++]);
+                    nb_read += i2c_ll_read_ack(self->instance, &b_in[nb_read]);
                 else state = STATE_RD_NACK;
                 break;
 
             case STATE_RD_NACK:
-                err += i2c_ll_read_nack(self->instance, &b_in[nb_read++]);
+                nb_read += i2c_ll_read_nack(self->instance, &b_in[nb_read]);
                 state = STATE_STO;
                 break;
 
@@ -162,6 +163,9 @@ int i2c_bus_transaction(i2c_bus_t self, uint8_t addr, const void * out, unsigned
         if (err != I2C_LL_OK)
             return -I2C_ERR_SEQ;
     }
+
+    if (nb_read != rd && nb_written != wr)
+        return -I2C_ERR_SEQ;
 
     return -I2C_ERR_TIMEOUT;
 }
