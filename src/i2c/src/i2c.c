@@ -200,28 +200,6 @@ int i2c_device_init(i2c_device_t dev, i2c_bus_t bus, uint8_t addr)
     return I2C_OK;
 }
 
-int i2c_device_write_byte(i2c_device_t self, uint8_t reg, const uint8_t byte)
-{
-    // TODO return i2c_device_write_bytes(self, reg, &byte, 1);
-    return -I2C_ERR;
-}
-
-int i2c_device_read_byte(i2c_device_t self, uint8_t reg, uint8_t *data)
-{
-    return i2c_bus_transaction(self->bus, self->addr, &reg, 1, data, 1, 10);
-}
-
-int i2c_device_write_bytes(i2c_device_t self, uint8_t reg, const void * data, unsigned int length)
-{
-    // TODO return i2c_bus_transaction(self->bus, self->addr, &reg, 1, data, length, 1);
-    return -I2C_ERR;
-}
-
-int i2c_device_read_bytes(i2c_device_t self, uint8_t reg, void *data, unsigned int length)
-{
-    return i2c_bus_transaction(self->bus, self->addr, &reg, 1, data, length, 10);
-}
-
 int i2c_device_transaction(i2c_device_t self, const void * out, unsigned int wr, void * in, unsigned int rd, unsigned int timeout)
 {
     return i2c_bus_transaction(self->bus, self->addr, out, wr, in, rd, timeout);

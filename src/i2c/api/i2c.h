@@ -34,10 +34,6 @@ void i2c_device_destroy(i2c_device_t self);
 #endif // OS_MALLOC
 
 int i2c_device_init(i2c_device_t self, i2c_bus_t bus, uint8_t addr);
-int i2c_device_write_byte(i2c_device_t self, uint8_t reg, const uint8_t byte);
-int i2c_device_write_bytes(i2c_device_t self, uint8_t reg, const void *data, unsigned int length);
-int i2c_device_read_byte(i2c_device_t self, uint8_t reg, uint8_t *data);
-int i2c_device_read_bytes(i2c_device_t self, uint8_t reg, void *data, unsigned int length);
 int i2c_device_transaction(i2c_device_t self, const void * out, unsigned int wr, void * in, unsigned int rd, unsigned int timeout);
 
 #endif // __I2C_API_H__
