@@ -266,7 +266,7 @@ void st7735_draw_char(st7735_t self, unsigned int x, unsigned int y, const char 
             for (unsigned int dx = 0 ; dx < ST7735_CHARSET_WIDTH ; dx++)
             {
                 uint8_t b = raw[dx];
-                st7735_color_t px = IS_SET_BIT(b, dy) ? self->foreground_color : self->background_color;
+                st7735_color_t px = CHECK_BIT(b, dy) ? self->foreground_color : self->background_color;
 
                 for (unsigned int j = 0 ; j < SCALE ; j++)
                 {
@@ -324,7 +324,7 @@ static st7735_color_t ST7735_RenderXbm(unsigned int x, unsigned int y, unsigned 
     XbmRendererData *d = TYPECAST(data, XbmRendererData*);
     uint8_t bw = (w+7)/8; // Number of bytes per line
     uint8_t b = d->bits[y*bw + x/8];
-    return IS_SET_BIT(b, x % 8) ? d->fg_color : d->bg_color;
+    return CHECK_BIT(b, x % 8) ? d->fg_color : d->bg_color;
 }
 
 void st7735_draw_xbm(st7735_t self, st7735_xbm_t *bits, unsigned int x, unsigned int y, unsigned int w, unsigned int h)

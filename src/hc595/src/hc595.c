@@ -38,7 +38,7 @@ int hc595_write(hc595_t self, void * data, int len)
     {
         for (int j = 7 ; j >= 0 ; j--)
         {
-            bool st = IS_SET_BIT(bytes[i], j);
+            bool st = CHECK_BIT(bytes[i], j);
 
             if (st) gpio_set(self->serial);
             else gpio_reset(self->serial);

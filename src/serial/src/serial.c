@@ -113,7 +113,7 @@ void serial_tx_irq_handler(usart_t usart)
 {
     if (tx[usart].sz > 0)
     {
-        uint8_t byte = READ_PU8(tx[usart].buf++);
+        uint8_t byte = *PU8(tx[usart].buf++);
         serial_ll_write(usart, byte);
         tx[usart].sz--;
     }
@@ -144,7 +144,7 @@ int serial_write_async(usart_t usart, const void *buffer, unsigned int length)
     tx[usart].sz = length-1;
 
     // Kickstart transmission
-    uint8_t b = READ_PU8(bytes);
+    uint8_t b = *PU8(bytes);
     serial_ll_write(usart, b);
 
     return SERIAL_OK;
@@ -169,7 +169,7 @@ int serial_write_bytes(usart_t usart, const void *buffer, unsigned int length)
         return -SERIAL_ERROR_INSTANCE;
 
     int written = 0;
-    uint8_t *bytes = UINT8_PTR(buffer);
+    uint8_t *bytes = PU8(buffer);
 
     while(length-- > 0) written += serial_write_byte(usart, *bytes++);
 
@@ -243,7 +243,7 @@ int serial_read_bytes(usart_t usart, void *buffer, unsigned int length)
         return -SERIAL_ERROR_INSTANCE;
 
     int received = 0;
-    uint8_t *bytes = UINT8_PTR(buffer);
+    uint8_t *bytes = PU8(buffer);
 
     while(length-- > 0) received += serial_read_byte(usart, bytes++);
 

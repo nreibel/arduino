@@ -343,7 +343,7 @@ int max31790_read_tachy(max31790_t self, max31790_tach_t tachy, unsigned int *va
 // {
 //     uint8_t reg = 0;
 //     i2c_device_read_byte(&dev, MAX31790_REG_GLOBAL_CONFIGURATION, &reg);
-//     *status = IS_SET_BIT(reg, 0);
+//     *status = CHECK_BIT(reg, 0);
 //     return Status_OK;
 // }
 //

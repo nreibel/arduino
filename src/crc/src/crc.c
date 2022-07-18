@@ -20,7 +20,7 @@ void CRC32_Update(uint8_t b, uint32_t *crc)
 
     for (int i = 0; i < 8; i++)
     {
-        if ( IS_SET_BIT(*crc, 31) )
+        if ( CHECK_BIT(*crc, 31) )
         {
             *crc = (*crc << 1) ^ CRC32_POLYNOMIAL;
         }

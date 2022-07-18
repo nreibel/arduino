@@ -325,7 +325,7 @@ static int pmbus_read_block(pmbus_t self, uint8_t reg, void * buf, unsigned int 
     const uint8_t addr = self->dev.addr;
 
     unsigned int wr = 0, rd = 0;
-    uint8_t *bytes = UINT8_PTR(buf);
+    uint8_t *bytes = PU8(buf);
     int err = I2C_LL_OK;
 
     err += i2c_ll_start_condition(twi);
@@ -366,7 +366,7 @@ static int pmbus_read_block(pmbus_t self, uint8_t reg, void * buf, unsigned int 
 // TODO : make macro
 static int twos_complement(unsigned int n, unsigned int b)
 {
-    return IS_SET_BIT(n, b-1) ? (int) n - (int) BIT(b) : (int) n;
+    return CHECK_BIT(n, b-1) ? (int) n - (int) BIT(b) : (int) n;
 }
 
 // Compute y * 2^n

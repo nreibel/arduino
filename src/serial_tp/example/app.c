@@ -21,14 +21,14 @@ void Serial_TP_Callback(Serial_TP_Request *req, Serial_TP_Response *rsp)
             {
                 case DATA_X:
                 {
-                    x = READ_PU8(req->data);
+                    x = *PU8(req->data);
                     rsp->status = SERIAL_TP_RETCODE_OK;
                     break;
                 }
 
                 case DATA_Y:
                 {
-                    y = READ_PU8(req->data);
+                    y = *PU8(req->data);
                     rsp->status = SERIAL_TP_RETCODE_OK;
                     break;
                 }
@@ -80,7 +80,7 @@ void Serial_TP_Callback(Serial_TP_Request *req, Serial_TP_Response *rsp)
         }
     }
 }
-        
+
 // App entry point
 void App_Init()
 {

@@ -76,7 +76,7 @@ int max31865_read_rtd(max31865_t *self, double *rtd, bool *fault)
         return -1;
     }
 
-    *fault = IS_SET_BIT(lsb, 0) ? true : false;
+    *fault = CHECK_BIT(lsb, 0) ? true : false;
 
     uint16_t w = (msb << 8) | lsb;
     *rtd = (MAX31865_RES_REF * TYPECAST(w >> 1, double)) / MAX31865_ADC_RESOLUTION;

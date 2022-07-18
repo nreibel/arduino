@@ -147,7 +147,7 @@ uint16_t icp_ll_capture_edge(icp_t icp, bool rising)
     SET_BIT(TIFR1, ICF1);
 
     // Wait for next interrupt
-    while (!IS_SET_BIT(TIFR1, ICF1));
+    while (!CHECK_BIT(TIFR1, ICF1));
 
     return icp->icr;
 }
@@ -155,7 +155,7 @@ uint16_t icp_ll_capture_edge(icp_t icp, bool rising)
 bool icp_ll_is_ovf(icp_t icp)
 {
     UNUSED(icp);
-    return IS_SET_BIT(TIFR1, TOV1);
+    return CHECK_BIT(TIFR1, TOV1);
 }
 
 void icp_ll_clear_ovf(icp_t icp)

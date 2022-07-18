@@ -12,7 +12,7 @@ bool max31855_get_temperature(max31855_t *self, float *temperature)
 {
     uint8_t bytes[2] = {0};
     spi_device_read_bytes(&self->spi_device, bytes, 2);
-    if (IS_SET_BIT(bytes[1], 0)) return false;
+    if (CHECK_BIT(bytes[1], 0)) return false;
 
     float ipart = (bytes[0] << 4) + (bytes[1] >> 4);
     float fpart = ((bytes[1] >> 2) & 0x3) / 4.0;

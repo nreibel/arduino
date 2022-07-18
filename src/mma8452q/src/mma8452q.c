@@ -77,7 +77,7 @@ void MMA8452Q_GetData(MMA8452Q_Data_t* buffer)
     I2C_Master_ReadSync(MMA8452Q_I2C_ADDR, MMA8452Q_OUT_X_MSB, buffer, sizeof(MMA8452Q_Data_t));
 
 #if MMA8452Q_READ_MODE_FAST != ON
-    uint8_t *b = UINT8_PTR(buffer);
+    uint8_t *b = PU8(buffer);
 
     buffer->acc_x = (b[0] << 4) | (b[1] >> 4);
     buffer->acc_y = (b[2] << 4) | (b[3] >> 4);
@@ -98,7 +98,7 @@ void MMA8452Q_GetInterruptStatus(uint8_t* mask)
 
     while(int_source != 0)
     {
-        if ( IS_SET_BIT(int_source, 0) )
+        if ( CHECK_BIT(int_source, 0) )
         {
             switch(bit)
             {
