@@ -25,57 +25,10 @@ int i2c_bus_init(i2c_bus_t self, twi_t twi, bool fast_mode)
     return I2C_OK;
 }
 
-#if 0
-int i2c_bus_write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, unsigned int length)
-{
-    int err = 0;
-    unsigned int written = 0;
-    const uint8_t *bytes = data;
-
-    err += i2c_ll_start_condition(self->instance);
-    err += i2c_ll_slave_write(self->instance, addr);
-    written += i2c_ll_write(self->instance, reg);
-
-    for(unsigned int i = 0 ; i < length ; i++)
-        written += i2c_ll_write(self->instance, bytes[i]);
-
-    err += i2c_ll_stop_condition(self->instance);
-
-    if (err != 0 || written != length+1)
-        return -I2C_ERR_SEQ;
-
-    return length;
-}
-
-int i2c_bus_read(i2c_bus_t self, uint8_t addr, uint8_t reg, void * data, unsigned int length)
-{
-    int err = 0;
-    unsigned int written = 0;
-    unsigned int read = 0;
-    uint8_t *bytes = data;
-
-    err += i2c_ll_start_condition(self->instance);
-    err += i2c_ll_slave_write(self->instance, addr);
-    written += i2c_ll_write(self->instance, reg);
-    err += i2c_ll_restart_condition(self->instance);
-    err += i2c_ll_slave_read(self->instance, addr);
-
-    while(read < length-1)
-        read += i2c_ll_read_ack(self->instance, &bytes[read]);
-
-    read += i2c_ll_read_nack(self->instance, &bytes[read]);
-    err += i2c_ll_stop_condition(self->instance);
-
-    if (err != 0 || written != 1 || read != length)
-        return -I2C_ERR_SEQ;
-
-    return length;
-}
-#endif
-
 int i2c_bus_transaction(i2c_bus_t self, uint8_t addr, const void * out, unsigned int wr, void * in, unsigned int rd, unsigned int timeout)
 {
     int err = I2C_LL_OK;
+
     unsigned int nb_written = 0;
     unsigned int nb_read = 0;
     uint8_t * b_in = in;

@@ -1,6 +1,7 @@
 #include "pmbus.h"
 #include "i2c.h"
 #include "bits.h"
+#include "i2c_ll.h"
 #include "os_mem.h"
 
 /*
@@ -323,7 +324,7 @@ static int pmbus_read_block(pmbus_t self, uint8_t reg, void * buf, unsigned int 
     const twi_t twi = self->dev.bus->instance;
     const uint8_t addr = self->dev.addr;
 
-    unsigned int wr = 0, rd = 0, len = 0;
+    unsigned int wr = 0, rd = 0;
     uint8_t *bytes = UINT8_PTR(buf);
     int err = I2C_LL_OK;
 
@@ -334,14 +335,20 @@ static int pmbus_read_block(pmbus_t self, uint8_t reg, void * buf, unsigned int 
     err += i2c_ll_slave_read(twi, addr);
 
     // First byte is string length
-    rd += i2c_ll_read_ack(twi, bytes);
-    len = READ_PU8(bytes);
+    uint8_t len = 0;
+    rd += i2c_ll_read_ack(twi, &len);
 
     if (err != I2C_LL_OK)
+    {
+        i2c_ll_reset_bus(twi);
         return -PMBUS_ERROR_IO;
+    }
 
     if (len > sz)
+    {
+        i2c_ll_reset_bus(twi);
         return -PMBUS_ERROR;
+    }
 
     while(rd < len)
         rd += i2c_ll_read_ack(twi, bytes++);
@@ -350,7 +357,7 @@ static int pmbus_read_block(pmbus_t self, uint8_t reg, void * buf, unsigned int 
 
     err += i2c_ll_stop_condition(twi);
 
-    if (err != I2C_LL_OK || wr != 1 || rd != len+1)
+    if (err != I2C_LL_OK || wr != 1 || rd != len+1u)
         return -PMBUS_ERROR_IO;
 
     return len;
