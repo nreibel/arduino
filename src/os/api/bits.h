@@ -6,7 +6,7 @@
 #define ABS(v)           ((v) >= 0 ? (v) : -(v))
 
 // Returns a mask with the bit at rank x set
-#define BIT(x)               (1ULL << (x))
+#define BIT(x)               (1U << (x))
 
 // Apply mask
 #define MASK(x, m)           ((x) & (m))
