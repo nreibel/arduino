@@ -8,6 +8,12 @@
 #include "stdlib.h"
 
 /*
+ * Private defines
+ */
+
+#define ADDR(var) TYPECAST(&(var), unsigned int)
+
+/*
  * Private functions prototypes
  */
 
