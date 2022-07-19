@@ -33,20 +33,22 @@ static uint8_t * rx_ptr;
 static unsigned int rx_len;
 static unsigned int rx_cnt;
 
-void i2c_ll_set_rx_buffer(twi_t twi, void * buffer, unsigned int len)
+int i2c_ll_set_rx_buffer(twi_t twi, void * buffer, unsigned int len)
 {
     UNUSED(twi);
 
     rx_ptr = buffer;
     rx_len = len;
+    return I2C_LL_OK;
 }
 
-void i2c_ll_set_tx_buffer(twi_t twi, const void * buffer, unsigned int len)
+int i2c_ll_set_tx_buffer(twi_t twi, const void * buffer, unsigned int len)
 {
     UNUSED(twi);
 
     tx_ptr = buffer;
     tx_len = len;
+    return I2C_LL_OK;
 }
 
 ISR(TWI_vect)
@@ -173,18 +175,22 @@ ISR(TWI_vect)
  * Exported functions
  */
 
-int i2c_ll_init_master(twi_t twi, bool fast_mode)
+int i2c_ll_init_master(twi_t twi, i2c_ll_clk_t clk)
 {
     power_twi_enable();
 
-    // Reset device
+    uint8_t twbr = 0;
+
+    switch(clk)
+    {
+        case I2C_LL_100KHZ: twbr = 72; break;
+        case I2C_LL_400KHZ: twbr = 12; break;
+        default: return -I2C_LL_ERR_PARAMETER;
+    }
+
     twi->twcr.reg = 0;
-
-    // Prescaler = 1
     twi->twsr.bits.twps = I2C_LL_PSCL_1;
-
-    // Formula is ((F_CPU/F_I2C)-16)/2;
-    twi->twbr = fast_mode ? 12 /* 400kHz */ : 72 /* 100kHz */;
+    twi->twbr = twbr;
 
     return I2C_LL_OK;
 }
@@ -192,7 +198,7 @@ int i2c_ll_init_master(twi_t twi, bool fast_mode)
 int i2c_ll_init_slave(twi_t twi, uint8_t addr)
 {
     if (addr > 0x7f)
-        return -I2C_LL_SLAVE_ADDRESS;
+        return -I2C_LL_ERR_PARAMETER;
 
     power_twi_enable();
 
@@ -217,7 +223,7 @@ int i2c_ll_wait_int(twi_t twi, unsigned int ms)
 
     do {
         time_t diff = os_millis() - start;
-        if (diff > ms) return -I2C_LL_TIMEOUT;
+        if (diff > ms) return -I2C_LL_ERR_TIMEOUT;
     }
     while(!twi->twcr.bits.twint);
 
@@ -230,7 +236,7 @@ int i2c_ll_wait_stop(twi_t twi, unsigned int ms)
 
     do {
         time_t diff = os_millis() - start;
-        if (diff > ms) return -I2C_LL_TIMEOUT;
+        if (diff > ms) return -I2C_LL_ERR_TIMEOUT;
     }
     while(twi->twcr.bits.twsto);
 
@@ -264,7 +270,7 @@ int i2c_ll_start_condition(twi_t twi)
             return I2C_LL_OK;
 
         default:
-            return -I2C_LL_FAIL;
+            return -I2C_LL_ERR_STATUS;
     }
 }
 
@@ -289,7 +295,7 @@ int i2c_ll_restart_condition(twi_t twi)
             return I2C_LL_OK;
 
         default:
-            return -I2C_LL_FAIL;
+            return -I2C_LL_ERR_STATUS;
     }
 }
 
@@ -329,7 +335,7 @@ int i2c_ll_slave_write(twi_t twi, uint8_t addr)
             return I2C_LL_OK;
 
         default:
-            return -I2C_LL_FAIL;
+            return -I2C_LL_ERR_STATUS;
     }
 }
 
@@ -354,7 +360,7 @@ int i2c_ll_slave_read(twi_t twi, uint8_t addr)
             return I2C_LL_OK;
 
         default:
-            return -I2C_LL_FAIL;
+            return -I2C_LL_ERR_STATUS;
     }
 }
 
@@ -381,7 +387,7 @@ int i2c_ll_write(twi_t twi, uint8_t data)
             return 1;
 
         default:
-            return -I2C_LL_FAIL;
+            return -I2C_LL_ERR_STATUS;
     }
 }
 
@@ -407,7 +413,7 @@ int i2c_ll_read_ack(twi_t twi, uint8_t *data)
             return 1;
 
         default:
-            return -I2C_LL_FAIL;
+            return -I2C_LL_ERR_STATUS;
     }
 }
 
@@ -432,6 +438,6 @@ int i2c_ll_read_nack(twi_t twi, uint8_t *data)
             return 1;
 
         default:
-            return -I2C_LL_FAIL;
+            return -I2C_LL_ERR_STATUS;
     }
 }

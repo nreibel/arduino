@@ -14,13 +14,12 @@ int i2c_bus_init(i2c_bus_t self, twi_t twi, bool fast_mode)
 {
     int err = 0;
 
-    err += i2c_ll_init_master(twi, fast_mode);
+    err += i2c_ll_init_master(twi, fast_mode ? I2C_LL_400KHZ : I2C_LL_100KHZ);
 
     if (err != 0)
         return -I2C_ERR;
 
     self->instance = twi;
-    self->fast_mode = fast_mode;
 
     return I2C_OK;
 }

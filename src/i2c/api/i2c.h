@@ -15,7 +15,6 @@ enum {
 
 typedef struct i2c_bus_prv_s {
     twi_t instance;
-    bool fast_mode;
 } * i2c_bus_t;
 
 typedef struct i2c_device_prv_s {
@@ -24,8 +23,6 @@ typedef struct i2c_device_prv_s {
 } * i2c_device_t;
 
 int i2c_bus_init(i2c_bus_t self, twi_t twi, bool fast_mode);
-// int i2c_bus_read(i2c_bus_t self, uint8_t addr, uint8_t reg, void *data, unsigned int length);
-// int i2c_bus_write(i2c_bus_t self, uint8_t addr, uint8_t reg, const void *data, unsigned int length);
 int i2c_bus_transaction(i2c_bus_t self, uint8_t addr, const void * out, unsigned int wr, void * in, unsigned int rd, unsigned int timeout);
 
 #if OS_MALLOC

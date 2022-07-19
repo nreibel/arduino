@@ -5,9 +5,9 @@
 
 enum {
     I2C_LL_OK = 0,
-    I2C_LL_FAIL,
-    I2C_LL_TIMEOUT,
-    I2C_LL_SLAVE_ADDRESS
+    I2C_LL_ERR_PARAMETER,
+    I2C_LL_ERR_STATUS,
+    I2C_LL_ERR_TIMEOUT,
 };
 
 typedef enum {
@@ -21,6 +21,11 @@ typedef enum {
     I2C_EVENT_RX_ERROR,
     I2C_EVENT_TX_ERROR,
 } i2c_event_t;
+
+typedef enum {
+    I2C_LL_100KHZ,
+    I2C_LL_400KHZ,
+} i2c_ll_clk_t;
 
 enum {
     I2C_LL_PSCL_1  = 0x0,
@@ -67,10 +72,10 @@ typedef struct {
 extern void i2c_ll_callback(twi_t twi, i2c_event_t event, unsigned int size);
 
 // I2C Slave RX/TX Buffers
-void i2c_ll_set_rx_buffer(twi_t twi, void * buffer, unsigned int len);
-void i2c_ll_set_tx_buffer(twi_t twi, const void * buffer, unsigned int len);
+int i2c_ll_set_rx_buffer(twi_t twi, void * buffer, unsigned int len);
+int i2c_ll_set_tx_buffer(twi_t twi, const void * buffer, unsigned int len);
 
-int i2c_ll_init_master(twi_t bus, bool fast_mode);
+int i2c_ll_init_master(twi_t bus, i2c_ll_clk_t clk);
 int i2c_ll_init_slave(twi_t twi, uint8_t addr);
 
 int i2c_ll_wait_int(twi_t bus, unsigned int ms);
