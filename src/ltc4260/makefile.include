@@ -1,0 +1,2 @@
+INCLUDES += $(SRC_DIR)/ltc4260/api
+SOURCES += $(SRC_DIR)/ltc4260/src/ltc4260.c
