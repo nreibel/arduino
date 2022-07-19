@@ -10,6 +10,18 @@ enum {
     I2C_LL_SLAVE_ADDRESS
 };
 
+typedef enum {
+    I2C_EVENT_RX_START,
+    I2C_EVENT_TX_START,
+    I2C_EVENT_RX_MORE,
+    I2C_EVENT_TX_MORE,
+    I2C_EVENT_RX_COMPLETE,
+    I2C_EVENT_TX_COMPLETE,
+    I2C_EVENT_ERROR,
+    I2C_EVENT_RX_ERROR,
+    I2C_EVENT_TX_ERROR,
+} i2c_event_t;
+
 enum {
     I2C_LL_PSCL_1  = 0x0,
     I2C_LL_PSCL_4  = 0x1,
@@ -51,10 +63,12 @@ typedef struct {
 
 #define TWI0 TYPECAST(0xB8, twi_t)
 
-// RX callbacks
-extern void i2c_ll_cbk_rx(twi_t bus, uint8_t *buffer, unsigned int length);
-extern uint8_t i2c_ll_cbk_tx(twi_t bus, unsigned int offset);
-extern void i2c_ll_cbk_err(twi_t bus, uint8_t status);
+// I2C Slave Callback
+extern void i2c_ll_callback(twi_t twi, i2c_event_t event, unsigned int size);
+
+// I2C Slave RX/TX Buffers
+void i2c_ll_set_rx_buffer(twi_t twi, void * buffer, unsigned int len);
+void i2c_ll_set_tx_buffer(twi_t twi, const void * buffer, unsigned int len);
 
 int i2c_ll_init_master(twi_t bus, bool fast_mode);
 int i2c_ll_init_slave(twi_t twi, uint8_t addr);
