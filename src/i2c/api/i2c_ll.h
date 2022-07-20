@@ -17,9 +17,8 @@ typedef enum {
     I2C_EVENT_TX_MORE,
     I2C_EVENT_RX_COMPLETE,
     I2C_EVENT_TX_COMPLETE,
-    I2C_EVENT_ERROR,
-    I2C_EVENT_RX_ERROR,
-    I2C_EVENT_TX_ERROR,
+    I2C_EVENT_SEQ_ERROR,
+    I2C_EVENT_BUS_ERROR,
 } i2c_event_t;
 
 typedef enum {

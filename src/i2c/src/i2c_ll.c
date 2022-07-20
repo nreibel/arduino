@@ -84,9 +84,13 @@ ISR(TWI_vect)
                     state = STATE_TX;
                     break;
 
+                // Illegal start or stop condition
+                case TW_BUS_ERROR:
+                    i2c_ll_callback(TWI0, I2C_EVENT_BUS_ERROR, 0);
+                    break;
+
                 default:
-                    i2c_ll_callback(TWI0, I2C_EVENT_ERROR, 0);
-                    state = STATE_IDLE;
+                    i2c_ll_callback(TWI0, I2C_EVENT_SEQ_ERROR, 0);
                     break;
             }
 
@@ -116,7 +120,7 @@ ISR(TWI_vect)
                     break;
 
                 default:
-                    i2c_ll_callback(TWI0, I2C_EVENT_RX_ERROR, rx_cnt);
+                    i2c_ll_callback(TWI0, I2C_EVENT_SEQ_ERROR, 0);
                     state = STATE_IDLE;
                     break;
             }
@@ -146,7 +150,7 @@ ISR(TWI_vect)
                     break;
 
                 default:
-                    i2c_ll_callback(TWI0, I2C_EVENT_TX_ERROR, tx_cnt);
+                    i2c_ll_callback(TWI0, I2C_EVENT_SEQ_ERROR, 0);
                     state = STATE_IDLE;
                     break;
             }
