@@ -103,41 +103,41 @@ int pmbus_init(pmbus_t self, i2c_bus_t bus, uint8_t addr)
 int pmbus_read_fanspeed(pmbus_t self, unsigned int * fanspeed)
 {
     double data;
-    int res = pmbus_read_linear11(self, CMD_READ_FAN_SPEED_1, &data);
+    int res = pmbus_read_linear11(self, PMBUS_READ_FAN_SPEED_1, &data);
     if (res >= 0) *fanspeed = data;
     return res;
 }
 
 int pmbus_read_mfr_model(pmbus_t self, char *buffer, unsigned int len)
 {
-    int res = pmbus_read_block(self, CMD_MFR_MODEL, buffer, len-1);
+    int res = pmbus_read_block(self, PMBUS_MFR_MODEL, buffer, len-1);
     if (res >= 0) buffer[res] = '\0';
     return res;
 }
 
 int pmbus_read_temperature(pmbus_t self, double *temperature)
 {
-    return pmbus_read_linear11(self, CMD_READ_TEMPERATURE_1, temperature);
+    return pmbus_read_linear11(self, PMBUS_READ_TEMPERATURE_1, temperature);
 }
 
 int pmbus_read_vin(pmbus_t self, double *vin)
 {
-    return pmbus_read_linear11(self, CMD_READ_VIN, vin);
+    return pmbus_read_linear11(self, PMBUS_READ_VIN, vin);
 }
 
 int pmbus_read_iin(pmbus_t self, double *iin)
 {
-    return pmbus_read_linear11(self, CMD_READ_IIN, iin);
+    return pmbus_read_linear11(self, PMBUS_READ_IIN, iin);
 }
 
 int pmbus_read_pin(pmbus_t self, double *pin)
 {
-    return pmbus_read_linear11(self, CMD_READ_PIN, pin);
+    return pmbus_read_linear11(self, PMBUS_READ_PIN, pin);
 }
 
 int pmbus_read_iout(pmbus_t self, double *iout)
 {
-    return pmbus_read_linear11(self, CMD_READ_IOUT, iout);
+    return pmbus_read_linear11(self, PMBUS_READ_IOUT, iout);
 }
 
 int pmbus_read_vout(pmbus_t self, double * vout)
@@ -145,7 +145,7 @@ int pmbus_read_vout(pmbus_t self, double * vout)
     uint16_t data = 0;
     int res = 0;
 
-    res = pmbus_read_u16(self, CMD_READ_VOUT, &data);
+    res = pmbus_read_u16(self, PMBUS_READ_VOUT, &data);
     if (res < 0) return res;
 
     res = pmbus_vout_decode(self, data, vout);
@@ -156,47 +156,47 @@ int pmbus_read_vout(pmbus_t self, double * vout)
 
 int pmbus_read_pout(pmbus_t self, double *pout)
 {
-    return pmbus_read_linear11(self, CMD_READ_POUT, pout);
+    return pmbus_read_linear11(self, PMBUS_READ_POUT, pout);
 }
 
 int pmbus_read_blackbox(pmbus_t self, pmbus_blackbox_t * data)
 {
-    return pmbus_read_block(self, CMD_MFR_BLACKBOX, data, sizeof(pmbus_blackbox_t));
+    return pmbus_read_block(self, PMBUS_MFR_BLACKBOX, data, sizeof(pmbus_blackbox_t));
 }
 
 int pmbus_read_status_word(pmbus_t self, pmbus_status_word_t * value)
 {
-    return pmbus_read_u16(self, CMD_STATUS_VOUT, &value->raw);
+    return pmbus_read_u16(self, PMBUS_STATUS_VOUT, &value->raw);
 }
 
 int pmbus_read_status_vout(pmbus_t self, pmbus_status_vout_t * value)
 {
-    return pmbus_read_u8(self, CMD_STATUS_VOUT, &value->raw);
+    return pmbus_read_u8(self, PMBUS_STATUS_VOUT, &value->raw);
 }
 
 int pmbus_read_status_iout(pmbus_t self, pmbus_status_iout_t * value)
 {
-    return pmbus_read_u8(self, CMD_STATUS_IOUT, &value->raw);
+    return pmbus_read_u8(self, PMBUS_STATUS_IOUT, &value->raw);
 }
 
 int pmbus_read_status_input(pmbus_t self, pmbus_status_input_t * value)
 {
-    return pmbus_read_u8(self, CMD_STATUS_INPUT, &value->raw);
+    return pmbus_read_u8(self, PMBUS_STATUS_INPUT, &value->raw);
 }
 
 int pmbus_read_status_temperature(pmbus_t self, pmbus_status_temperature_t * value)
 {
-    return pmbus_read_u8(self, CMD_STATUS_TEMPERATURE, &value->raw);
+    return pmbus_read_u8(self, PMBUS_STATUS_TEMPERATURE, &value->raw);
 }
 
 int pmbus_read_status_cml(pmbus_t self, pmbus_status_cml_t * value)
 {
-    return pmbus_read_u8(self, CMD_STATUS_CML, &value->raw);
+    return pmbus_read_u8(self, PMBUS_STATUS_CML, &value->raw);
 }
 
 int pmbus_read_status_fans_1_2(pmbus_t self, pmbus_status_fans_t * value)
 {
-    return pmbus_read_u8(self, CMD_STATUS_FANS_1_2, &value->raw);
+    return pmbus_read_u8(self, PMBUS_STATUS_FANS_1_2, &value->raw);
 }
 
 double pmbus_linear11_decode(uint16_t data)
@@ -247,7 +247,7 @@ int pmbus_vout_decode(pmbus_t self, uint16_t raw, double *value)
 {
     if (self->vout_mode == 0xFF)
     {
-        int res = pmbus_read_u8(self, CMD_VOUT_MODE, &self->vout_mode);
+        int res = pmbus_read_u8(self, PMBUS_VOUT_MODE, &self->vout_mode);
         if (res < 0) return -PMBUS_ERROR_IO;
     }
 
