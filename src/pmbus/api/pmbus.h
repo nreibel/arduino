@@ -19,6 +19,7 @@ enum {
     PMBUS_QUERY,
     /* ... */
     PMBUS_VOUT_MODE = 0x20,
+    PMBUS_VOUT_COMMAND,
     /* ... */
     PMBUS_VOUT_OV_FAULT_LIMIT = 0x40,
     PMBUS_VOUT_OV_FAULT_RESPONSE,
