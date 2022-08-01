@@ -1,0 +1,2 @@
+INCLUDES += $(SRC_DIR)/mcp40d1x/api
+SOURCES += $(SRC_DIR)/mcp40d1x/src/mcp40d1x.c
