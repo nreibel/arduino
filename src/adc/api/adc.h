@@ -38,7 +38,8 @@ typedef enum {
     ADC_CHANNEL_4,
     ADC_CHANNEL_5,
     ADC_CHANNEL_6,
-    ADC_CHANNEL_7
+    ADC_CHANNEL_7,
+    NUMBER_OF_ADC_CHANNELS
 } adc_channel_t;
 
 typedef enum {
