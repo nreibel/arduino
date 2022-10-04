@@ -10,6 +10,9 @@
 // Should be big enough to accomodate the biggest message to be received
 #define SERIAL_RECEIVE_BUFFER_LENGTH 32
 
+// Write received bytes back (for local echo)
+#define SERIAL_ECHO OFF
+
 // Name of the task to use to handle RX callbacks
 // If not defined, RX callbacks are called from the interrupt handler
 // #define SERIAL_WORKER_TASK TASK_SERIAL_WORKER

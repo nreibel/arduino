@@ -79,6 +79,11 @@ void serial_rx_irq_handler(usart_t usart)
 {
     uint8_t data = serial_ll_read(usart);
 
+#if SERIAL_ECHO
+    serial_ll_write(usart, data);
+    serial_ll_wait_tx(usart);
+#endif
+
     if ( rx[usart].sz >= SERIAL_RECEIVE_BUFFER_LENGTH )
     {
         serial_rx_overflow(usart);
