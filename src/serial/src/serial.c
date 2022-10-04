@@ -84,11 +84,7 @@ void serial_rx_irq_handler(usart_t usart)
     serial_ll_wait_tx(usart);
 #endif
 
-    if ( rx[usart].sz >= SERIAL_RECEIVE_BUFFER_LENGTH )
-    {
-        serial_rx_overflow(usart);
-    }
-    else if (data == SERIAL_LINE_TERMINATOR)
+    if (data == SERIAL_LINE_TERMINATOR)
     {
         // Terminate string
         rx[usart].buf[rx[usart].sz++] = 0;
@@ -103,6 +99,10 @@ void serial_rx_irq_handler(usart_t usart)
         rx[usart].sz = 0;
 #endif // SERIAL_WORKER_TASK
 
+    }
+    else if ( rx[usart].sz >= SERIAL_RECEIVE_BUFFER_LENGTH )
+    {
+        serial_rx_overflow(usart);
     }
     else
     {
