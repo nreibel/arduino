@@ -79,11 +79,6 @@ void serial_rx_irq_handler(usart_t usart)
 {
     uint8_t data = serial_ll_read(usart);
 
-#if SERIAL_ECHO
-    serial_ll_write(usart, data);
-    serial_ll_wait_tx(usart);
-#endif
-
     if (data == SERIAL_LINE_TERMINATOR)
     {
         // Terminate string
@@ -107,6 +102,11 @@ void serial_rx_irq_handler(usart_t usart)
     else
     {
         rx[usart].buf[rx[usart].sz++] = data;
+
+#if SERIAL_ECHO
+        serial_ll_write(usart, data);
+        // serial_ll_wait_tx(usart);
+#endif
     }
 }
 
