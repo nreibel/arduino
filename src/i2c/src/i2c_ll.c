@@ -33,6 +33,14 @@ static uint8_t * rx_ptr;
 static unsigned int rx_len;
 static unsigned int rx_cnt;
 
+__attribute((weak))
+void i2c_ll_callback(twi_t twi, i2c_event_t event, unsigned int size)
+{
+    UNUSED(twi);
+    UNUSED(event);
+    UNUSED(size);
+}
+
 int i2c_ll_set_rx_buffer(twi_t twi, void * buffer, unsigned int len)
 {
     UNUSED(twi);
