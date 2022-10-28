@@ -74,7 +74,7 @@ int max31790_init(max31790_t self, i2c_bus_t bus, uint8_t addr)
 
     // Write new config
     uint8_t data[2] = { MAX31790_REG_GLOBAL_CONFIGURATION, cfg };
-    ret = i2c_device_transaction(&self->dev, data, 2, NULL_PTR, 0, 10);
+    ret = i2c_device_transaction(&self->dev, data, 2, NULL_PTR, 0);
     if (ret < 0) return ret;
 
     return MAX31790_OK;
@@ -101,7 +101,7 @@ int max31790_set_frequency(max31790_t self, max31790_frequency_t freq)
         default: return -MAX31790_INVALID_ARGUMENT;
     }
 
-    int ret = i2c_device_transaction(&self->dev, data, 2, NULL_PTR, 0, 10);
+    int ret = i2c_device_transaction(&self->dev, data, 2, NULL_PTR, 0);
     if (ret < 0) return ret;
 
     return MAX31790_OK;
@@ -112,7 +112,7 @@ int max31790_set_watchdog(max31790_t self, max31790_watchdog_t watchdog)
     int res = 0;
 
     uint8_t cfg = MAX31790_REG_GLOBAL_CONFIGURATION;
-    res = i2c_device_transaction(&self->dev, &cfg, 1, &cfg, 1, 10);
+    res = i2c_device_transaction(&self->dev, &cfg, 1, &cfg, 1);
     if (res < 0) return res;
 
     switch(watchdog)
@@ -125,7 +125,7 @@ int max31790_set_watchdog(max31790_t self, max31790_watchdog_t watchdog)
     }
 
     uint8_t data[2] = { MAX31790_REG_GLOBAL_CONFIGURATION, cfg };
-    res = i2c_device_transaction(&self->dev, data, 2, NULL_PTR, 0, 10);
+    res = i2c_device_transaction(&self->dev, data, 2, NULL_PTR, 0);
     if (res < 0) return res;
 
     return MAX31790_OK;
@@ -136,13 +136,13 @@ int max31790_clear_watchdog(max31790_t self)
     int res = 0;
 
     uint8_t cfg = MAX31790_REG_GLOBAL_CONFIGURATION;
-    res = i2c_device_transaction(&self->dev, &cfg, 1, &cfg, 1, 10);
+    res = i2c_device_transaction(&self->dev, &cfg, 1, &cfg, 1);
     if (res < 0) return res;
 
     RESET_BIT(cfg, 0);
 
     uint8_t data[2] = { MAX31790_REG_GLOBAL_CONFIGURATION, cfg };
-    res = i2c_device_transaction(&self->dev, data, 2, NULL_PTR, 0, 10);
+    res = i2c_device_transaction(&self->dev, data, 2, NULL_PTR, 0);
     if (res < 0) return res;
 
     return MAX31790_OK;
@@ -189,7 +189,7 @@ int max31790_set_fan_mode(max31790_t self, max31790_fan_t fan, max31790_mode_t m
         default: return -MAX31790_INVALID_ARGUMENT;
     }
 
-    int res = i2c_device_transaction(&self->dev, data, 2, NULL_PTR, 0, 10);
+    int res = i2c_device_transaction(&self->dev, data, 2, NULL_PTR, 0);
     if (res < 0) return res;
 
     self->mode[fan] = mode;
@@ -234,7 +234,7 @@ int max31790_set_target_rpm(max31790_t self, max31790_fan_t fan, unsigned int rp
     data[1] = rpm >> 3;
     data[2] = rpm << 5;
 
-    int res = i2c_device_transaction(&self->dev, data, 3, NULL_PTR, 0, 10);
+    int res = i2c_device_transaction(&self->dev, data, 3, NULL_PTR, 0);
     if (res < 0) return res;
 
     return MAX31790_OK;
@@ -258,7 +258,7 @@ int max31790_set_target_pwm(max31790_t self, max31790_fan_t fan, uint8_t pwm)
     if(self->mode[fan] != MAX31790_MODE_PWM)
         return -MAX31790_INVALID_MODE;
 
-    int res = i2c_device_transaction(&self->dev, data, 2, NULL_PTR, 0, 10);
+    int res = i2c_device_transaction(&self->dev, data, 2, NULL_PTR, 0);
     if (res < 0) return res;
 
     return MAX31790_OK;
@@ -305,7 +305,7 @@ int max31790_read_tachy(max31790_t self, max31790_tach_t tachy, unsigned int *va
     // TODO : read uint16_t
     uint8_t read[2];
 
-    int ret = i2c_device_transaction(&self->dev, &reg, 1, read, 2, 10);
+    int ret = i2c_device_transaction(&self->dev, &reg, 1, read, 2);
     if (ret < 0 || read[1] & 0x1F)
     {
         // Lower 5 bits always return zeros

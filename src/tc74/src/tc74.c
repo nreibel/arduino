@@ -57,12 +57,12 @@ int tc74_init(tc74_t self, i2c_bus_t bus, uint8_t addr)
     return TC74_OK;
 }
 
-int tc74_set_standby(tc74_t self, bool stdby, unsigned int timeout)
+int tc74_set_standby(tc74_t self, bool stdby)
 {
     int err = I2C_OK;
 
     uint8_t cr = TC74_REG_RWCR;
-    err += i2c_device_transaction(&self->dev, &cr, 1, &cr, 1, timeout);
+    err += i2c_device_transaction(&self->dev, &cr, 1, &cr, 1);
 
     if (err != I2C_OK)
         return -TC74_ERR_BUS;
@@ -71,7 +71,7 @@ int tc74_set_standby(tc74_t self, bool stdby, unsigned int timeout)
     else RESET_BIT(cr, 7);
 
     uint8_t buf[2] = { TC74_REG_RWCR, cr };
-    err += i2c_device_transaction(&self->dev, buf, 2, NULL_PTR, 0, timeout);
+    err += i2c_device_transaction(&self->dev, buf, 2, NULL_PTR, 0);
 
     if (err != I2C_OK)
         return -TC74_ERR_BUS;
@@ -79,12 +79,12 @@ int tc74_set_standby(tc74_t self, bool stdby, unsigned int timeout)
     return TC74_OK;
 }
 
-int tc74_read_temperature(tc74_t self, int * temp, unsigned int timeout)
+int tc74_read_temperature(tc74_t self, int * temp)
 {
     int err = I2C_OK;
     uint8_t buf = TC74_REG_RTR;
 
-    err += i2c_device_transaction(&self->dev, &buf, 1, &buf, 1, timeout);
+    err += i2c_device_transaction(&self->dev, &buf, 1, &buf, 1);
 
     if (err != I2C_OK)
         return -TC74_ERR_BUS;

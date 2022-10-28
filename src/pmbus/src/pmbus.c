@@ -284,28 +284,28 @@ int pmbus_vout_decode(pmbus_t self, uint16_t raw, double *value)
 static int pmbus_write_u8(pmbus_t self, uint8_t reg, uint8_t value)
 {
     uint8_t data[2] = {reg, value};
-    int res = i2c_device_transaction(&self->dev, data, 2, NULL_PTR, 0, 10);
+    int res = i2c_device_transaction(&self->dev, data, 2, NULL_PTR, 0);
     if (res < 0) return -PMBUS_ERROR_IO;
     return 1;
 }
 
 static int pmbus_read_u8(pmbus_t self, uint8_t reg, uint8_t * value)
 {
-    int res = i2c_device_transaction(&self->dev, &reg, 1, value, 1, 10);
+    int res = i2c_device_transaction(&self->dev, &reg, 1, value, 1);
     if (res < 0) return -PMBUS_ERROR_IO;
     return 1;
 }
 
 static int pmbus_read_u16(pmbus_t self, uint8_t reg, uint16_t * value)
 {
-    int res = i2c_device_transaction(&self->dev, &reg, 1, value, 2, 10);
+    int res = i2c_device_transaction(&self->dev, &reg, 1, value, 2);
     if (res < 0) return -PMBUS_ERROR_IO;
     return 2;
 }
 
 static int pmbus_read_u32(pmbus_t self, uint8_t reg, uint32_t * value)
 {
-    int res = i2c_device_transaction(&self->dev, &reg, 1, value, 4, 10);
+    int res = i2c_device_transaction(&self->dev, &reg, 1, value, 4);
     if (res < 0) return -PMBUS_ERROR_IO;
     return 4;
 }
@@ -313,7 +313,7 @@ static int pmbus_read_u32(pmbus_t self, uint8_t reg, uint32_t * value)
 static int pmbus_read_linear11(pmbus_t self, uint8_t reg, double *value)
 {
     uint16_t data = 0;
-    int res = i2c_device_transaction(&self->dev, &reg, 1, &data, 2, 10);
+    int res = i2c_device_transaction(&self->dev, &reg, 1, &data, 2);
     if (res < 0) return -PMBUS_ERROR_IO;
     *value = pmbus_linear11_decode(data);
     return 2;

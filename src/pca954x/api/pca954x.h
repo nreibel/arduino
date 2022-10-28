@@ -25,6 +25,18 @@ typedef struct pca954x_prv_s {
     uint8_t current;
 } * pca954x_t;
 
+
+typedef struct pca954x_bus_prv_s {
+
+    // Inherit from i2c_bus_t
+    struct i2c_bus_prv_s super;
+
+    // Attributes
+    pca954x_t parent;
+    uint8_t channel;
+
+} * pca954x_bus_t;
+
 /*
  * Exported functions
  */
@@ -35,6 +47,8 @@ void pca954x_destroy(pca954x_t self);
 #endif // OS_MALLOC
 
 int pca954x_init(pca954x_t self, i2c_bus_t parent, uint8_t addr);
-int pca954x_select(pca954x_t self, uint8_t bus, unsigned int timeout);
+int pca954x_select(pca954x_t self, uint8_t bus);
+
+int pca954x_bus_init(pca954x_bus_t self, pca954x_t parent, uint8_t channel);
 
 #endif // __PCA954X_API_H__
