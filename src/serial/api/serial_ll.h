@@ -2,7 +2,6 @@
 #define SERIAL_LL_API_H__
 
 #include "types.h"
-#include "usart.h"
 
 #define COLOR(c)    "\33[" #c "m"
 #define C_END       COLOR(0)
@@ -95,19 +94,20 @@ typedef struct {
     uint8_t  __reserved;
     uint16_t ubrr;
     uint8_t  udr;
-} volatile * mem_usart_t;
+} volatile * usart_t;
 
-extern void serial_tx_irq_handler(usart_t self);
-extern void serial_rx_irq_handler(usart_t self);
+extern void serial_tx_irq_handler(usart_t usart, void * context);
+extern void serial_rx_irq_handler(usart_t usart, void * context);
 
-void serial_ll_init(usart_t self, uint32_t baudrate);
-void serial_ll_power_enable(usart_t self);
-void serial_ll_reset(usart_t self);
-void serial_ll_set_tx_irq(usart_t self, bool enabled);
-void serial_ll_set_rx_irq(usart_t self, bool enabled);
-void serial_ll_wait_tx(usart_t self);
-void serial_ll_wait_rx(usart_t self);
-void serial_ll_write(usart_t self, uint8_t byte);
-uint8_t serial_ll_read(usart_t self);
+void serial_ll_init             (usart_t usart, uint32_t baudrate);
+void serial_ll_power_enable     (usart_t usart);
+void serial_ll_reset            (usart_t usart);
+void serial_ll_set_tx_irq       (usart_t usart, bool enabled);
+void serial_ll_set_rx_irq       (usart_t usart, bool enabled);
+void serial_ll_set_irq_context  (usart_t usart, void * context);
+void serial_ll_wait_tx          (usart_t usart);
+void serial_ll_wait_rx          (usart_t usart);
+void serial_ll_write            (usart_t usart, uint8_t byte);
+uint8_t serial_ll_read          (usart_t usart);
 
 #endif // SERIAL_LL_API_H__

@@ -1,11 +1,9 @@
-#ifndef USART_API_H__
-#define USART_API_H__
+#ifndef __USART_API_H__
+#define __USART_API_H__
 
+#include "serial_ll.h"
 #include "types.h"
 
-typedef enum {
-    USART0,
-    NUMBER_OF_USART
-} usart_t;
+#define USART0 TYPECAST(0xC0, const usart_t)
 
-#endif // USART_API_H__
+#endif // __USART_API_H__

@@ -1,280 +1,182 @@
-#include "os.h"
 #include "serial.h"
-#include "serial_cfg.h"
 #include "serial_ll.h"
 #include "types.h"
-
-#ifdef SERIAL_WORKER_TASK
-static int deferred_task_rx_cbk(void* data);
-#endif
+#include <string.h>
+#include <stdio.h>
 
 /*
- * Private data
+ * Interrupt handlers
  */
 
-#if SERIAL_ASYNC_RX
-static volatile struct {
-    bool ready;
-    char buf[SERIAL_RECEIVE_BUFFER_LENGTH];
-    unsigned int sz;
-} rx[NUMBER_OF_USART];
-#endif // SERIAL_ASYNC_RX
-
-#if SERIAL_ASYNC_TX
-static volatile struct {
-    const uint8_t *buf;
-    unsigned int sz;
-} tx[NUMBER_OF_USART];
-#endif // SERIAL_ASYNC_TX
-
-/*
- * Weak interrupt handlers
- */
-
-__attribute((weak))
-void serial_rx_callback(usart_t usart, volatile const char *buffer, unsigned int length)
+void serial_rx_irq_handler(usart_t usart, void * context)
 {
-    UNUSED(usart);
-    UNUSED(buffer);
-    UNUSED(length);
+    serial_instance_t self = (serial_instance_t) context;
+
+    const uint8_t data = serial_ll_read(usart);
+
+    if (data == self->ter)
+    {
+        self->rx.buf[self->rx.cnt] = 0;
+        self->cbk(self, SERIAL_EVENT_RX_LINE, self->rx.buf, self->rx.cnt);
+        self->rx.cnt = 0;
+    }
+    else if (self->rx.cnt >= self->rx.len-1)
+    {
+        self->rx.buf[self->rx.cnt] = 0;
+        self->cbk(self, SERIAL_EVENT_RX_OVERFLOW, self->rx.buf, self->rx.cnt);
+        self->rx.buf[0] = data;
+        self->rx.cnt = 1;
+    }
+    else
+    {
+        self->rx.buf[self->rx.cnt++] = data;
+        self->cbk(self, SERIAL_EVENT_RX_CHAR, &data, 1);
+    }
 }
 
-__attribute((weak))
-void serial_rx_overflow(usart_t usart)
+void serial_tx_irq_handler(usart_t usart, void * context)
 {
-    UNUSED(usart);
+    serial_instance_t self = (serial_instance_t) context;
+
+    if (self->tx.cnt < self->tx.len)
+    {
+        const uint8_t b = self->tx.buf[self->tx.cnt++];
+        serial_ll_write(usart, b);
+    }
+    else
+    {
+        serial_ll_set_tx_irq(usart, false);
+        self->cbk(self, SERIAL_EVENT_TX_COMPLETE, NULL, 0);
+        self->tx.bsy = false;
+    }
 }
 
 /*
  * Public functions
  */
 
-int serial_init(usart_t usart, uint32_t baudrate)
+int serial_init(serial_instance_t self, usart_t usart, uint32_t baudrate)
 {
+    memset(self, 0, sizeof(*self));
+
     serial_ll_init(usart, baudrate);
+    serial_ll_set_irq_context(usart, self);
 
-#if SERIAL_ASYNC_RX
-    rx[usart].sz = 0;
-    rx[usart].ready = false;
-    serial_ll_set_rx_irq(usart, true);
-#endif
-
-#if SERIAL_ASYNC_TX
-    tx[usart].buf = NULL_PTR;
-    tx[usart].sz = 0;
-    serial_ll_set_tx_irq(usart, true);
-#endif
-
-#ifdef SERIAL_WORKER_TASK
-        os_task_setup(SERIAL_WORKER_TASK, 1, deferred_task_rx_cbk, NULL_PTR);
-        os_task_disable(SERIAL_WORKER_TASK);
-#endif // SERIAL_WORKER_TASK
+    self->dev = usart;
 
     return SERIAL_OK;
 }
 
-#if SERIAL_ASYNC_RX
-
-void serial_rx_irq_handler(usart_t usart)
+int serial_set_line_terminator(serial_instance_t self, char ter)
 {
-    uint8_t data = serial_ll_read(usart);
-
-    if (data == SERIAL_LINE_TERMINATOR)
-    {
-        // Terminate string
-        rx[usart].buf[rx[usart].sz++] = 0;
-
-#ifdef SERIAL_WORKER_TASK
-        // Signal the deferred routine to execute
-        rx[usart].ready = true;
-        os_task_enable(SERIAL_WORKER_TASK);
-#else
-        // Call user callback from interrupt context
-        serial_rx_callback(usart, rx[usart].buf, rx[usart].sz-1);
-        rx[usart].sz = 0;
-#endif // SERIAL_WORKER_TASK
-
-    }
-    else if ( rx[usart].sz >= SERIAL_RECEIVE_BUFFER_LENGTH )
-    {
-        serial_rx_overflow(usart);
-    }
-    else
-    {
-        rx[usart].buf[rx[usart].sz++] = data;
-
-#if SERIAL_ECHO
-        serial_ll_write(usart, data);
-        // serial_ll_wait_tx(usart);
-#endif
-    }
+    self->ter = ter;
+    return SERIAL_OK;
 }
 
-#endif // SERIAL_ASYNC_RX
-
-#if SERIAL_ASYNC_TX
-
-void serial_tx_irq_handler(usart_t usart)
+int serial_set_callback(serial_instance_t self, serial_callback callback, void * buffer, unsigned int length)
 {
-    if (tx[usart].sz > 0)
-    {
-        uint8_t byte = *PU8(tx[usart].buf++);
-        serial_ll_write(usart, byte);
-        tx[usart].sz--;
-    }
-    else
-    {
-        tx[usart].buf = NULL_PTR;
-        tx[usart].sz = 0;
-    }
+    self->cbk    = callback;
+    self->rx.buf = buffer;
+    self->rx.len = length;
+    self->rx.cnt = 0;
+
+    serial_ll_set_rx_irq(self->dev, callback == NULL_PTR ? false : true);
+
+    return SERIAL_OK;
 }
 
-bool serial_tx_ready(usart_t usart)
+int serial_read_byte(serial_instance_t self, uint8_t * byte)
 {
-    if ( usart >= NUMBER_OF_USART ) return false; // TODO
-    return tx[usart].buf == NULL_PTR && tx[usart].sz == 0;
+    serial_ll_wait_rx(self->dev);
+    *byte = serial_ll_read(self->dev);
+    return 1;
 }
 
-int serial_write_async(usart_t usart, const void *buffer, unsigned int length)
+int serial_read_bytes(serial_instance_t self, void * buffer, unsigned int length)
 {
+    int received = 0;
     uint8_t * bytes = buffer;
 
-    if (usart >= NUMBER_OF_USART)
-        return -SERIAL_ERROR_INSTANCE;
-
-    if (tx[usart].buf != NULL_PTR || tx[usart].sz > 0)
-        return -SERIAL_ERROR_BUSY;
-
-    tx[usart].buf = bytes+1;
-    tx[usart].sz = length-1;
-
-    // Kickstart transmission
-    uint8_t b = *PU8(bytes);
-    serial_ll_write(usart, b);
-
-    return SERIAL_OK;
-}
-
-#endif // SERIAL_ASYNC_TX
-
-int serial_write_byte(usart_t usart, uint8_t chr)
-{
-    if (usart >= NUMBER_OF_USART)
-        return -SERIAL_ERROR_INSTANCE;
-
-    serial_ll_write(usart, chr);
-    serial_ll_wait_tx(usart);
-
-    return 1;
-}
-
-int serial_write_bytes(usart_t usart, const void *buffer, unsigned int length)
-{
-    if (usart >= NUMBER_OF_USART)
-        return -SERIAL_ERROR_INSTANCE;
-
-    int written = 0;
-    uint8_t *bytes = PU8(buffer);
-
-    while(length-- > 0) written += serial_write_byte(usart, *bytes++);
-
-    return written;
-}
-
-int serial_new_line(usart_t usart)
-{
-    if (usart >= NUMBER_OF_USART)
-        return -SERIAL_ERROR_INSTANCE;
-
-    static const uint8_t data[2] = {'\r', '\n'};
-    return serial_write_bytes(usart, data, 2);
-}
-
-int serial_print(usart_t usart, const char * string)
-{
-    if (usart >= NUMBER_OF_USART)
-        return -SERIAL_ERROR_INSTANCE;
-
-    int written = 0;
-
-    while(*string != 0) written += serial_write_byte(usart, *string++);
-
-    return written;
-}
-
-int serial_println(usart_t usart, const char * string)
-{
-    if (usart >= NUMBER_OF_USART)
-        return -SERIAL_ERROR_INSTANCE;
-
-    return serial_print(usart, string) + serial_new_line(usart);
-}
-
-int serial_print_P(usart_t usart, flstr_t string)
-{
-    if (usart >= NUMBER_OF_USART)
-        return -SERIAL_ERROR_INSTANCE;
-
-    int written = 0;
-
-    while(*string != 0) written += serial_write_byte(usart, *string++);
-
-    return written;
-}
-
-int serial_println_P(usart_t usart, flstr_t string)
-{
-    if (usart >= NUMBER_OF_USART)
-        return -SERIAL_ERROR_INSTANCE;
-
-    return serial_print_P(usart, string) + serial_new_line(usart);
-}
-
-int serial_read_byte(usart_t usart, uint8_t *byte)
-{
-    if (usart >= NUMBER_OF_USART)
-        return -SERIAL_ERROR_INSTANCE;
-
-    serial_ll_wait_rx(usart);
-
-    *byte = serial_ll_read(usart);
-
-    return 1;
-}
-
-int serial_read_bytes(usart_t usart, void *buffer, unsigned int length)
-{
-    if (usart >= NUMBER_OF_USART)
-        return -SERIAL_ERROR_INSTANCE;
-
-    int received = 0;
-    uint8_t *bytes = PU8(buffer);
-
-    while(length-- > 0) received += serial_read_byte(usart, bytes++);
+    for (unsigned int i = 0 ; i < length ; i++)
+        received += serial_read_byte(self, &bytes[i]);
 
     return received;
 }
 
-/*
- * Private functions
- */
-
-#ifdef SERIAL_WORKER_TASK
-
-static int deferred_task_rx_cbk(void* data)
+int serial_write_byte(serial_instance_t self, uint8_t chr)
 {
-    UNUSED(data);
-
-    for (usart_t u = 0 ; u < NUMBER_OF_USART ; u++)
-    {
-        if (rx[u].ready)
-        {
-            serial_rx_callback(u, rx[u].buf, rx[u].sz-1);
-            rx[u].ready = false;
-            rx[u].sz = 0;
-        }
-    }
-    return -EDONE;
+    serial_ll_write(self->dev, chr);
+    serial_ll_wait_tx(self->dev);
+    return 1;
 }
 
-#endif
+int serial_write_bytes(serial_instance_t self, const void * buffer, unsigned int length)
+{
+    int written = 0;
+    const uint8_t * bytes = buffer;
+
+    for (unsigned int i = 0 ; i < length ; i++)
+        written += serial_write_byte(self, bytes[i]);
+
+    return written;
+}
+
+int serial_write_async(serial_instance_t self, const void * buffer, unsigned int length)
+{
+    if (self->tx.bsy)
+        return -SERIAL_ERR_BUSY;
+
+    self->tx.bsy = true;
+    self->tx.buf = buffer;
+    self->tx.len = length;
+    self->tx.cnt = 0;
+
+    serial_ll_set_tx_irq(self->dev, true);
+
+    // Kickstart transmission
+    const uint8_t b = self->tx.buf[self->tx.cnt++];
+    serial_ll_write(self->dev, b);
+
+    return SERIAL_OK;
+}
+
+int serial_print(serial_instance_t self, const char * string)
+{
+    int written = 0;
+
+    while(*string != 0) written += serial_write_byte(self, *string++);
+
+    return written;
+}
+
+int serial_printf(serial_instance_t self, void * buffer, unsigned int length, const char * fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(buffer, length, fmt, args);
+    va_end(args);
+
+    return serial_print(self, buffer);
+}
+
+int serial_printf_async(serial_instance_t self, void * buffer, unsigned int length, const char * fmt, ...)
+{
+    if (self->tx.bsy)
+        return -SERIAL_ERR_BUSY;
+
+    va_list args;
+    va_start(args, fmt);
+    int len = vsnprintf(buffer, length, fmt, args);
+    va_end(args);
+
+    return serial_write_async(self, buffer, len);
+}
+
+int serial_print_P(serial_instance_t self, flstr_t string)
+{
+    int written = 0;
+
+    while(*string != 0) written += serial_write_byte(self, *string++);
+
+    return written;
+}
