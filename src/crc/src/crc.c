@@ -63,7 +63,7 @@ int crc_feed_bytes(crc_t self, const void * data, unsigned int len)
     while(len-- && res == CRC_OK)
         res += crc_feed_byte(self, *bytes++);
 
-    return CRC_OK;
+    return res;
 }
 
 int crc_feed_byte(crc_t self, uint8_t b)
