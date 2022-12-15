@@ -165,7 +165,7 @@ void app_init()
     // Init tasks
     printf( C_RED "Start!" C_END "\r\n");
 
-    err += crc_init(crc, 32, CRC32_BZIP2_POLYNOMIAL, CRC32_BZIP2_INIT, CRC32_BZIP2_XOROUT);
+    err += crc_init(crc, 32, 0x04C11DB7, 0xFFFFFFFF, 0xFFFFFFFF, true, true);
     err += crc_feed_bytes(crc, bytes, sizeof(bytes));
     err += crc_final(crc, &out);
 

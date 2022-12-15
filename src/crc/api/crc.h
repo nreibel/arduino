@@ -35,9 +35,11 @@ typedef struct crc_data_s {
     uint32_t        poly;   // Polynomial
     uint32_t        init;   // Initial value
     uint32_t        xorout; // Final XOR value
+    bool            refin;  // Reflect input data
+    bool            refout; // Reflect final CRC
 } * crc_data_t;
 
-int crc_init       (crc_data_t self, unsigned int len, uint32_t poly, uint32_t init, uint32_t xorout);
+int crc_init       (crc_data_t self, unsigned int len, uint32_t poly, uint32_t init, uint32_t xorout, bool refin, bool refout);
 int crc_reset      (crc_data_t self);
 int crc_feed_byte  (crc_data_t self, uint8_t byte);
 int crc_feed_bytes (crc_data_t self, const void * byte, unsigned int len);

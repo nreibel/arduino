@@ -3,7 +3,9 @@
 #include "types.h"
 #include "bits.h"
 
-int crc_init(crc_data_t self, unsigned int len, uint32_t poly, uint32_t init, uint32_t xorout)
+static uint32_t reflect(uint32_t a, unsigned int len);
+
+int crc_init(crc_data_t self, unsigned int len, uint32_t poly, uint32_t init, uint32_t xorout, bool refin, bool refout)
 {
     switch(len)
     {
@@ -23,6 +25,8 @@ int crc_init(crc_data_t self, unsigned int len, uint32_t poly, uint32_t init, ui
     self->init      = init;
     self->poly      = poly;
     self->xorout    = xorout;
+    self->refin     = refin;
+    self->refout    = refout;
 
     return CRC_OK;
 }
@@ -41,8 +45,15 @@ int crc_final(crc_data_t self, uint32_t *crc)
     if (self->len == 0)
         return -CRC_ERR_INIT;
 
-    *crc = self->crc ^ self->xorout;
-    *crc &= (1ul << self->len) - 1;
+    uint32_t res = self->crc ^ self->xorout;
+
+    if (self->refout)
+        res = reflect(res, self->len);
+
+    res &= (1ul << self->len) - 1;
+
+    *crc = res;
+
     return CRC_OK;
 }
 
@@ -66,6 +77,9 @@ int crc_feed_byte(crc_data_t self, uint8_t b)
     if (self->len == 0)
         return -CRC_ERR_INIT;
 
+    if (self->refout)
+        b = reflect(b, 8);
+
     // Move byte into upper byte of CRC
     self->crc ^= TYPECAST(b, uint32_t) << (self->len - 8);
 
@@ -82,4 +96,26 @@ int crc_feed_byte(crc_data_t self, uint8_t b)
     }
 
     return CRC_OK;
+}
+
+/*
+ * Private functions
+ */
+
+static uint32_t reflect(uint32_t a, unsigned int len)
+{
+    switch(len)
+    {
+        case 0:
+            return 0;
+
+        case 1:
+            return a & 0x1;
+
+        default:
+        {
+            int n = len/2;
+            return reflect(a, n) << n | reflect(a >> n, n);
+        }
+    }
 }
