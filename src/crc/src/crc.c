@@ -28,7 +28,7 @@ int crc_init(crc_t self, crc_config_s * cfg)
 
 int crc_reset(crc_t self)
 {
-    if (self->cfg->length == 0)
+    if (self->cfg == NULL_PTR)
         return -CRC_ERR_INIT;
 
     self->crc = self->cfg->initial_value;
@@ -37,7 +37,7 @@ int crc_reset(crc_t self)
 
 int crc_get_result(crc_t self, uint32_t *crc)
 {
-    if (self->cfg->length == 0)
+    if (self->cfg == NULL_PTR)
         return -CRC_ERR_INIT;
 
     uint32_t res = self->crc ^ self->cfg->final_xor;
@@ -54,7 +54,7 @@ int crc_get_result(crc_t self, uint32_t *crc)
 
 int crc_feed_bytes(crc_t self, const void * data, unsigned int len)
 {
-    if (self->cfg->length == 0)
+    if (self->cfg == NULL_PTR)
         return -CRC_ERR_INIT;
 
     int res = CRC_OK;
@@ -68,7 +68,7 @@ int crc_feed_bytes(crc_t self, const void * data, unsigned int len)
 
 int crc_feed_byte(crc_t self, uint8_t b)
 {
-    if (self->cfg->length == 0)
+    if (self->cfg == NULL_PTR)
         return -CRC_ERR_INIT;
 
     if (self->cfg->reflect_input)

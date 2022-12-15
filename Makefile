@@ -1,5 +1,5 @@
 # Serial
-SERIAL_TTY := /dev/ttyUSB0
+SERIAL_TTY := /dev/ttyACM0
 SERIAL_BAUDRATE := 19200
 
 ARDUINO_LIBS := .
@@ -22,7 +22,7 @@ SOURCES := app/app.c
 # LIBS := printf_flt m
 
 # Enable selected modules
-MODULES := os gpio timer serial i2c
+MODULES := os gpio timer serial i2c crc
 
 # Use only LL API to save on memory
 GPIO_LL=1
