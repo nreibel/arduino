@@ -5,9 +5,9 @@
 
 static uint32_t reflect(uint32_t a, unsigned int len);
 
-int crc_init(crc_data_t self, unsigned int len, uint32_t poly, uint32_t init, uint32_t xorout, bool refin, bool refout)
+int crc_init(crc_t self, crc_config_s * cfg)
 {
-    switch(len)
+    switch(cfg->length)
     {
         case 8:
         case 16:
@@ -20,74 +20,68 @@ int crc_init(crc_data_t self, unsigned int len, uint32_t poly, uint32_t init, ui
 
     memset(self, 0, sizeof(*self));
 
-    self->crc       = init;
-    self->len       = len;
-    self->init      = init;
-    self->poly      = poly;
-    self->xorout    = xorout;
-    self->refin     = refin;
-    self->refout    = refout;
+    self->crc = cfg->initial_value;
+    self->cfg = cfg;
 
     return CRC_OK;
 }
 
-int crc_reset(crc_data_t self)
+int crc_reset(crc_t self)
 {
-    if (self->len == 0)
+    if (self->cfg->length == 0)
         return -CRC_ERR_INIT;
 
-    self->crc = self->init;
+    self->crc = self->cfg->initial_value;
     return CRC_OK;
 }
 
-int crc_final(crc_data_t self, uint32_t *crc)
+int crc_get_result(crc_t self, uint32_t *crc)
 {
-    if (self->len == 0)
+    if (self->cfg->length == 0)
         return -CRC_ERR_INIT;
 
-    uint32_t res = self->crc ^ self->xorout;
+    uint32_t res = self->crc ^ self->cfg->final_xor;
 
-    if (self->refout)
-        res = reflect(res, self->len);
+    if (self->cfg->reflect_output)
+        res = reflect(res, self->cfg->length);
 
-    res &= (1ul << self->len) - 1;
+    res &= (1ul << self->cfg->length) - 1;
 
     *crc = res;
 
     return CRC_OK;
 }
 
-int crc_feed_bytes (crc_data_t self, const void * data, unsigned int len)
+int crc_feed_bytes(crc_t self, const void * data, unsigned int len)
 {
-    if (self->len == 0)
+    if (self->cfg->length == 0)
         return -CRC_ERR_INIT;
 
+    int res = CRC_OK;
     const uint8_t * bytes = data;
 
-    for (unsigned int i = 0 ; i < len ; i++)
-    {
-        crc_feed_byte(self, bytes[i]);
-    }
+    while(len-- && res == CRC_OK)
+        res += crc_feed_byte(self, *bytes++);
 
     return CRC_OK;
 }
 
-int crc_feed_byte(crc_data_t self, uint8_t b)
+int crc_feed_byte(crc_t self, uint8_t b)
 {
-    if (self->len == 0)
+    if (self->cfg->length == 0)
         return -CRC_ERR_INIT;
 
-    if (self->refout)
+    if (self->cfg->reflect_input)
         b = reflect(b, 8);
 
     // Move byte into upper byte of CRC
-    self->crc ^= TYPECAST(b, uint32_t) << (self->len - 8);
+    self->crc ^= TYPECAST(b, uint32_t) << (self->cfg->length - 8);
 
     for (int i = 0; i < 8; i++)
     {
-        if ( CHECK_BIT(self->crc, self->len - 1) )
+        if ( CHECK_BIT(self->crc, self->cfg->length - 1) )
         {
-            self->crc = (self->crc << 1) ^ self->poly;
+            self->crc = (self->crc << 1) ^ self->cfg->polynomial;
         }
         else
         {

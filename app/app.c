@@ -13,8 +13,25 @@ static volatile bool tx_ready = true;
 static uint8_t serial_rx[16];
 static uint8_t serial_tx[64];
 
+
+/*
+ * Static storage
+ */
+
+static struct crc_data_s crc_data;
 static struct serial_instance_s serial_data;
+
+static crc_t crc                = &crc_data;
 static serial_instance_t serial = &serial_data;
+
+static crc_config_s bzip2_cfg = {
+    .length         = 32,
+    .polynomial     = 0x04C11DB7,
+    .initial_value  = 0xFFFFFFFF,
+    .final_xor      = 0xFFFFFFFF,
+    .reflect_input  = false,
+    .reflect_output = false,
+};
 
 /*
  * PMBus data
@@ -147,9 +164,6 @@ void serial_cbk(serial_instance_t self, serial_event_t event, const uint8_t * bu
  * App entry point
  */
 
-struct crc_data_s crc_data;
-crc_data_t crc = &crc_data;
-
 void app_init()
 {
     int err = 0;
@@ -165,9 +179,9 @@ void app_init()
     // Init tasks
     printf( C_RED "Start!" C_END "\r\n");
 
-    err += crc_init(crc, 32, 0x04C11DB7, 0xFFFFFFFF, 0xFFFFFFFF, true, true);
+    err += crc_init(crc, &bzip2_cfg);
     err += crc_feed_bytes(crc, bytes, sizeof(bytes));
-    err += crc_final(crc, &out);
+    err += crc_get_result(crc, &out);
 
     if (err < 0) printf("CRC Error\r\n");
     else printf("CRC = %08lx\r\n", out);

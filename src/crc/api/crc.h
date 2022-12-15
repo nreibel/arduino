@@ -29,20 +29,25 @@ enum {
     CRC_ERR_INIT,
 };
 
-typedef struct crc_data_s {
-    uint32_t        crc;    // Current value
-    unsigned int    len;    // CRC length in bits
-    uint32_t        poly;   // Polynomial
-    uint32_t        init;   // Initial value
-    uint32_t        xorout; // Final XOR value
-    bool            refin;  // Reflect input data
-    bool            refout; // Reflect final CRC
-} * crc_data_t;
+typedef const struct {
+    unsigned int    length; // In bits
+    uint32_t        polynomial;
+    uint32_t        initial_value;
+    uint32_t        final_xor;
+    bool            reflect_input;
+    bool            reflect_output;
+} crc_config_s;
 
-int crc_init       (crc_data_t self, unsigned int len, uint32_t poly, uint32_t init, uint32_t xorout, bool refin, bool refout);
-int crc_reset      (crc_data_t self);
-int crc_feed_byte  (crc_data_t self, uint8_t byte);
-int crc_feed_bytes (crc_data_t self, const void * byte, unsigned int len);
-int crc_final      (crc_data_t self, uint32_t * crc);
+typedef struct crc_data_s {
+    uint32_t crc;       // Current value
+    crc_config_s * cfg; // Config object
+
+} * crc_t;
+
+int crc_init        (crc_t self, crc_config_s * cfg);
+int crc_reset       (crc_t self);
+int crc_feed_byte   (crc_t self, uint8_t byte);
+int crc_feed_bytes  (crc_t self, const void * byte, unsigned int len);
+int crc_get_result  (crc_t self, uint32_t * crc);
 
 #endif /* SRC_CRC_API_CRC_H_ */
