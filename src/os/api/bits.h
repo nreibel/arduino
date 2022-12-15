@@ -32,7 +32,7 @@
 #define TOGGLE_MASK(r, m)    (r ^= (m))
 
 // Test bit of value r at index x
-#define CHECK_BIT(r, x)     (MASK((r), BIT(x)) ? true : false)
+#define CHECK_BIT(r, x)     ((((r) >> (x)) & 1U) ? true : false)
 
 #define INCREMENT_MOD(var, max) (var = (var+1) % (max))
 #define DECREMENT_MOD(var, max) (var = (var+(max)-1) % (max))

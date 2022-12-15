@@ -1,32 +1,85 @@
+#include <string.h>
 #include "crc.h"
-#include "crc_prv.h"
 #include "types.h"
 #include "bits.h"
 
-void CRC32_Init(uint32_t *crc)
+int crc_init(crc_data_t self, unsigned int len, uint32_t poly, uint32_t init, uint32_t xorout)
 {
-    *crc = CRC32_INIT;
+    switch(len)
+    {
+        case 8:
+        case 16:
+        case 32:
+            break;
+
+        default:
+            return -CRC_ERR_PARAM;
+    }
+
+    memset(self, 0, sizeof(*self));
+
+    self->crc       = init;
+    self->len       = len;
+    self->init      = init;
+    self->poly      = poly;
+    self->xorout    = xorout;
+
+    return CRC_OK;
 }
 
-void CRC32_Final(uint32_t *crc)
+int crc_reset(crc_data_t self)
 {
-    *crc ^= CRC32_XOROUT;
+    if (self->len == 0)
+        return -CRC_ERR_INIT;
+
+    self->crc = self->init;
+    return CRC_OK;
 }
 
-void CRC32_Update(uint8_t b, uint32_t *crc)
+int crc_final(crc_data_t self, uint32_t *crc)
 {
-    // Move byte into MSB of 32bit CRC
-    *crc ^= TYPECAST(b, uint32_t) << 24;
+    if (self->len == 0)
+        return -CRC_ERR_INIT;
+
+    *crc = self->crc ^ self->xorout;
+    *crc &= (1ul << self->len) - 1;
+    return CRC_OK;
+}
+
+int crc_feed_bytes (crc_data_t self, const void * data, unsigned int len)
+{
+    if (self->len == 0)
+        return -CRC_ERR_INIT;
+
+    const uint8_t * bytes = data;
+
+    for (unsigned int i = 0 ; i < len ; i++)
+    {
+        crc_feed_byte(self, bytes[i]);
+    }
+
+    return CRC_OK;
+}
+
+int crc_feed_byte(crc_data_t self, uint8_t b)
+{
+    if (self->len == 0)
+        return -CRC_ERR_INIT;
+
+    // Move byte into upper byte of CRC
+    self->crc ^= TYPECAST(b, uint32_t) << (self->len - 8);
 
     for (int i = 0; i < 8; i++)
     {
-        if ( CHECK_BIT(*crc, 31) )
+        if ( CHECK_BIT(self->crc, self->len - 1) )
         {
-            *crc = (*crc << 1) ^ CRC32_POLYNOMIAL;
+            self->crc = (self->crc << 1) ^ self->poly;
         }
         else
         {
-            *crc <<= 1;
+            self->crc <<= 1;
         }
     }
+
+    return CRC_OK;
 }

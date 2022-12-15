@@ -3,6 +3,7 @@
 #include "usart.h"
 #include "serial.h"
 #include "i2c.h"
+#include "crc.h"
 
 /*
  * Serial data
@@ -146,8 +147,15 @@ void serial_cbk(serial_instance_t self, serial_event_t event, const uint8_t * bu
  * App entry point
  */
 
+struct crc_data_s crc_data;
+crc_data_t crc = &crc_data;
+
 void app_init()
 {
+    int err = 0;
+    uint32_t out = 0;
+    uint8_t bytes[] = {0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39};
+
     serial_init(serial, USART0, 19200);
     serial_set_line_terminator(serial, 0x0D);
     serial_set_callback(serial, serial_cbk, serial_rx, sizeof(serial_rx));
@@ -156,6 +164,13 @@ void app_init()
 
     // Init tasks
     printf( C_RED "Start!" C_END "\r\n");
+
+    err += crc_init(crc, 32, CRC32_BZIP2_POLYNOMIAL, CRC32_BZIP2_INIT, CRC32_BZIP2_XOROUT);
+    err += crc_feed_bytes(crc, bytes, sizeof(bytes));
+    err += crc_final(crc, &out);
+
+    if (err < 0) printf("CRC Error\r\n");
+    else printf("CRC = %08lx\r\n", out);
 
     os_task_setup(TASK_MAIN, 1000, task_main, NULL_PTR);
 }
