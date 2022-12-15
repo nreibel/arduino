@@ -10,7 +10,7 @@
 
 void serial_rx_irq_handler(usart_t usart, void * context)
 {
-    serial_instance_t self = (serial_instance_t) context;
+    serial_t self = (serial_t) context;
 
     const uint8_t data = serial_ll_read(usart);
 
@@ -36,7 +36,7 @@ void serial_rx_irq_handler(usart_t usart, void * context)
 
 void serial_tx_irq_handler(usart_t usart, void * context)
 {
-    serial_instance_t self = (serial_instance_t) context;
+    serial_t self = (serial_t) context;
 
     if (self->tx.cnt < self->tx.len)
     {
@@ -55,7 +55,7 @@ void serial_tx_irq_handler(usart_t usart, void * context)
  * Public functions
  */
 
-int serial_init(serial_instance_t self, usart_t usart, uint32_t baudrate)
+int serial_init(serial_t self, usart_t usart, uint32_t baudrate)
 {
     memset(self, 0, sizeof(*self));
 
@@ -67,13 +67,13 @@ int serial_init(serial_instance_t self, usart_t usart, uint32_t baudrate)
     return SERIAL_OK;
 }
 
-int serial_set_line_terminator(serial_instance_t self, char ter)
+int serial_set_line_terminator(serial_t self, char ter)
 {
     self->ter = ter;
     return SERIAL_OK;
 }
 
-int serial_set_callback(serial_instance_t self, serial_callback callback, void * buffer, unsigned int length)
+int serial_set_callback(serial_t self, serial_callback callback, void * buffer, unsigned int length)
 {
     self->cbk    = callback;
     self->rx.buf = buffer;
@@ -85,14 +85,14 @@ int serial_set_callback(serial_instance_t self, serial_callback callback, void *
     return SERIAL_OK;
 }
 
-int serial_read_byte(serial_instance_t self, uint8_t * byte)
+int serial_read_byte(serial_t self, uint8_t * byte)
 {
     serial_ll_wait_rx(self->dev);
     *byte = serial_ll_read(self->dev);
     return 1;
 }
 
-int serial_read_bytes(serial_instance_t self, void * buffer, unsigned int length)
+int serial_read_bytes(serial_t self, void * buffer, unsigned int length)
 {
     int received = 0;
     uint8_t * bytes = buffer;
@@ -103,14 +103,14 @@ int serial_read_bytes(serial_instance_t self, void * buffer, unsigned int length
     return received;
 }
 
-int serial_write_byte(serial_instance_t self, uint8_t chr)
+int serial_write_byte(serial_t self, uint8_t chr)
 {
     serial_ll_write(self->dev, chr);
     serial_ll_wait_tx(self->dev);
     return 1;
 }
 
-int serial_write_bytes(serial_instance_t self, const void * buffer, unsigned int length)
+int serial_write_bytes(serial_t self, const void * buffer, unsigned int length)
 {
     int written = 0;
     const uint8_t * bytes = buffer;
@@ -121,7 +121,7 @@ int serial_write_bytes(serial_instance_t self, const void * buffer, unsigned int
     return written;
 }
 
-int serial_write_async(serial_instance_t self, const void * buffer, unsigned int length)
+int serial_write_async(serial_t self, const void * buffer, unsigned int length)
 {
     if (self->tx.bsy)
         return -SERIAL_ERR_BUSY;
@@ -140,7 +140,7 @@ int serial_write_async(serial_instance_t self, const void * buffer, unsigned int
     return SERIAL_OK;
 }
 
-int serial_print(serial_instance_t self, const char * string)
+int serial_print(serial_t self, const char * string)
 {
     int written = 0;
 
@@ -149,7 +149,7 @@ int serial_print(serial_instance_t self, const char * string)
     return written;
 }
 
-int serial_printf(serial_instance_t self, void * buffer, unsigned int length, const char * fmt, ...)
+int serial_printf(serial_t self, void * buffer, unsigned int length, const char * fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
@@ -159,7 +159,7 @@ int serial_printf(serial_instance_t self, void * buffer, unsigned int length, co
     return serial_print(self, buffer);
 }
 
-int serial_printf_async(serial_instance_t self, void * buffer, unsigned int length, const char * fmt, ...)
+int serial_printf_async(serial_t self, void * buffer, unsigned int length, const char * fmt, ...)
 {
     if (self->tx.bsy)
         return -SERIAL_ERR_BUSY;
@@ -172,7 +172,7 @@ int serial_printf_async(serial_instance_t self, void * buffer, unsigned int leng
     return serial_write_async(self, buffer, len);
 }
 
-int serial_print_P(serial_instance_t self, flstr_t string)
+int serial_print_P(serial_t self, flstr_t string)
 {
     int written = 0;
 

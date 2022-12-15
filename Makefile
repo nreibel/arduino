@@ -22,7 +22,7 @@ SOURCES := app/app.c
 # LIBS := printf_flt m
 
 # Enable selected modules
-MODULES := os gpio timer serial i2c crc
+MODULES := os gpio timer serial serial_tp i2c crc
 
 # Use only LL API to save on memory
 GPIO_LL=1

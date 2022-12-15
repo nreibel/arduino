@@ -17,11 +17,11 @@ typedef enum {
     SERIAL_EVENT_TX_COMPLETE,
 } serial_event_t;
 
-typedef struct serial_instance_s * serial_instance_t;
+typedef struct serial_s * serial_t;
 
-typedef void (*serial_callback) (serial_instance_t self, serial_event_t event, const uint8_t * buffer, unsigned int length);
+typedef void (*serial_callback) (serial_t self, serial_event_t event, const uint8_t * buffer, unsigned int length);
 
-struct serial_instance_s
+struct serial_s
 {
     usart_t             dev;
     char                ter;
@@ -39,22 +39,22 @@ struct serial_instance_s
     } tx;
 };
 
-int     serial_init                 (serial_instance_t self, usart_t usart, uint32_t baudrate);
-int     serial_set_callback         (serial_instance_t self, serial_callback callback, void * buffer, unsigned int length);
-int     serial_set_line_terminator  (serial_instance_t self, char terminator);
-int     serial_read_byte            (serial_instance_t self, uint8_t *chr);
-int     serial_read_bytes           (serial_instance_t self, void * buffer, unsigned int length);
-int     serial_write_byte           (serial_instance_t self, uint8_t chr);
-int     serial_write_bytes          (serial_instance_t self, const void * buffer, unsigned int length);
-int     serial_write_async          (serial_instance_t self, const void * buffer, unsigned int length);
+int     serial_init                 (serial_t self, usart_t usart, uint32_t baudrate);
+int     serial_set_callback         (serial_t self, serial_callback callback, void * buffer, unsigned int length);
+int     serial_set_line_terminator  (serial_t self, char terminator);
+int     serial_read_byte            (serial_t self, uint8_t *chr);
+int     serial_read_bytes           (serial_t self, void * buffer, unsigned int length);
+int     serial_write_byte           (serial_t self, uint8_t chr);
+int     serial_write_bytes          (serial_t self, const void * buffer, unsigned int length);
+int     serial_write_async          (serial_t self, const void * buffer, unsigned int length);
 
-int     serial_print                (serial_instance_t self, const char * string);
-int     serial_printf               (serial_instance_t self, void * buffer, unsigned int length, const char * fmt, ...);
-int     serial_printf_async         (serial_instance_t self, void * buffer, unsigned int length, const char * fmt, ...);
+int     serial_print                (serial_t self, const char * string);
+int     serial_printf               (serial_t self, void * buffer, unsigned int length, const char * fmt, ...);
+int     serial_printf_async         (serial_t self, void * buffer, unsigned int length, const char * fmt, ...);
 
-int     serial_print_P              (serial_instance_t self, flstr_t string);
+int     serial_print_P              (serial_t self, flstr_t string);
 
-// TODO int serial_printf_P(serial_instance_t self, void * buffer, unsigned int length, const char * fmt, ...);
-// TODO int serial_printf_async_P(serial_instance_t self, void * buffer, unsigned int length, const char * fmt, ...);
+// TODO int serial_printf_P(serial_t self, void * buffer, unsigned int length, const char * fmt, ...);
+// TODO int serial_printf_async_P(serial_t self, void * buffer, unsigned int length, const char * fmt, ...);
 
 #endif /* __SERIAL_API_H__ */

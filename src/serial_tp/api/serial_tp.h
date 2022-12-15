@@ -5,10 +5,6 @@
 #include "serial.h"
 #include "serial_tp_cfg.h"
 
-#if SERIAL_ASYNC_RX != ON
-#error "Serial TP needs SERIAL_ASYNC_RX enabled!"
-#endif
-
 typedef enum {
     // Generic errors
     SERIAL_TP_RETCODE_OK = 0x0,
@@ -34,12 +30,18 @@ typedef struct {
     uint8_t header;
     uint8_t function;
     uint8_t address;
-    uint8_t data_len;
+    uint8_t length;
     uint8_t data[];
 } serial_tp_request_t;
 
-extern uint8_t serial_tp_callback(usart_t bus, const serial_tp_request_t * req, void *data, uint8_t *length);
+typedef struct {
+    uint8_t status;                              /* Status code                                */
+    uint8_t length;                              /* Data length, in bytes                      */
+    uint8_t data[SERIAL_TP_RESPONSE_BUFFER_LEN]; /* Data buffer                                */
+} serial_tp_response_t;
 
-void serial_tp_init(usart_t bus);
+extern void serial_tp_callback(serial_t bus, const serial_tp_request_t * req, serial_tp_response_t * rsp);
+
+void serial_tp_init(serial_t bus);
 
 #endif /* __SERIAL_TP_API_H__ */

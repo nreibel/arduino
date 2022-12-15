@@ -1,4 +1,5 @@
 #include "serial_ll.h"
+#include "serial_tp.h"
 #include "stdio.h"
 #include "os.h"
 #include "usart.h"
@@ -19,11 +20,11 @@ static uint8_t serial_tx[64];
  * Static storage
  */
 
-static struct crc_data_s crc_instance;
-static struct serial_instance_s serial_data;
+static struct crc_data_s    crc_instance;
+static struct serial_s      serial_data;
 
-static crc_t crc                = &crc_instance;
-static serial_instance_t serial = &serial_data;
+static crc_t    crc     = &crc_instance;
+static serial_t serial  = &serial_data;
 
 enum {
     CRC32,
@@ -196,7 +197,7 @@ void i2c_ll_callback(twi_t twi, i2c_event_t event, unsigned int size)
  * Serial callback
  */
 
-void serial_cbk(serial_instance_t self, serial_event_t event, const uint8_t * buffer, unsigned int length)
+void serial_cbk(serial_t self, serial_event_t event, const uint8_t * buffer, unsigned int length)
 {
     UNUSED(self);
 
@@ -224,6 +225,75 @@ void serial_cbk(serial_instance_t self, serial_event_t event, const uint8_t * bu
     }
 }
 
+void serial_tp_callback(serial_t bus, const serial_tp_request_t * req, serial_tp_response_t * rsp)
+{
+    #define FUNCTION_WRITE_DATA   0x10
+    #define FUNCTION_READ_DATA    0x11
+
+    #define DATA_X 0x01
+    #define DATA_Y 0x02
+
+    UNUSED(bus);
+
+    static uint8_t x = 0x11;
+    static uint8_t y = 0x22;
+
+    switch(req->function)
+    {
+        case FUNCTION_READ_DATA:
+        {
+            switch(req->address)
+            {
+                case DATA_X:
+                    rsp->data[0] = x;
+                    rsp->length = 1;
+                    rsp->status = SERIAL_TP_RETCODE_OK;
+                    break;
+
+                case DATA_Y:
+                    rsp->data[0] = y;
+                    rsp->length = 1;
+                    rsp->status = SERIAL_TP_RETCODE_OK;
+                    break;
+
+                default:
+                    rsp->status = SERIAL_TP_RETCODE_ADDRESS_INVALID;
+                    break;
+            }
+
+            break;
+        }
+
+        case FUNCTION_WRITE_DATA:
+        {
+            switch(req->address)
+            {
+                case DATA_X:
+                    x = req->data[0];
+                    rsp->status = SERIAL_TP_RETCODE_OK;
+                    break;
+
+                case DATA_Y:
+                    y = req->data[0];
+                    rsp->status = SERIAL_TP_RETCODE_OK;
+                    break;
+
+                default:
+                    rsp->status = SERIAL_TP_RETCODE_ADDRESS_INVALID;
+                    break;
+            }
+
+            break;
+        }
+
+        default:
+        {
+            rsp->status = SERIAL_TP_RETCODE_FUNCTION_INVALID;
+            break;
+        }
+    }
+}
+
 /*
  * App entry point
  */
@@ -236,6 +306,8 @@ void app_init()
     serial_init(serial, USART0, 19200);
     serial_set_line_terminator(serial, 0x0D);
     serial_set_callback(serial, serial_cbk, serial_rx, sizeof(serial_rx));
+
+    // serial_tp_init(serial);
 
     i2c_ll_init_slave(TWI0, 0x20);
 
