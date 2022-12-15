@@ -98,18 +98,14 @@ int crc_feed_byte(crc_t self, uint8_t b)
 
 static uint32_t reflect(uint32_t a, unsigned int len)
 {
-    switch(len)
+    uint32_t res = 0;
+
+    for (unsigned int i = 0 ; i < len ; i++)
     {
-        case 0:
-            return 0;
-
-        case 1:
-            return a & 0x1;
-
-        default:
-        {
-            int n = len/2;
-            return reflect(a, n) << n | reflect(a >> n, n);
-        }
+        res <<= 1;
+        if (a & 0x1) res |= 0x1;
+        a >>= 1;
     }
+
+    return res;
 }
