@@ -75,7 +75,7 @@ int i2c_ll_set_rx_buffer(twi_t twi, void * buffer, unsigned int len);
 int i2c_ll_set_tx_buffer(twi_t twi, const void * buffer, unsigned int len);
 
 int i2c_ll_init_master(twi_t bus, i2c_ll_clk_t clk);
-int i2c_ll_init_slave(twi_t twi, uint8_t addr);
+int i2c_ll_init_slave(twi_t twi, uint8_t addr, uint8_t mask);
 
 int i2c_ll_wait_int(twi_t bus, unsigned int ms);
 int i2c_ll_wait_stop(twi_t bus, unsigned int ms);

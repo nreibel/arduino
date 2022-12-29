@@ -25,13 +25,13 @@
  * Interrupt callbacks
  */
 
-static const uint8_t * tx_ptr;
-static unsigned int tx_len;
-static unsigned int tx_cnt;
+static const uint8_t * tx_ptr = NULL_PTR;
+static unsigned int tx_len    = 0;
+static unsigned int tx_cnt    = 0;
 
-static uint8_t * rx_ptr;
-static unsigned int rx_len;
-static unsigned int rx_cnt;
+static uint8_t * rx_ptr    = NULL_PTR;
+static unsigned int rx_len = 0;
+static unsigned int rx_cnt = 0;
 
 __attribute((weak))
 void i2c_ll_callback(twi_t twi, i2c_event_t event, unsigned int size)
@@ -47,6 +47,7 @@ int i2c_ll_set_rx_buffer(twi_t twi, void * buffer, unsigned int len)
 
     rx_ptr = buffer;
     rx_len = len;
+
     return I2C_LL_OK;
 }
 
@@ -56,6 +57,7 @@ int i2c_ll_set_tx_buffer(twi_t twi, const void * buffer, unsigned int len)
 
     tx_ptr = buffer;
     tx_len = len;
+
     return I2C_LL_OK;
 }
 
@@ -63,122 +65,109 @@ ISR(TWI_vect)
 {
     // TODO : buffer overflow
 
-    static enum {
-        STATE_IDLE,
-        STATE_RX,
-        STATE_TX,
-    } state = STATE_IDLE;
-
-    const uint8_t status = TW_STATUS;
-
-    switch(state)
-    {
-        case STATE_IDLE:
-        {
-            switch(status)
-            {
-                // Received SLA+W
-                case TW_SR_SLA_ACK:
-                    i2c_ll_callback(TWI0, I2C_EVENT_RX_START, 0);
-                    rx_cnt = 0;
-                    state = STATE_RX;
-                    break;
-
-                // Received SLA+R
-                case TW_ST_SLA_ACK:
-                    i2c_ll_callback(TWI0, I2C_EVENT_TX_START, 0);
-                    TWI0->twdr = *(tx_ptr++);
-                    tx_cnt = 1;
-                    state = STATE_TX;
-                    break;
-
-                // Illegal start or stop condition
-                case TW_BUS_ERROR:
-                    i2c_ll_callback(TWI0, I2C_EVENT_BUS_ERROR, 0);
-                    break;
-
-                default:
-                    i2c_ll_callback(TWI0, I2C_EVENT_SEQ_ERROR, 0);
-                    break;
-            }
-
-            break;
-        }
-
-        case STATE_RX:
-        {
-            switch(status)
-            {
-                // Received DATA
-                case TW_SR_DATA_ACK:
-                case TW_SR_DATA_NACK:
-                {
-                    if (rx_cnt >= rx_len)
-                        i2c_ll_callback(TWI0, I2C_EVENT_RX_MORE, rx_cnt);
-
-                    *(rx_ptr++) = TWI0->twdr;
-                    rx_cnt++;
-                    break;
-                }
-
-                // Receive STOP
-                case TW_SR_STOP:
-                    i2c_ll_callback(TWI0, I2C_EVENT_RX_COMPLETE, rx_cnt);
-                    state = STATE_IDLE;
-                    break;
-
-                default:
-                    i2c_ll_callback(TWI0, I2C_EVENT_SEQ_ERROR, 0);
-                    state = STATE_IDLE;
-                    break;
-            }
-
-            break;
-        }
-
-        case STATE_TX:
-        {
-            switch(status)
-            {
-                // Sending DATA
-                case TW_ST_DATA_ACK:
-                {
-                    if (tx_cnt >= tx_len)
-                        i2c_ll_callback(TWI0, I2C_EVENT_TX_MORE, tx_cnt);
-
-                    TWI0->twdr = *(tx_ptr++);
-                    tx_cnt++;
-                    break;
-                }
-
-                // Transmit STOP
-                case TW_ST_DATA_NACK:
-                    i2c_ll_callback(TWI0, I2C_EVENT_TX_COMPLETE, tx_cnt);
-                    state = STATE_IDLE;
-                    break;
-
-                default:
-                    i2c_ll_callback(TWI0, I2C_EVENT_SEQ_ERROR, 0);
-                    state = STATE_IDLE;
-                    break;
-            }
-
-            break;
-        }
-
-        default:
-            // TODO
-            HALT;
-    }
-
     twcr_t twcr = {
         .bits = {
             .twie = 1,
             .twint = 1,
             .twea = 1,
-            .twen = 1
+            .twen = 1,
         }
     };
+
+    switch(TW_STATUS)
+    {
+        // Received SLA+W
+        case TW_SR_SLA_ACK:
+        {
+            rx_cnt = 0;
+            i2c_ll_callback(TWI0, I2C_EVENT_RX_START, 0);
+            break;
+        }
+
+        // Received DATA
+        case TW_SR_DATA_ACK:
+        case TW_SR_DATA_NACK:
+        {
+            if (rx_len <= 0)
+                i2c_ll_callback(TWI0, I2C_EVENT_RX_MORE, rx_cnt);
+
+            if (rx_len > 0)
+            {
+                *(rx_ptr++) = TWI0->twdr;
+                rx_cnt++;
+                rx_len--;
+            }
+
+            break;
+        }
+
+        // Receive STOP
+        case TW_SR_STOP:
+        {
+            i2c_ll_callback(TWI0, I2C_EVENT_RX_COMPLETE, rx_cnt);
+            break;
+        }
+
+        // Received SLA+R
+        case TW_ST_SLA_ACK:
+        {
+            tx_cnt = 0;
+            i2c_ll_callback(TWI0, I2C_EVENT_TX_START, 0);
+
+            if (tx_len > 0)
+            {
+                TWI0->twdr = *(tx_ptr++);
+                tx_cnt++;
+                tx_len--;
+            }
+            else
+            {
+                TWI0->twdr = 0xFF;
+            }
+
+            break;
+        }
+
+        // Sending DATA
+        case TW_ST_DATA_ACK:
+        {
+            if (tx_len <= 0)
+                i2c_ll_callback(TWI0, I2C_EVENT_TX_MORE, tx_cnt);
+
+            if (tx_len > 0)
+            {
+                TWI0->twdr = *(tx_ptr++);
+                tx_cnt++;
+                tx_len--;
+            }
+            else
+            {
+                TWI0->twdr = 0xFF;
+            }
+
+            break;
+        }
+
+        // Transmit STOP
+        case TW_ST_DATA_NACK:
+        {
+            i2c_ll_callback(TWI0, I2C_EVENT_TX_COMPLETE, tx_cnt);
+            break;
+        }
+
+        // Illegal start or stop condition
+        case TW_BUS_ERROR:
+        {
+            i2c_ll_callback(TWI0, I2C_EVENT_BUS_ERROR, 0);
+            break;
+        }
+
+        default:
+        {
+            i2c_ll_callback(TWI0, I2C_EVENT_SEQ_ERROR, 0);
+            break;
+        }
+    }
 
     TWI0->twcr = twcr;
 }
@@ -207,7 +196,7 @@ int i2c_ll_init_master(twi_t twi, i2c_ll_clk_t clk)
     return I2C_LL_OK;
 }
 
-int i2c_ll_init_slave(twi_t twi, uint8_t addr)
+int i2c_ll_init_slave(twi_t twi, uint8_t addr, uint8_t mask)
 {
     if (addr > 0x7f)
         return -I2C_LL_ERR_PARAMETER;
@@ -224,6 +213,7 @@ int i2c_ll_init_slave(twi_t twi, uint8_t addr)
     };
 
     twi->twar = addr << 1;
+    twi->twamr = ~mask << 1;
     twi->twcr = twcr;
 
     return I2C_LL_OK;
