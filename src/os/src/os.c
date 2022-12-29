@@ -134,7 +134,6 @@ uint8_t os_rand()
 
 void os_sleep()
 {
-#if OS_SLEEP_ON_IDLE
     set_sleep_mode(SLEEP_MODE_IDLE);
     sleep_enable();
     sleep_cpu();
@@ -144,7 +143,6 @@ void os_sleep()
     */
 
     sleep_disable();
-#endif
 }
 
 void os_wait_us(unsigned int us)
@@ -154,14 +152,12 @@ void os_wait_us(unsigned int us)
 
 void os_wait(time_t ms)
 {
-    if (ms <= 0) return;
-
     const time_t start = os_timer;
 
     while(1)
     {
         time_t elapsed = os_timer - start;
-        if (elapsed >= ms ) return;
+        if (elapsed >= ms) return;
         else os_sleep();
     }
 }
@@ -205,7 +201,9 @@ int main(void)
         // Execute background tasks in the spare time, or sleep until next tick
         if (os_background_tasks() == EOK)
         {
+#if OS_SLEEP_ON_IDLE
             os_sleep();
+#endif
         }
     }
 

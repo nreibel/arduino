@@ -32,9 +32,7 @@ typedef enum {
     OS_WATCHDOG_8S,
 } os_watchdog_t;
 
-// Background Tasks
 typedef int (*background_task)(void);
-extern background_task background_tasks_list[NUMBER_OF_BACKGROUND_TASKS];
 
 // App entry point
 extern void app_init(void);

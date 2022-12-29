@@ -6,12 +6,15 @@
  */
 
 static volatile struct {
-    bool   enabled;
-    time_t interval;
-    time_t last;
+    bool       enabled;
+    time_t     interval;
+    time_t     last;
     callback_t callback;
-    void* param;
+    void *     param;
 } tasks[NUMBER_OF_OS_TASKS];
+
+
+static volatile background_task background_tasks_list[NUMBER_OF_BACKGROUND_TASKS] = { /* TODO */ };
 
 /*
  * Public functions
@@ -22,8 +25,8 @@ void os_task_setup(os_task_t task, time_t interval, callback_t callback, void* p
     tasks[task].enabled  = true;
     tasks[task].interval = interval;
     tasks[task].callback = callback;
-    tasks[task].param = param;
-    tasks[task].last = os_millis() - interval;
+    tasks[task].param    = param;
+    tasks[task].last     = os_millis() - interval;
 }
 
 void os_task_enable(os_task_t task)
@@ -40,7 +43,8 @@ void os_cyclic_tasks()
 {
     for(int i = 0; i < NUMBER_OF_OS_TASKS; i++)
     {
-        if(!tasks[i].enabled || tasks[i].interval <= 0 || tasks[i].callback == NULL_PTR) continue;
+        if(!tasks[i].enabled || tasks[i].interval <= 0 || tasks[i].callback == NULL_PTR)
+            continue;
 
         time_t elapsed = os_millis() - tasks[i].last;
 
