@@ -68,7 +68,15 @@ typedef struct {
 #define TWI0 TYPECAST(0xB8, twi_t)
 
 // I2C Slave Callback
-extern void i2c_ll_callback(twi_t twi, i2c_event_t event, unsigned int size);
+
+typedef struct i2c_ll_callback_args {
+    twi_t        twi;
+    uint8_t      address;
+    i2c_event_t  event;
+    unsigned int size;
+} i2c_ll_callback_args_t;
+
+extern void i2c_ll_callback(const i2c_ll_callback_args_t * args);
 
 // I2C Slave RX/TX Buffers
 int i2c_ll_set_rx_buffer(twi_t twi, void * buffer, unsigned int len);

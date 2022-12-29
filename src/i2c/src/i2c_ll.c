@@ -34,11 +34,9 @@ static unsigned int rx_len = 0;
 static unsigned int rx_cnt = 0;
 
 __attribute((weak))
-void i2c_ll_callback(twi_t twi, i2c_event_t event, unsigned int size)
+void i2c_ll_callback(const i2c_ll_callback_args_t * args)
 {
-    UNUSED(twi);
-    UNUSED(event);
-    UNUSED(size);
+    UNUSED(args);
 }
 
 int i2c_ll_set_rx_buffer(twi_t twi, void * buffer, unsigned int len)
@@ -63,7 +61,8 @@ int i2c_ll_set_tx_buffer(twi_t twi, const void * buffer, unsigned int len)
 
 ISR(TWI_vect)
 {
-    // TODO : buffer overflow
+    const twi_t twi = TWI0;
+    static uint8_t addr = 0;
 
     twcr_t twcr = {
         .bits = {
@@ -80,7 +79,16 @@ ISR(TWI_vect)
         case TW_SR_SLA_ACK:
         {
             rx_cnt = 0;
-            i2c_ll_callback(TWI0, I2C_EVENT_RX_START, 0);
+            addr = twi->twdr >> 1;
+
+            const i2c_ll_callback_args_t args = {
+                .twi     = twi,
+                .address = addr,
+                .event   = I2C_EVENT_RX_START,
+                .size    = 0,
+            };
+
+            i2c_ll_callback(&args);
             break;
         }
 
@@ -89,11 +97,20 @@ ISR(TWI_vect)
         case TW_SR_DATA_NACK:
         {
             if (rx_len <= 0)
-                i2c_ll_callback(TWI0, I2C_EVENT_RX_MORE, rx_cnt);
+            {
+                const i2c_ll_callback_args_t args = {
+                    .twi     = twi,
+                    .address = addr,
+                    .event   = I2C_EVENT_RX_MORE,
+                    .size    = rx_cnt,
+                };
+
+                i2c_ll_callback(&args);
+            }
 
             if (rx_len > 0)
             {
-                *(rx_ptr++) = TWI0->twdr;
+                *(rx_ptr++) = twi->twdr;
                 rx_cnt++;
                 rx_len--;
             }
@@ -104,7 +121,14 @@ ISR(TWI_vect)
         // Receive STOP
         case TW_SR_STOP:
         {
-            i2c_ll_callback(TWI0, I2C_EVENT_RX_COMPLETE, rx_cnt);
+            const i2c_ll_callback_args_t args = {
+                .twi     = twi,
+                .address = addr,
+                .event   = I2C_EVENT_RX_COMPLETE,
+                .size    = rx_cnt,
+            };
+
+            i2c_ll_callback(&args);
             break;
         }
 
@@ -112,17 +136,26 @@ ISR(TWI_vect)
         case TW_ST_SLA_ACK:
         {
             tx_cnt = 0;
-            i2c_ll_callback(TWI0, I2C_EVENT_TX_START, 0);
+            addr = twi->twdr >> 1;
+
+            const i2c_ll_callback_args_t args = {
+                .twi     = twi,
+                .address = addr,
+                .event   = I2C_EVENT_TX_START,
+                .size    = 0,
+            };
+
+            i2c_ll_callback(&args);
 
             if (tx_len > 0)
             {
-                TWI0->twdr = *(tx_ptr++);
+                twi->twdr = *(tx_ptr++);
                 tx_cnt++;
                 tx_len--;
             }
             else
             {
-                TWI0->twdr = 0xFF;
+                twi->twdr = 0xFF;
             }
 
             break;
@@ -132,17 +165,26 @@ ISR(TWI_vect)
         case TW_ST_DATA_ACK:
         {
             if (tx_len <= 0)
-                i2c_ll_callback(TWI0, I2C_EVENT_TX_MORE, tx_cnt);
+            {
+                const i2c_ll_callback_args_t args = {
+                    .twi     = twi,
+                    .address = addr,
+                    .event   = I2C_EVENT_TX_MORE,
+                    .size    = tx_cnt,
+                };
+
+                i2c_ll_callback(&args);
+            }
 
             if (tx_len > 0)
             {
-                TWI0->twdr = *(tx_ptr++);
+                twi->twdr = *(tx_ptr++);
                 tx_cnt++;
                 tx_len--;
             }
             else
             {
-                TWI0->twdr = 0xFF;
+                twi->twdr = 0xFF;
             }
 
             break;
@@ -151,25 +193,46 @@ ISR(TWI_vect)
         // Transmit STOP
         case TW_ST_DATA_NACK:
         {
-            i2c_ll_callback(TWI0, I2C_EVENT_TX_COMPLETE, tx_cnt);
+            const i2c_ll_callback_args_t args = {
+                .twi     = twi,
+                .address = addr,
+                .event   = I2C_EVENT_TX_COMPLETE,
+                .size    = tx_cnt,
+            };
+
+            i2c_ll_callback(&args);
             break;
         }
 
         // Illegal start or stop condition
         case TW_BUS_ERROR:
         {
-            i2c_ll_callback(TWI0, I2C_EVENT_BUS_ERROR, 0);
+            const i2c_ll_callback_args_t args = {
+                .twi     = twi,
+                .address = 0,
+                .event   = I2C_EVENT_BUS_ERROR,
+                .size    = 0,
+            };
+
+            i2c_ll_callback(&args);
             break;
         }
 
         default:
         {
-            i2c_ll_callback(TWI0, I2C_EVENT_SEQ_ERROR, 0);
+            const i2c_ll_callback_args_t args = {
+                .twi     = twi,
+                .address = 0,
+                .event   = I2C_EVENT_SEQ_ERROR,
+                .size    = 0,
+            };
+
+            i2c_ll_callback(&args);
             break;
         }
     }
 
-    TWI0->twcr = twcr;
+    twi->twcr = twcr;
 }
 
 /*
