@@ -7,25 +7,16 @@
 #include <string.h>
 
 #if OS_MALLOC
-
-spi_device_t spi_device_create(spi_bus_t bus, gpio_t cs, spi_clock_t clock, spi_mode_t mode)
+spi_device_t spi_device_create(void)
 {
     spi_device_t self = os_malloc(sizeof(*self));
-
-    if (self == NULL_PTR)
-        return NULL_PTR;
-
-    spi_device_init(self, bus, cs, clock, mode);
-
     return self;
 }
 
 void spi_device_destroy(spi_device_t dev)
 {
-    if (dev != NULL_PTR)
-        os_free(dev);
+    os_free(dev);
 }
-
 #endif // OS_MALLOC
 
 int spi_device_init(spi_device_t self, spi_bus_t bus, gpio_t cs, spi_clock_t clock, spi_mode_t mode)

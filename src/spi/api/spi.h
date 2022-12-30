@@ -46,10 +46,10 @@ typedef struct spi_device_prv_s {
 } * spi_device_t;
 
 #if OS_MALLOC
-spi_bus_t spi_bus_create(spi_t dev);
+spi_bus_t spi_bus_create(void);
 void spi_bus_destroy(spi_bus_t dev);
 
-spi_device_t spi_device_create(spi_bus_t bus, gpio_t cs, spi_clock_t clk, spi_mode_t mode);
+spi_device_t spi_device_create(void);
 void spi_device_destroy(spi_device_t dev);
 #endif // OS_MALLOC
 

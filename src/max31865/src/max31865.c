@@ -3,6 +3,7 @@
 #include "spi.h"
 #include "bits.h"
 #include "types.h"
+#include "os_mem.h"
 
 #include <string.h>
 #include <math.h>
@@ -28,6 +29,18 @@
  * Exported functions
  */
 
+#if OS_MALLOC
+max31865_t max31865_create(void)
+{
+    max31865_t self = os_malloc(sizeof(*self));
+    return self;
+}
+
+void max31865_destroy(max31865_t dev)
+{
+    os_free(dev);
+}
+#endif // OS_MALLOC
 int max31865_init(max31865_t self, spi_bus_t bus, gpio_t cs, max31865_mode_t mode, max31865_filter_t filter)
 {
     memset(self, 0, sizeof(*self));

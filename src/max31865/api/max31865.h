@@ -3,6 +3,7 @@
 
 #include "gpio.h"
 #include "spi.h"
+#include "os_cfg.h"
 
 #define MAX_31865_STATUS_VOLTAGE     BIT(2) // Overvoltage/undervoltage fault
 #define MAX_31865_STATUS_RTDIN_OPEN  BIT(3) // RTDIN < 0.85xVBIAS (open)
@@ -34,6 +35,11 @@ typedef enum {
     MAX31865_FILTER_50HZ,
     MAX31865_FILTER_60HZ,
 } max31865_filter_t;
+
+#if OS_MALLOC
+max31865_t max31865_create(void);
+void max31865_destroy(max31865_t dev);
+#endif // OS_MALLOC
 
 int max31865_init(max31865_t self, spi_bus_t bus, gpio_t cs, max31865_mode_t mode, max31865_filter_t filter);
 int max31865_read_rtd(max31865_t self, double * rtd);

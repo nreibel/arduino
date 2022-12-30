@@ -71,32 +71,15 @@ int gpio_disable_extint(extint_t pin)
 /* Public functions */
 
 #if OS_MALLOC
-gpio_t gpio_create(port_t port, uint8_t pin)
+gpio_t gpio_create(void)
 {
-    if (pin >= 8)
-        return NULL_PTR;
-
-    if (port >= NUMBER_OF_PORTS)
-        return NULL_PTR;
-
     gpio_t self = os_malloc(sizeof(*self));
-
-    if (self != NULL_PTR)
-    {
-        self->port = port;
-        self->pin = pin;
-        self->direction = GPIO_DIRECTION_NONE;
-    }
-
     return self;
 }
 
 void gpio_destroy(gpio_t self)
 {
-    if (self != NULL_PTR)
-    {
-        os_free(self);
-    }
+    os_free(self);
 }
 #endif // OS_MALLOC
 

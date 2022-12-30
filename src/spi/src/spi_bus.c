@@ -8,25 +8,16 @@
 #include <string.h>
 
 #if OS_MALLOC
-
-spi_bus_t spi_bus_create(spi_t bus)
+spi_bus_t spi_bus_create(void)
 {
     spi_bus_t self = os_malloc(sizeof(*self));
-
-    if (self == NULL_PTR)
-        return NULL_PTR;
-
-    spi_bus_init(self, bus);
-
     return self;
 }
 
 void spi_bus_destroy(spi_bus_t dev)
 {
-    if (dev != NULL_PTR)
-        os_free(dev);
+    os_free(dev);
 }
-
 #endif // OS_MALLOC
 
 int spi_bus_init(spi_bus_t self, spi_t bus)
