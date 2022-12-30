@@ -1,6 +1,8 @@
 #include "adc.h"
 #include "types.h"
+#include "macros.h"
 #include "os_mem.h"
+#include <string.h>
 
 #if OS_MALLOC
 adc_handle_t adc_create(void)
@@ -17,6 +19,10 @@ void adc_destroy(adc_handle_t dev)
 
 int adc_init(adc_handle_t self, adc_t adc)
 {
+    CHECK_NULL(self);
+
+    memset(self, 0, sizeof(*self));
+
     adc_ll_init(adc);
 
     self->dev = adc;
@@ -29,6 +35,8 @@ int adc_init(adc_handle_t self, adc_t adc)
 
 int adc_configure(adc_handle_t self, adc_vref_t vref, adc_prescaler_t pscl)
 {
+    CHECK_NULL(self);
+
     uint8_t vref_ll = 0;
     uint8_t pscl_ll = 0;
 
@@ -62,6 +70,8 @@ int adc_configure(adc_handle_t self, adc_vref_t vref, adc_prescaler_t pscl)
 
 int adc_read_word(adc_handle_t self, adc_channel_t channel, uint16_t * value)
 {
+    CHECK_NULL(self);
+
     if (!self->configured)
         return -ADC_ERR_INIT;
 
@@ -86,6 +96,8 @@ int adc_read_word(adc_handle_t self, adc_channel_t channel, uint16_t * value)
 
 int adc_read_byte(adc_handle_t self, adc_channel_t channel, uint8_t * value)
 {
+    CHECK_NULL(self);
+
     if (!self->configured)
         return -ADC_ERR_INIT;
 
@@ -110,6 +122,8 @@ int adc_read_byte(adc_handle_t self, adc_channel_t channel, uint8_t * value)
 
 int adc_setup_trigger(adc_handle_t self, adc_trigger_t trigger)
 {
+    CHECK_NULL(self);
+
     uint8_t trg = 0;
 
     if (!self->configured)

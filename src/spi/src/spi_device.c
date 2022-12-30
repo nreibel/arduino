@@ -3,6 +3,7 @@
 #include "bits.h"
 #include "os_cfg.h"
 #include "os_mem.h"
+#include "macros.h"
 
 #include <string.h>
 
@@ -21,6 +22,8 @@ void spi_device_destroy(spi_device_t dev)
 
 int spi_device_init(spi_device_t self, spi_bus_t bus, gpio_t cs, spi_clock_t clock, spi_mode_t mode)
 {
+    CHECK_NULL(self);
+
     memset(self, 0, sizeof(*self));
 
     self->bus   = bus;
@@ -35,6 +38,8 @@ int spi_device_init(spi_device_t self, spi_bus_t bus, gpio_t cs, spi_clock_t clo
 
 int spi_device_enable(spi_device_t self)
 {
+    CHECK_NULL(self);
+
     spi_bus_configure(self->bus, self->clock, self->mode);
     gpio_set(self->cs);
     return SPI_OK;
@@ -42,12 +47,16 @@ int spi_device_enable(spi_device_t self)
 
 int spi_device_disable(spi_device_t self)
 {
+    CHECK_NULL(self);
+
     gpio_reset(self->cs);
     return SPI_OK;
 }
 
 int spi_device_read_bytes(spi_device_t self, void * buffer, unsigned int len)
 {
+    CHECK_NULL(self);
+
     int ret = SPI_OK;
     unsigned int cnt = 0;
 
@@ -62,6 +71,8 @@ int spi_device_read_bytes(spi_device_t self, void * buffer, unsigned int len)
 
 int spi_device_read_byte(spi_device_t self, uint8_t * byte)
 {
+    CHECK_NULL(self);
+
     int ret = SPI_OK;
     unsigned int cnt = 0;
 
@@ -76,6 +87,8 @@ int spi_device_read_byte(spi_device_t self, uint8_t * byte)
 
 int spi_device_transfer_bytes(spi_device_t self, void *buffer, unsigned int len)
 {
+    CHECK_NULL(self);
+
     int ret = SPI_OK;
     unsigned int cnt = 0;
 
@@ -90,6 +103,8 @@ int spi_device_transfer_bytes(spi_device_t self, void *buffer, unsigned int len)
 
 int spi_device_transfer_byte(spi_device_t self, uint8_t byte, uint8_t *read)
 {
+    CHECK_NULL(self);
+
     int ret = SPI_OK;
     unsigned int cnt = 0;
 

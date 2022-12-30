@@ -1,6 +1,7 @@
 #include "spi.h"
 #include "spi_ll.h"
 #include "bits.h"
+#include "macros.h"
 #include "os_cfg.h"
 #include "os_mem.h"
 
@@ -22,6 +23,8 @@ void spi_bus_destroy(spi_bus_t dev)
 
 int spi_bus_init(spi_bus_t self, spi_t bus)
 {
+    CHECK_NULL(self);
+
     memset(self, 0, sizeof(*self));
 
     spi_ll_init(bus);
@@ -37,6 +40,8 @@ int spi_bus_init(spi_bus_t self, spi_t bus)
 
 int spi_bus_configure(spi_bus_t self, spi_clock_t clock, spi_mode_t mode)
 {
+    CHECK_NULL(self);
+
     if (self->clock != clock)
     {
         switch(clock)
@@ -122,6 +127,8 @@ int spi_bus_configure(spi_bus_t self, spi_clock_t clock, spi_mode_t mode)
 
 int spi_bus_read_bytes(spi_bus_t self, void * buffer, unsigned int len)
 {
+    CHECK_NULL(self);
+
     uint8_t * bytes = buffer;
 
     for (unsigned int i = 0 ; i < len ; i++)
@@ -136,6 +143,8 @@ int spi_bus_read_bytes(spi_bus_t self, void * buffer, unsigned int len)
 
 int spi_bus_read_byte(spi_bus_t self, uint8_t * byte)
 {
+    CHECK_NULL(self);
+
     spi_ll_write_byte(self->bus, 0);
     spi_ll_wait_tx(self->bus);
     *byte = spi_ll_read_byte(self->bus);
@@ -145,6 +154,8 @@ int spi_bus_read_byte(spi_bus_t self, uint8_t * byte)
 
 int spi_bus_transfer_bytes(spi_bus_t self, void * buffer, unsigned int len)
 {
+    CHECK_NULL(self);
+
     uint8_t * bytes = buffer;
 
     for (unsigned int i = 0 ; i < len ; i++)
@@ -159,6 +170,8 @@ int spi_bus_transfer_bytes(spi_bus_t self, void * buffer, unsigned int len)
 
 int spi_bus_transfer_byte(spi_bus_t self, uint8_t byte, uint8_t * read)
 {
+    CHECK_NULL(self);
+
     spi_ll_write_byte(self->bus, byte);
     spi_ll_wait_tx(self->bus);
     if (read != NULL_PTR) *read = spi_ll_read_byte(self->bus);
@@ -168,6 +181,8 @@ int spi_bus_transfer_byte(spi_bus_t self, uint8_t byte, uint8_t * read)
 
 inline void spi_bus_write_fast(spi_bus_t self, const uint8_t byte)
 {
+    CHECK_NULL(self);
+
     spi_ll_write_byte(self->bus, byte);
     _delay_us(1);
 }

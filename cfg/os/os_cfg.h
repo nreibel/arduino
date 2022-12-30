@@ -29,6 +29,8 @@ typedef uint16_t time_t;
 
 #define OS_ENABLE_PRINTF ON
 
+#define OS_CHECK_NULL    ON
+
 typedef enum {
     NUMBER_OF_BACKGROUND_TASKS
 } os_background_tasks_t;

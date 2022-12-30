@@ -3,6 +3,8 @@
 #include "os_mem.h"
 #include "bits.h"
 #include "types.h"
+#include "macros.h"
+#include <string.h>
 
 /* External interrupts */
 
@@ -85,11 +87,15 @@ void gpio_destroy(gpio_t self)
 
 int gpio_init(gpio_t self, port_t port, uint8_t pin)
 {
+    CHECK_NULL(self);
+
     if (pin >= 8)
         return -GPIO_ERROR_PIN;
 
     if (port >= NUMBER_OF_PORTS)
         return -GPIO_ERROR_PORT;
+
+    memset(self, 0, sizeof(*self));
 
     self->port = port;
     self->pin = pin;
@@ -100,6 +106,8 @@ int gpio_init(gpio_t self, port_t port, uint8_t pin)
 
 int gpio_configure(gpio_t self, gpio_data_direction_t direction)
 {
+    CHECK_NULL(self);
+
     // Set data direction
     switch(direction)
     {
@@ -141,6 +149,8 @@ int gpio_configure(gpio_t self, gpio_data_direction_t direction)
 
 int gpio_get(gpio_t self, bool *state)
 {
+    CHECK_NULL(self);
+
     switch(self->direction)
     {
         case GPIO_INPUT_HIGH_Z:
@@ -155,6 +165,8 @@ int gpio_get(gpio_t self, bool *state)
 
 int gpio_set(gpio_t self)
 {
+    CHECK_NULL(self);
+
     switch(self->direction)
     {
         case GPIO_OUTPUT_ACTIVE_HIGH:
@@ -172,6 +184,8 @@ int gpio_set(gpio_t self)
 
 int gpio_toggle(gpio_t self)
 {
+    CHECK_NULL(self);
+
     switch(self->direction)
     {
         case GPIO_OUTPUT_ACTIVE_HIGH:
@@ -186,6 +200,8 @@ int gpio_toggle(gpio_t self)
 
 int gpio_reset(gpio_t self)
 {
+    CHECK_NULL(self);
+
     switch(self->direction)
     {
         case GPIO_OUTPUT_ACTIVE_HIGH:

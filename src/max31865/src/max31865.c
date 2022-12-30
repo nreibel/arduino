@@ -4,6 +4,7 @@
 #include "bits.h"
 #include "types.h"
 #include "os_mem.h"
+#include "macros.h"
 
 #include <string.h>
 #include <math.h>
@@ -41,10 +42,14 @@ void max31865_destroy(max31865_t dev)
     os_free(dev);
 }
 #endif // OS_MALLOC
+
 int max31865_init(max31865_t self, spi_bus_t bus, gpio_t cs, max31865_mode_t mode, max31865_filter_t filter)
 {
-    memset(self, 0, sizeof(*self));
+    CHECK_NULL(self);
+
     int ret = 0;
+
+    memset(self, 0, sizeof(*self));
 
     ret = spi_device_init(&self->dev, bus, cs, SPI_CLOCK_DIV_16, SPI_MODE_3);
     if (ret < 0) return -MAX31865_ERR_INIT;
@@ -101,6 +106,8 @@ int max31865_init(max31865_t self, spi_bus_t bus, gpio_t cs, max31865_mode_t mod
 
 int max31865_read_rtd(max31865_t self, double *rtd)
 {
+    CHECK_NULL(self);
+
     int ret = 0;
     uint8_t data[] = { MAX31865_REG_RTD_MSB | MAX31865_READ, 0, 0 };
 
@@ -137,6 +144,8 @@ double max31865_rtd_to_temperature(double rtd)
 
 int max31865_read_fault_status(max31865_t self, uint8_t *status)
 {
+    CHECK_NULL(self);
+
     int ret = 0;
     uint8_t data[] = { MAX31865_REG_FAULT_STATUS | MAX31865_READ, 0 };
 

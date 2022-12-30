@@ -42,6 +42,13 @@ void os_systick()
  * Public functions
  */
 
+__attribute((weak))
+void error_trap()
+{
+    cli();
+    for(;;){}
+}
+
 void os_powerdown()
 {
     // Disable interrupts, watchdog, and all peripherals

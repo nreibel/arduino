@@ -1,6 +1,7 @@
 #include "serial.h"
 #include "types.h"
 #include "os_mem.h"
+#include "macros.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -70,6 +71,8 @@ void serial_destroy(serial_t self)
 
 int serial_init(serial_t self, usart_t usart, uint32_t baudrate)
 {
+    CHECK_NULL(self);
+
     memset(self, 0, sizeof(*self));
 
     serial_ll_init(usart, baudrate);
@@ -82,12 +85,16 @@ int serial_init(serial_t self, usart_t usart, uint32_t baudrate)
 
 int serial_set_line_terminator(serial_t self, char ter)
 {
+    CHECK_NULL(self);
+
     self->ter = ter;
     return SERIAL_OK;
 }
 
 int serial_set_callback(serial_t self, serial_callback callback, void * buffer, unsigned int length)
 {
+    CHECK_NULL(self);
+
     self->cbk    = callback;
     self->rx.buf = buffer;
     self->rx.len = length;
@@ -100,6 +107,8 @@ int serial_set_callback(serial_t self, serial_callback callback, void * buffer, 
 
 int serial_read_byte(serial_t self, uint8_t * byte)
 {
+    CHECK_NULL(self);
+
     serial_ll_wait_rx(self->dev);
     *byte = serial_ll_read(self->dev);
     return 1;
@@ -107,6 +116,8 @@ int serial_read_byte(serial_t self, uint8_t * byte)
 
 int serial_read_bytes(serial_t self, void * buffer, unsigned int length)
 {
+    CHECK_NULL(self);
+
     int received = 0;
     uint8_t * bytes = buffer;
 
@@ -118,6 +129,8 @@ int serial_read_bytes(serial_t self, void * buffer, unsigned int length)
 
 int serial_write_byte(serial_t self, uint8_t chr)
 {
+    CHECK_NULL(self);
+
     serial_ll_write(self->dev, chr);
     serial_ll_wait_tx(self->dev);
     return 1;
@@ -125,6 +138,8 @@ int serial_write_byte(serial_t self, uint8_t chr)
 
 int serial_write_bytes(serial_t self, const void * buffer, unsigned int length)
 {
+    CHECK_NULL(self);
+
     int written = 0;
     const uint8_t * bytes = buffer;
 
@@ -136,6 +151,8 @@ int serial_write_bytes(serial_t self, const void * buffer, unsigned int length)
 
 int serial_write_async(serial_t self, const void * buffer, unsigned int length)
 {
+    CHECK_NULL(self);
+
     if (self->tx.bsy)
         return -SERIAL_ERR_BUSY;
 
@@ -155,6 +172,8 @@ int serial_write_async(serial_t self, const void * buffer, unsigned int length)
 
 int serial_print(serial_t self, const char * string)
 {
+    CHECK_NULL(self);
+
     int written = 0;
 
     while(*string != 0) written += serial_write_byte(self, *string++);
@@ -164,6 +183,8 @@ int serial_print(serial_t self, const char * string)
 
 int serial_printf(serial_t self, void * buffer, unsigned int length, const char * fmt, ...)
 {
+    CHECK_NULL(self);
+
     va_list args;
     va_start(args, fmt);
     vsnprintf(buffer, length, fmt, args);
@@ -174,6 +195,8 @@ int serial_printf(serial_t self, void * buffer, unsigned int length, const char 
 
 int serial_printf_async(serial_t self, void * buffer, unsigned int length, const char * fmt, ...)
 {
+    CHECK_NULL(self);
+
     if (self->tx.bsy)
         return -SERIAL_ERR_BUSY;
 
@@ -187,6 +210,8 @@ int serial_printf_async(serial_t self, void * buffer, unsigned int length, const
 
 int serial_print_P(serial_t self, flstr_t string)
 {
+    CHECK_NULL(self);
+
     int written = 0;
 
     while(*string != 0) written += serial_write_byte(self, *string++);
