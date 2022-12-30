@@ -1,6 +1,3 @@
-#include "os.h"
-#include "os_mem.h"
-#include "os_cfg.h"
 #include "gpio_ll.h"
 #include "bits.h"
 #include "types.h"
@@ -84,4 +81,22 @@ void gpio_ll_toggle(port_t port, uint8_t pin)
 void gpio_ll_reset(port_t port, uint8_t pin)
 {
     RESET_BIT(PORTS[port].port, pin);
+}
+
+void gpio_ll_enable_extint(extint_t pin)
+{
+    SET_BIT(EIMSK, pin);
+}
+
+void gpio_ll_disable_extint(extint_t pin)
+{
+    RESET_BIT(EIMSK, pin);
+}
+
+void gpio_ll_set_edge(extint_t pin, gpio_ll_edge_t edge)
+{
+    const unsigned int idx = pin / 4;
+    const unsigned int off = pin % 4;
+
+    EICR[idx] = (edge & 0x3) << (2 * off);
 }

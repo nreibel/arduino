@@ -5,7 +5,6 @@
 
 // TODO name clash with avr/io.h
 
-
 typedef enum {
     EXTINT0, // PD2
     EXTINT1, // PD3
@@ -26,7 +25,14 @@ typedef enum {
     NUMBER_OF_PORTS
 } port_t;
 
+typedef struct {
+    uint8_t pin;
+    uint8_t ddr;
+    uint8_t port;
+} volatile * mem_port_t;
+
 #define PORTS TYPECAST(0x23, mem_port_t)
 #define PCMSK TYPECAST(0x6B, volatile uint8_t *)
+#define EICR  TYPECAST(0x69, volatile uint8_t *)
 
 #endif // PORT_LL_API_H__
