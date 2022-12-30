@@ -1,11 +1,7 @@
-#include "os_cfg.h"
-
-#if OS_MALLOC == OS_MALLOC_STDLIB
-
 #include "os_mem.h"
 #include "types.h"
-#include "string.h"
-#include "stdlib.h"
+#include <string.h>
+#include <stdlib.h>
 
 /*
  * Private defines
@@ -17,31 +13,25 @@
  * Private functions prototypes
  */
 
-static void* my_malloc(unsigned int sz);
-static void* my_calloc(unsigned int sz);
-static void my_free(void *ptr);
-static unsigned int my_get_free();
-static unsigned int my_get_total();
-static unsigned int my_get_used();
-
-/*
- * Private data
- */
-
-static struct malloc_drv_s drv = {
-    .malloc = my_malloc,
-    .calloc = my_calloc,
-    .free = my_free,
-    .get_free = my_get_free,
-    .get_used = my_get_used,
-    .get_total = my_get_total
-};
+static void *       my_malloc(unsigned int sz);
+static void *       my_calloc(unsigned int sz);
+static void         my_free(void * ptr);
+static unsigned int my_get_free (void);
+static unsigned int my_get_total(void);
+static unsigned int my_get_used (void);
 
 /*
  * Exported data
  */
 
-const malloc_drv_t malloc_drv = &drv;
+const struct malloc_drv_s stdlib_malloc = {
+    .malloc    = my_malloc,
+    .calloc    = my_calloc,
+    .free      = my_free,
+    .get_free  = my_get_free,
+    .get_used  = my_get_used,
+    .get_total = my_get_total
+};
 
 /*
  * Linker variables
@@ -86,5 +76,3 @@ static unsigned int my_get_total()
     uint8_t v = 0, *stack_end = &v;
     return (unsigned int) stack_end - ADDR(__heap_start);
 }
-
-#endif // OS_MALLOC == OS_MALLOC_GCC

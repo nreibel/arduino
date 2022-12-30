@@ -155,36 +155,36 @@ void pmbus_rx(uint8_t reg, const uint8_t * buffer, unsigned int len)
     }
 }
 
-void i2c_ll_callback(twi_t twi, i2c_event_t event, unsigned int size)
+void i2c_ll_callback(const i2c_ll_callback_args_t * args)
 {
     static uint8_t reg = 0;
     static uint8_t rx[8];
     static uint8_t tx[8];
 
-    switch(event)
+    switch(args->event)
     {
         case I2C_EVENT_RX_START:
         {
-            i2c_ll_set_rx_buffer(twi, &reg, 1);
+            i2c_ll_set_rx_buffer(args->twi, &reg, 1);
             break;
         }
 
         case I2C_EVENT_RX_MORE:
         {
-            i2c_ll_set_rx_buffer(twi, rx, sizeof(rx));
+            i2c_ll_set_rx_buffer(args->twi, rx, sizeof(rx));
             break;
         }
 
         case I2C_EVENT_RX_COMPLETE:
         {
-            pmbus_rx(reg, rx, size);
+            pmbus_rx(reg, rx, args->size);
             break;
         }
 
         case I2C_EVENT_TX_START:
         {
             unsigned int len = pmbus_tx(reg, tx, sizeof(tx));
-            i2c_ll_set_tx_buffer(twi, tx, len);
+            i2c_ll_set_tx_buffer(args->twi, tx, len);
             break;
         }
 
@@ -309,7 +309,7 @@ void app_init()
 
     // serial_tp_init(serial);
 
-    i2c_ll_init_slave(TWI0, 0x20);
+    i2c_ll_init_slave(TWI0, 0x20, 0xFF);
 
     // Init tasks
     printf( C_RED "Start!" C_END "\r\n");

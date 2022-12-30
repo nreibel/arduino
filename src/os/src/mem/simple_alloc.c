@@ -1,31 +1,18 @@
-#include "os_cfg.h"
-
-#if OS_MALLOC == OS_MALLOC_SIMPLE
-
 #include "os_mem.h"
-#include "string.h"
+#include <string.h>
 
 /*
  * Private functions prototypes
  */
 
-static void* my_malloc(unsigned int sz);
-static unsigned int my_get_total();
-static unsigned int my_get_free();
-static unsigned int my_get_used();
+static void *       my_malloc(unsigned int sz);
+static unsigned int my_get_total(void);
+static unsigned int my_get_free (void);
+static unsigned int my_get_used (void);
 
 /*
  * Private data
  */
-
-static struct malloc_drv_s drv = {
-    .malloc = my_malloc,
-    .calloc = NULL_PTR,
-    .free = NULL_PTR,
-    .get_free = my_get_free,
-    .get_used = my_get_used,
-    .get_total = my_get_total
-};
 
 static uint8_t heap[OS_HEAP_SIZE];
 static unsigned int idx = 0;
@@ -34,7 +21,14 @@ static unsigned int idx = 0;
  * Exported data
  */
 
-const malloc_drv_t malloc_drv = &drv;
+const struct malloc_drv_s simple_malloc = {
+    .malloc    = my_malloc,
+    .calloc    = NULL_PTR,
+    .free      = NULL_PTR,
+    .get_free  = my_get_free,
+    .get_used  = my_get_used,
+    .get_total = my_get_total
+};
 
 /*
  * Private functions
@@ -64,5 +58,3 @@ static unsigned int my_get_total()
 {
     return OS_HEAP_SIZE;
 }
-
-#endif // OS_MALLOC == OS_MALLOC_SIMPLE

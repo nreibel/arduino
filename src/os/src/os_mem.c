@@ -1,15 +1,26 @@
 #include "os.h"
 #include "os_cfg.h"
 #include "os_mem.h"
-#include "string.h"
+#include <string.h>
 
-#if OS_MALLOC != OS_MALLOC_NONE
+extern const struct malloc_drv_s simple_malloc;
+extern const struct malloc_drv_s stdlib_malloc;
 
-extern const malloc_drv_t malloc_drv;
+#if OS_MALLOC == OS_MALLOC_NONE
+const malloc_drv_t malloc_drv = NULL_PTR;
+#elif OS_MALLOC == OS_MALLOC_SIMPLE
+const malloc_drv_t malloc_drv = &simple_malloc;
+#elif OS_MALLOC == OS_MALLOC_STDLIB
+const malloc_drv_t malloc_drv = &stdlib_malloc;
+#else
+#error Invalid value of OS_MALLOC
+#endif
 
 /*
  * Public functions
  */
+
+#if OS_MALLOC != OS_MALLOC_NONE
 
 void* os_calloc(unsigned int sz)
 {
@@ -61,4 +72,4 @@ unsigned int os_get_total_heap()
     else return malloc_drv->get_total();
 }
 
-#endif // OS_MALLOC != OS_MALLOC_NONE
+#endif // OS_MALLOC == OS_MALLOC_NONE
