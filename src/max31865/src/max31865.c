@@ -4,16 +4,19 @@
 #include "spi.h"
 #include "bits.h"
 #include "types.h"
+
+#include <string.h>
 #include <math.h>
 
-int max31865_init(max31865_t *self, gpio_t *cs, max31865_mode_t mode, max31865_filter_t filter)
+int max31865_init(max31865_t self, spi_bus_t bus, gpio_t cs, max31865_mode_t mode, max31865_filter_t filter)
 {
-    spi_device_init(&self->dev, cs, SPI_CLOCK_DIV_16 , SPI_MODE_3);
+    memset(self, 0, sizeof(*self));
+
+    spi_device_init(&self->dev, bus, cs, SPI_CLOCK_DIV_16, SPI_MODE_3);
     spi_device_set_transaction_mode(&self->dev, true);
 
     // VBIAS = On, Conversion mode = Auto
     uint8_t configuration = BIT(7) | BIT(6);
-    uint8_t read = 0;
 
     switch(mode)
     {
@@ -42,24 +45,25 @@ int max31865_init(max31865_t *self, gpio_t *cs, max31865_mode_t mode, max31865_f
     }
 
     // Write config
+    uint8_t data_wr[] = { MAX31865_REG_CONFIG | MAX31865_WRITE, configuration };
     spi_device_enable(&self->dev);
-    spi_device_write_byte(&self->dev, MAX31865_REG_CONFIG | MAX31865_WRITE, NULL_PTR);
-    spi_device_write_byte(&self->dev, configuration, NULL_PTR);
+    spi_device_write_bytes( &self->dev, data_wr, sizeof(data_wr) );
     spi_device_disable(&self->dev);
 
+
     // Read back config
+    uint8_t data_rd[] = { MAX31865_REG_CONFIG | MAX31865_READ, 0 };
     spi_device_enable(&self->dev);
-    spi_device_write_byte(&self->dev, MAX31865_REG_CONFIG | MAX31865_READ, NULL_PTR);
-    spi_device_write_byte(&self->dev, configuration, &read);
+    spi_device_write_bytes(&self->dev, data_rd, sizeof(data_rd));
     spi_device_disable(&self->dev);
 
     // Same config should be read back if communication is set up properly
-    if (read != configuration) return -1;
+    if (data_rd[1] != configuration) return -1;
 
     return 0;
 }
 
-int max31865_read_rtd(max31865_t *self, double *rtd, bool *fault)
+int max31865_read_rtd(max31865_t self, double *rtd, bool *fault)
 {
     uint8_t msb = 0;
     uint8_t lsb = 0;
@@ -97,7 +101,7 @@ double max31865_rtd_to_temperature(double rtd)
     return acc / (2 * MAX31865_RTD_B);
 }
 
-int max31865_read_fault_status(max31865_t *self, uint8_t *status)
+int max31865_read_fault_status(max31865_t self, uint8_t *status)
 {
     spi_device_enable(&self->dev);
     spi_device_write_byte(&self->dev, MAX31865_REG_FAULT_STATUS | MAX31865_READ, NULL_PTR);
