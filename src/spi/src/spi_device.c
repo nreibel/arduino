@@ -4,6 +4,8 @@
 #include "os_cfg.h"
 #include "os_mem.h"
 
+#include <string.h>
+
 #if OS_MALLOC
 
 spi_device_t spi_device_create(spi_bus_t bus, gpio_t cs, spi_clock_t clock, spi_mode_t mode)
@@ -28,22 +30,15 @@ void spi_device_destroy(spi_device_t dev)
 
 int spi_device_init(spi_device_t self, spi_bus_t bus, gpio_t cs, spi_clock_t clock, spi_mode_t mode)
 {
-    UNUSED(bus);
+    memset(self, 0, sizeof(*self));
 
-    self->bus = bus;
-    self->cs = cs;
+    self->bus   = bus;
+    self->cs    = cs;
     self->clock = clock;
-    self->mode = mode;
-    self->transaction_mode = false;
+    self->mode  = mode;
 
     gpio_configure(cs, GPIO_OUTPUT_ACTIVE_LOW);
 
-    return SPI_OK;
-}
-
-int spi_device_set_transaction_mode(spi_device_t self, bool enabled)
-{
-    self->transaction_mode = enabled;
     return SPI_OK;
 }
 
@@ -60,46 +55,58 @@ int spi_device_disable(spi_device_t self)
     return SPI_OK;
 }
 
-int spi_device_read_bytes(spi_device_t self, void *buffer, unsigned int len)
+int spi_device_read_bytes(spi_device_t self, void * buffer, unsigned int len)
 {
-    if (!self->transaction_mode) spi_device_enable(self);
-    int ret = spi_bus_read_bytes(self->bus, buffer, len);
-    if (!self->transaction_mode) spi_device_disable(self);
+    int ret = SPI_OK;
+    unsigned int cnt = 0;
 
-    return ret;
+    ret += spi_device_enable(self);
+    cnt += spi_bus_read_bytes(self->bus, buffer, len);
+    ret += spi_device_disable(self);
+
+    if (ret == SPI_OK && cnt == len)
+        return cnt;
+    else return -SPI_FAIL;
 }
 
-int spi_device_read_byte(spi_device_t self, uint8_t *byte)
+int spi_device_read_byte(spi_device_t self, uint8_t * byte)
 {
-    if (!self->transaction_mode) spi_device_enable(self);
-    int ret = spi_bus_read_byte(self->bus, byte);
-    if (!self->transaction_mode) spi_device_disable(self);
+    int ret = SPI_OK;
+    unsigned int cnt = 0;
 
-    return ret;
+    ret += spi_device_enable(self);
+    cnt += spi_bus_read_byte(self->bus, byte);
+    ret += spi_device_disable(self);
+
+    if (ret == SPI_OK && cnt == 1)
+        return cnt;
+    else return -SPI_FAIL;
 }
 
-int spi_device_write_bytes(spi_device_t self, void *buffer, unsigned int len)
+int spi_device_transfer_bytes(spi_device_t self, void *buffer, unsigned int len)
 {
-    if (!self->transaction_mode) spi_device_enable(self);
-    int ret = spi_bus_write_bytes(self->bus, buffer, len);
-    if (!self->transaction_mode) spi_device_disable(self);
+    int ret = SPI_OK;
+    unsigned int cnt = 0;
 
-    return ret;
+    ret += spi_device_enable(self);
+    cnt += spi_bus_transfer_bytes(self->bus, buffer, len);
+    ret += spi_device_disable(self);
+
+    if (ret == SPI_OK && cnt == len)
+        return cnt;
+    else return -SPI_FAIL;
 }
 
-int spi_device_write_byte(spi_device_t self, uint8_t byte, uint8_t *read)
+int spi_device_transfer_byte(spi_device_t self, uint8_t byte, uint8_t *read)
 {
-    if (!self->transaction_mode) spi_device_enable(self);
-    int ret = spi_bus_write_byte(self->bus, byte, read);
-    if (!self->transaction_mode) spi_device_disable(self);
+    int ret = SPI_OK;
+    unsigned int cnt = 0;
 
-    return ret;
-}
+    ret += spi_device_enable(self);
+    cnt += spi_bus_transfer_byte(self->bus, byte, read);
+    ret += spi_device_disable(self);
 
-spi_bus_t spi_device_get_bus(spi_device_t self)
-{
-    if (self == NULL_PTR)
-        return NULL_PTR;
-
-    return self->bus;
+    if (ret == SPI_OK && cnt == 1)
+        return cnt;
+    else return -SPI_FAIL;
 }
