@@ -3,6 +3,7 @@
 
 #include <stdarg.h>
 #include "types.h"
+#include "os_cfg.h"
 #include "serial_ll.h"
 
 enum {
@@ -38,6 +39,11 @@ struct serial_s
         bool            bsy;
     } tx;
 };
+
+#if OS_MALLOC
+serial_t serial_create(void);
+void serial_destroy(serial_t self);
+#endif // OS_MALLOC
 
 int     serial_init                 (serial_t self, usart_t usart, uint32_t baudrate);
 int     serial_set_callback         (serial_t self, serial_callback callback, void * buffer, unsigned int length);

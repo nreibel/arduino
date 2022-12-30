@@ -35,7 +35,6 @@ typedef struct gpio_prv_s {
     gpio_data_direction_t direction;
 } * gpio_t;
 
-
 #if OS_MALLOC
 gpio_t gpio_create(void);
 void gpio_destroy(gpio_t self);

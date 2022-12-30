@@ -1,6 +1,6 @@
 #include "serial.h"
-#include "serial_ll.h"
 #include "types.h"
+#include "os_mem.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -54,6 +54,19 @@ void serial_tx_irq_handler(usart_t usart, void * context)
 /*
  * Public functions
  */
+
+#if OS_MALLOC
+serial_t serial_create(void)
+{
+    serial_t self = os_malloc(sizeof(*self));
+    return self;
+}
+
+void serial_destroy(serial_t self)
+{
+    os_free(self);
+}
+#endif // OS_MALLOC
 
 int serial_init(serial_t self, usart_t usart, uint32_t baudrate)
 {
