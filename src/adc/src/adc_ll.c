@@ -9,15 +9,19 @@
  */
 
 __attribute__((weak))
-void adc_interrupt(adc_t adc, uint16_t value)
+void adc_interrupt(const adc_ll_callback_args_t * args)
 {
-    UNUSED(adc);
-    UNUSED(value);
+    UNUSED(args);
 }
 
 ISR(ADC_vect)
 {
-    adc_interrupt(ADC0, ADC0->adc.w);
+    const adc_ll_callback_args_t args = {
+        .adc   = ADC0,
+        .value = ADC0->adc.w,
+    };
+
+    adc_interrupt(&args);
 }
 
 /*
@@ -43,12 +47,12 @@ void adc_ll_set_interrupts_enabled(adc_t adc, bool enabled)
     adc->adcsra.bits.adie = enabled ? 1 : 0;
 }
 
-void adc_ll_set_prescaler(adc_t adc, uint8_t pscl)
+void adc_ll_set_prescaler(adc_t adc, adc_ll_pscl_t pscl)
 {
     adc->adcsra.bits.adps = pscl;
 }
 
-void adc_ll_set_vref(adc_t adc, uint8_t vref)
+void adc_ll_set_vref(adc_t adc, adc_ll_vref_t vref)
 {
     adc->admux.bits.refs = vref;
 }
@@ -58,7 +62,7 @@ void adc_ll_set_auto_trigger(adc_t adc, bool enabled)
     adc->adcsra.bits.adate = enabled ? 1 : 0;
 }
 
-void adc_ll_set_trigger_source(adc_t adc, uint8_t source)
+void adc_ll_set_trigger_source(adc_t adc, adc_ll_trig_t source)
 {
     adc->adcsrb.bits.adts = source;
 }

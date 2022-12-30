@@ -2,16 +2,13 @@
 #define ADC_API_H__
 
 #include "adc_ll.h"
+#include "os_cfg.h"
 
 enum {
     ADC_OK,
-    ADC_ERROR_INSTANCE,
-    ADC_ERROR_NOT_CONFIGURED,
-    ADC_ERROR_BUSY,
-    ADC_ERROR_CHANNEL,
-    ADC_ERROR_VREF,
-    ADC_ERROR_TRIGGER,
-    ADC_ERROR_PRESCALER
+    ADC_ERR_PARAM,
+    ADC_ERR_INIT,
+    ADC_ERR_BUSY,
 };
 
 typedef enum {
@@ -59,6 +56,11 @@ typedef struct adc_prv_s {
     bool configured;
     bool started;
 } * adc_handle_t;
+
+#if OS_MALLOC
+adc_handle_t adc_create(void);
+void adc_destroy(adc_handle_t dev);
+#endif // OS_MALLOC
 
 int adc_init(adc_handle_t self, adc_t dev);
 int adc_configure(adc_handle_t self, adc_vref_t vref, adc_prescaler_t pscl);
