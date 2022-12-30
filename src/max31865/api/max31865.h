@@ -11,6 +11,15 @@
 #define MAX_31865_STATUS_RTD_LOW     BIT(6) // RTD Low Threshold
 #define MAX_31865_STATUS_RTD_HIGH    BIT(7) // RTD High Threshold
 
+enum {
+    MAX31865_OK,
+    MAX31865_FAIL,
+    MAX31865_ERR_FAULT,
+    MAX31865_ERR_PARAM,
+    MAX31865_ERR_INIT,
+    MAX31865_ERR_DISCONNECTED,
+};
+
 typedef struct max31865_prv_s {
     struct spi_device_prv_s dev;
 } * max31865_t;
@@ -27,7 +36,7 @@ typedef enum {
 } max31865_filter_t;
 
 int max31865_init(max31865_t self, spi_bus_t bus, gpio_t cs, max31865_mode_t mode, max31865_filter_t filter);
-int max31865_read_rtd(max31865_t self, double * rtd, bool * fault);
+int max31865_read_rtd(max31865_t self, double * rtd);
 int max31865_read_fault_status(max31865_t self, uint8_t * status);
 
 double max31865_rtd_to_temperature(double rtd);
