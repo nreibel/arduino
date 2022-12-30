@@ -6,11 +6,11 @@
 // TODO name clash with avr/io.h
 
 typedef enum {
-    EXTINT0, // PD0
-    EXTINT1, // PD1
-    EXTINT2, // PD2
-    EXTINT3, // PD3
-    EXTINT6, // PE6
+    EXTINT0,     // PD0
+    EXTINT1,     // PD1
+    EXTINT2,     // PD2
+    EXTINT3,     // PD3
+    EXTINT6 = 6, // PE6
     NUMBER_OF_EXTINTS
 } extint_t;
 

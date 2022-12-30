@@ -96,7 +96,7 @@ void gpio_ll_disable_extint(extint_t pin)
 void gpio_ll_set_edge(extint_t pin, gpio_ll_edge_t edge)
 {
     const unsigned int idx = pin / 4;
-    const unsigned int off = pin % 4;
+    const unsigned int off = 2 * (pin % 4);
 
-    EICR[idx] = (edge & 0x3) << (2 * off);
+    SET_BITS(EICR[idx], edge << off, 0x3 << off);
 }
