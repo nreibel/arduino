@@ -5,6 +5,9 @@
 #include "bits.h"
 #include "charset.h"
 #include "os.h"
+#include "os_mem.h"
+
+#include <string.h>
 
 /*
  * Private constants
@@ -60,25 +63,41 @@ typedef struct {
 } XbmRendererData;
 
 /*
+ * Exported functions
+ */
+
+#if OS_MALLOC
+st7735_t st7735_create(void)
+{
+    st7735_t self = os_malloc(sizeof(*self));
+    return self;
+}
+
+void st7735_destroy(st7735_t dev)
+{
+    os_free(dev);
+}
+#endif // OS_MALLOC
+
+/*
  * Object mehtods
  */
 
-void st7735_init_device(st7735_t self, spi_bus_t bus, gpio_t cs, gpio_t dc, unsigned int w, unsigned int h)
+void st7735_init_device(st7735_t self, spi_bus_t bus, gpio_t cs, gpio_t dc)
 {
+    memset(self, 0, sizeof(*self));
+
     spi_device_init(&self->dev, bus, cs, SPI_CLOCK_DIV_2, SPI_MODE_0);
-    spi_device_set_transaction_mode(&self->dev, true);
-    spi_device_enable(&self->dev);
 
     gpio_configure(dc, GPIO_OUTPUT_ACTIVE_LOW);
 
-    self->width = w;
-    self->height = h;
-    self->offset_x = 0;
-    self->offset_y = 0;
-    self->dc = dc;
-    self->background_color = ST7735_COLOR_BLACK;
-    self->foreground_color = ST7735_COLOR_WHITE;
-    self->scale = 1;
+    self->dc                = dc;
+    self->orientation       = ST7735_ORIENTATION_PORTRAIT;
+    self->background_color  = ST7735_COLOR_BLACK;
+    self->foreground_color  = ST7735_COLOR_WHITE;
+    self->scale             = 1;
+
+    spi_device_enable(&self->dev);
 
     // TFT startup routine
     st7735_command(self, ST7735_SWRESET);
@@ -90,22 +109,13 @@ void st7735_init_device(st7735_t self, spi_bus_t bus, gpio_t cs, gpio_t dc, unsi
     st7735_command(self, ST7735_COLMOD);
     st7735_data(self, ST7735_COLMOD_16_BPP);
 
-    // Screen orientation
+    // Screen orientation (default = portrait)
     st7735_command(self, ST7735_MADCTL);
-    st7735_data(self, ST7735_ORIENTATION_PORTRAIT);
+    st7735_data(self, 0);
 
     st7735_command(self, ST7735_DISPON);
+
     spi_device_disable(&self->dev);
-}
-
-unsigned int st7735_get_width(st7735_t self)
-{
-    return self->width;
-}
-
-unsigned int st7735_get_height(st7735_t self)
-{
-    return self->height;
 }
 
 void st7735_set_scale(st7735_t self, unsigned int scale)
@@ -115,28 +125,28 @@ void st7735_set_scale(st7735_t self, unsigned int scale)
 
 static void st7735_data(st7735_t self, uint8_t data)
 {
-    spi_bus_t bus = spi_device_get_bus(&self->dev);
+    const spi_bus_t bus = self->dev.bus;
     spi_bus_write_fast(bus, data);
 }
 
 static void st7735_command(st7735_t self, uint8_t command)
 {
+    const spi_bus_t bus = self->dev.bus;
     gpio_set(self->dc);
-    spi_bus_t bus = spi_device_get_bus(&self->dev);
     spi_bus_write_fast(bus, command);
     gpio_reset(self->dc);
 }
 
 static void st7735_color(st7735_t self, st7735_color_t color)
 {
-    spi_bus_t bus = spi_device_get_bus(&self->dev);
+    const spi_bus_t bus = self->dev.bus;
     spi_bus_write_fast(bus, color.b[1]);
     spi_bus_write_fast(bus, color.b[0]);
 }
 
 static void st7735_set_draw_window(st7735_t self, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2)
 {
-    spi_bus_t bus = spi_device_get_bus(&self->dev);
+    const spi_bus_t bus = self->dev.bus;
 
     // Set the column to write to
     st7735_command(self, ST7735_CASET);
@@ -180,6 +190,8 @@ void st7735_set_orientation(st7735_t self, st7735_orientation_t orientation)
     st7735_command(self, ST7735_MADCTL);
     st7735_data(self, madctl);
     spi_device_disable(&self->dev);
+
+    self->orientation = orientation;
 }
 
 void st7735_set_background(st7735_t self, st7735_color_t c)
@@ -214,7 +226,23 @@ void st7735_clear_screen(st7735_t self)
     st7735_color_t bg = st7735_get_background(self);
 
     st7735_set_foreground(self, bg);
-    st7735_fill_rectangle(self, 0, 0, self->width, self->height);
+
+    switch(self->orientation)
+    {
+        case ST7735_ORIENTATION_PORTRAIT:
+        case ST7735_ORIENTATION_PORTRAIT_INV:
+            st7735_fill_rectangle(self, 0, 0, 128, 160);
+            break;
+
+        case ST7735_ORIENTATION_LANDSCAPE:
+        case ST7735_ORIENTATION_LANDSCAPE_INV:
+            st7735_fill_rectangle(self, 0, 0, 160, 128);
+            break;
+
+        default:
+            break;
+    }
+
     st7735_set_foreground(self, fg);
 }
 
@@ -281,18 +309,18 @@ void st7735_draw_char(st7735_t self, unsigned int x, unsigned int y, const char 
 
 void st7735_draw_chars(st7735_t self, unsigned int x, unsigned int y, const char* chars, int length)
 {
-    for (int i = 0 ; i < length ; i++)
+    while(length-- > 0)
     {
-        st7735_draw_char(self, x, y, chars[i]);
+        st7735_draw_char(self, x, y, *(chars++));
         x += SCALE * (ST7735_CHARSET_WIDTH + 1);
     }
 }
 
 void st7735_draw_string(st7735_t self, unsigned int x, unsigned int y, const char* str)
 {
-    for(int i = 0 ; str[i] != 0 ; i++)
+    while(*str != 0)
     {
-        st7735_draw_char(self, x, y, str[i]);
+        st7735_draw_char(self, x, y, *(str++));
         x += SCALE * (ST7735_CHARSET_WIDTH + 1);
     }
 }

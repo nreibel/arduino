@@ -4,7 +4,16 @@
 #include "types.h"
 #include "gpio.h"
 #include "spi.h"
+#include "charset.h"
+#include "os_cfg.h"
 #include "st7735_cfg.h"
+
+typedef enum {
+    ST7735_ORIENTATION_PORTRAIT,
+    ST7735_ORIENTATION_LANDSCAPE,
+    ST7735_ORIENTATION_PORTRAIT_INV,
+    ST7735_ORIENTATION_LANDSCAPE_INV
+} st7735_orientation_t;
 
 typedef union {
     struct {
@@ -22,24 +31,22 @@ typedef st7735_color_t (*ST7735_Renderer)(unsigned int x, unsigned int y, unsign
 
 typedef struct st7735_prv_s {
     struct spi_device_prv_s dev;
-    st7735_color_t background_color;
-    st7735_color_t foreground_color;
-    unsigned int scale;
-    gpio_t dc;
-    uint8_t width;
-    uint8_t height;
-    int8_t offset_x;
-    int8_t offset_y;
+    gpio_t                  dc;
+    st7735_color_t          background_color;
+    st7735_color_t          foreground_color;
+    unsigned int            scale;
+    st7735_orientation_t    orientation;
+    int8_t                  offset_x;
+    int8_t                  offset_y;
 } * st7735_t;
 
-typedef enum {
-    ST7735_ORIENTATION_PORTRAIT,
-    ST7735_ORIENTATION_LANDSCAPE,
-    ST7735_ORIENTATION_PORTRAIT_INV,
-    ST7735_ORIENTATION_LANDSCAPE_INV
-} st7735_orientation_t;
 
-void st7735_init_device(st7735_t self, spi_bus_t bus, gpio_t cs, gpio_t dc, unsigned int w, unsigned int h);
+#if OS_MALLOC
+st7735_t st7735_create(void);
+void st7735_destroy(st7735_t dev);
+#endif // OS_MALLOC
+
+void st7735_init_device(st7735_t self, spi_bus_t bus, gpio_t cs, gpio_t dc);
 
 // Setters
 void st7735_set_foreground(st7735_t self, st7735_color_t c);
@@ -52,8 +59,6 @@ void st7735_set_scale(st7735_t self, unsigned int scale);
 #endif // ST7735_SCALING_ENABLED
 
 // Getters
-unsigned int st7735_get_width(st7735_t self);
-unsigned int st7735_get_height(st7735_t self);
 st7735_color_t st7735_get_foreground(st7735_t self);
 st7735_color_t st7735_get_background(st7735_t self);
 
