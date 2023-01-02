@@ -175,12 +175,13 @@ int main(void)
     os_interrupts_disable();
     power_all_disable();
 
-    /* Set all GPIO as inputs with pullup enabled to save power */
+#if OS_INIT_GPIO
     for (port_t p = 0 ; p < NUMBER_OF_PORTS ; p++)
     {
         gpio_ll_set_port_data_direction(p, 0x00);
         gpio_ll_set_port_value(p, 0xFF);
     }
+#endif
 
     // Configure 1ms system timer
     timer_ll_power_enable(TIMER0);

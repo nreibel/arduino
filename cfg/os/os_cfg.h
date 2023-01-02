@@ -27,6 +27,9 @@ typedef uint16_t time_t;
 // If the ADC is enabled, entering idle mode triggers a conversion!
 #define OS_SLEEP_ON_IDLE ON
 
+// Set all GPIO as inputs with pullup enabled to save power
+#define OS_INIT_GPIO ON
+
 #define OS_ENABLE_PRINTF ON
 
 #define OS_CHECK_NULL    ON
