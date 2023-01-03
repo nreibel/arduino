@@ -21,17 +21,17 @@ void spi_bus_destroy(spi_bus_t dev)
 }
 #endif // OS_MALLOC
 
-int spi_bus_init(spi_bus_t self, spi_t bus)
+int spi_bus_init(spi_bus_t self, spi_t dev)
 {
     CHECK_NULL(self);
 
     memset(self, 0, sizeof(*self));
 
-    spi_ll_init(bus);
-    spi_ll_set_master(bus);
-    spi_ll_enable(bus);
+    spi_ll_init(dev);
+    spi_ll_set_master(dev);
+    spi_ll_enable(dev);
 
-    self->bus   = bus;
+    self->dev   = dev;
     self->clock = NUMBER_OF_SPI_CLOCK_DIVS;
     self->mode  = NUMBER_OF_SPI_MODES;
 
@@ -49,14 +49,14 @@ int spi_bus_configure(spi_bus_t self, spi_clock_t clock, spi_mode_t mode)
             case SPI_CLOCK_DIV_2:
             case SPI_CLOCK_DIV_8:
             case SPI_CLOCK_DIV_32:
-                spi_ll_set_double_speed(self->bus, true);
+                spi_ll_set_double_speed(self->dev, true);
                 break;
 
             case SPI_CLOCK_DIV_4:
             case SPI_CLOCK_DIV_16:
             case SPI_CLOCK_DIV_64:
             case SPI_CLOCK_DIV_128:
-                spi_ll_set_double_speed(self->bus, false);
+                spi_ll_set_double_speed(self->dev, false);
                 break;
 
             default:
@@ -67,21 +67,21 @@ int spi_bus_configure(spi_bus_t self, spi_clock_t clock, spi_mode_t mode)
         {
             case SPI_CLOCK_DIV_2:
             case SPI_CLOCK_DIV_4:
-                spi_ll_set_prescaler(self->bus, SPI_LL_PSCL_4);
+                spi_ll_set_prescaler(self->dev, SPI_LL_PSCL_4);
                 break;
 
             case SPI_CLOCK_DIV_8:
             case SPI_CLOCK_DIV_16:
-                spi_ll_set_prescaler(self->bus, SPI_LL_PSCL_16);
+                spi_ll_set_prescaler(self->dev, SPI_LL_PSCL_16);
                 break;
 
             case SPI_CLOCK_DIV_32:
             case SPI_CLOCK_DIV_64:
-                spi_ll_set_prescaler(self->bus, SPI_LL_PSCL_64);
+                spi_ll_set_prescaler(self->dev, SPI_LL_PSCL_64);
                 break;
 
             case SPI_CLOCK_DIV_128:
-                spi_ll_set_prescaler(self->bus, SPI_LL_PSCL_128);
+                spi_ll_set_prescaler(self->dev, SPI_LL_PSCL_128);
                 break;
 
             default:
@@ -96,23 +96,23 @@ int spi_bus_configure(spi_bus_t self, spi_clock_t clock, spi_mode_t mode)
         switch(mode)
         {
             case SPI_MODE_0:
-                spi_ll_set_clock_polarity(self->bus, false);
-                spi_ll_set_clock_phase(self->bus, false);
+                spi_ll_set_clock_polarity(self->dev, false);
+                spi_ll_set_clock_phase(self->dev, false);
                 break;
 
             case SPI_MODE_1:
-                spi_ll_set_clock_polarity(self->bus, false);
-                spi_ll_set_clock_phase(self->bus, true);
+                spi_ll_set_clock_polarity(self->dev, false);
+                spi_ll_set_clock_phase(self->dev, true);
                 break;
 
             case SPI_MODE_2:
-                spi_ll_set_clock_polarity(self->bus, true);
-                spi_ll_set_clock_phase(self->bus, false);
+                spi_ll_set_clock_polarity(self->dev, true);
+                spi_ll_set_clock_phase(self->dev, false);
                 break;
 
             case SPI_MODE_3:
-                spi_ll_set_clock_polarity(self->bus, true);
-                spi_ll_set_clock_phase(self->bus, true);
+                spi_ll_set_clock_polarity(self->dev, true);
+                spi_ll_set_clock_phase(self->dev, true);
                 break;
 
             default:
@@ -129,7 +129,7 @@ int spi_bus_transfer(spi_bus_t self, const void * tx, void * rx, unsigned int le
 {
     CHECK_NULL(self);
 
-    spi_ll_transfer(self->bus, tx, rx, len);
+    spi_ll_transfer(self->dev, tx, rx, len);
 
     return len;
 }
@@ -138,6 +138,6 @@ inline void spi_bus_write_fast(spi_bus_t self, const uint8_t byte)
 {
     CHECK_NULL(self);
 
-    spi_ll_write_byte(self->bus, byte);
-    _delay_us(1);
+    spi_ll_write_byte(self->dev, byte);
+    _delay_us(0.7);
 }

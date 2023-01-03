@@ -41,18 +41,21 @@ typedef struct {
 
 #define SPI0 TYPECAST(0x4C, spi_t)
 
-void spi_ll_init(spi_t spi);
-void spi_ll_enable(spi_t spi);
-void spi_ll_disable(spi_t spi);
-void spi_ll_set_master(spi_t spi);
-void spi_ll_set_slave(spi_t spi);
-void spi_ll_set_prescaler(spi_t spi, uint8_t prescaler);
-void spi_ll_set_double_speed(spi_t spi, bool dbl);
-void spi_ll_set_clock_polarity(spi_t spi, bool polarity);
-void spi_ll_set_clock_phase(spi_t spi, bool phase);
-bool spi_ll_ready(spi_t spi);
-void spi_ll_transfer(spi_t spi, const uint8_t * tx, uint8_t * rx, unsigned int len);
-void spi_ll_write_byte(spi_t spi, uint8_t write);
-uint8_t spi_ll_read_byte(spi_t spi);
+void    spi_ll_init                 (spi_t spi);
+void    spi_ll_enable               (spi_t spi);
+void    spi_ll_disable              (spi_t spi);
+void    spi_ll_set_master           (spi_t spi);
+void    spi_ll_set_slave            (spi_t spi);
+void    spi_ll_set_prescaler        (spi_t spi, uint8_t prescaler);
+void    spi_ll_set_double_speed     (spi_t spi, bool dbl);
+void    spi_ll_set_clock_polarity   (spi_t spi, bool polarity);
+void    spi_ll_set_clock_phase      (spi_t spi, bool phase);
+void    spi_ll_transfer             (spi_t spi, const void * tx, void * rx, unsigned int len);
+void    spi_ll_write_byte           (spi_t spi, uint8_t write);
+uint8_t spi_ll_read_byte            (spi_t spi);
+
+// Async transfers are typically slower
+// bool spi_ll_ready           (spi_t spi);
+// void spi_ll_transfer_async  (spi_t spi, const void * tx, void * rx, unsigned int len);
 
 #endif // __SPI_API_LL_H

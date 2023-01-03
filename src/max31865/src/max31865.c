@@ -90,8 +90,8 @@ int max31865_init(max31865_t self, spi_bus_t bus, gpio_t cs, max31865_mode_t mod
     }
 
     // Write config
-    uint8_t data_wr[] = { MAX31865_REG_CONFIG | MAX31865_WRITE, configuration };
-    ret += spi_device_transfer(&self->dev, data_wr, data_wr, sizeof(data_wr));
+    const uint8_t data_wr[] = { MAX31865_REG_CONFIG | MAX31865_WRITE, configuration };
+    ret += spi_device_transfer(&self->dev, data_wr, NULL_PTR, sizeof(data_wr));
 
     // Read back config
     uint8_t data_rd[] = { MAX31865_REG_CONFIG | MAX31865_READ, 0 };

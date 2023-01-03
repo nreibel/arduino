@@ -5,11 +5,12 @@
 #include <avr/power.h>
 #include <avr/interrupt.h>
 
+/*
 static volatile struct {
     const uint8_t * tx;
     uint8_t *       rx;
-    unsigned int    length;
-    bool            complete;
+    unsigned int    len;
+    bool            cplt;
 } xfer_data;
 
 ISR(SPI_STC_vect)
@@ -17,16 +18,17 @@ ISR(SPI_STC_vect)
     if (xfer_data.rx != NULL_PTR)
         *(xfer_data.rx++) = SPI0->spdr;
 
-    if (xfer_data.length-- > 0)
+    if (xfer_data.len-- > 0)
     {
         SPI0->spdr = *(xfer_data.tx++);
     }
     else
     {
         SPI0->spcr.bits.spie = false;
-        xfer_data.complete = true;
+        xfer_data.cplt = true;
     }
 }
+*/
 
 void spi_ll_init(spi_t spi)
 {
@@ -83,11 +85,6 @@ void spi_ll_set_clock_phase(spi_t spi, bool phase)
     spi->spcr.bits.cpha = phase ? 1 : 0;
 }
 
-bool spi_ll_ready(spi_t spi)
-{
-    return spi->spsr.bits.spif;
-}
-
 void spi_ll_write_byte(spi_t spi, const uint8_t write)
 {
     spi->spdr = write;
@@ -98,16 +95,35 @@ uint8_t spi_ll_read_byte(spi_t spi)
     return spi->spdr;
 }
 
-void spi_ll_transfer(spi_t spi, const uint8_t * tx, uint8_t * rx, unsigned int len)
+void spi_ll_transfer(spi_t spi, const void * tx, void * rx, unsigned int len)
 {
-    xfer_data.tx = tx;
-    xfer_data.rx = rx;
-    xfer_data.length = len;
-    xfer_data.complete = false;
+    for (unsigned int i = 0 ; i < len ; i++)
+    {
+        spi->spdr = PU8(tx)[i];
+        while(!spi->spsr.bits.spif);
+        if (!rx) continue;
+        PU8(rx)[i] = spi->spdr;
+    }
+}
+
+/*
+bool spi_ll_ready(spi_t spi)
+{
+    UNUSED(spi);
+    return xfer_data.cplt;
+}
+
+void spi_ll_transfer_async(spi_t spi, const void * tx, void * rx, unsigned int len)
+{
+    xfer_data.tx    = tx;
+    xfer_data.rx    = rx;
+    xfer_data.len   = len - 1;
+    xfer_data.cplt  = false;
 
     // Start transmission
     spi->spcr.bits.spie = true;
     spi->spdr = *(xfer_data.tx++);
 
-    while(!xfer_data.complete);
+    while(!xfer_data.cplt);
 }
+*/

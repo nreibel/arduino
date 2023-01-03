@@ -33,16 +33,16 @@ typedef enum {
 } spi_mode_t;
 
 typedef struct spi_bus_prv_s {
-    spi_t bus;
+    spi_t       dev;
     spi_clock_t clock;
-    spi_mode_t mode;
+    spi_mode_t  mode;
 } * spi_bus_t;
 
 typedef struct spi_device_prv_s {
-    spi_bus_t bus;
-    gpio_t cs;
+    spi_bus_t   bus;
+    gpio_t      cs;
     spi_clock_t clock;
-    spi_mode_t mode;
+    spi_mode_t  mode;
 } * spi_device_t;
 
 #if OS_MALLOC
