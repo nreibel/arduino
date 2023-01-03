@@ -3,6 +3,30 @@
 #include "bits.h"
 
 #include <avr/power.h>
+#include <avr/interrupt.h>
+
+static volatile struct {
+    const uint8_t * tx;
+    uint8_t *       rx;
+    unsigned int    length;
+    bool            complete;
+} xfer_data;
+
+ISR(SPI_STC_vect)
+{
+    if (xfer_data.rx != NULL_PTR)
+        *(xfer_data.rx++) = SPI0->spdr;
+
+    if (xfer_data.length-- > 0)
+    {
+        SPI0->spdr = *(xfer_data.tx++);
+    }
+    else
+    {
+        SPI0->spcr.bits.spie = false;
+        xfer_data.complete = true;
+    }
+}
 
 void spi_ll_init(spi_t spi)
 {
@@ -64,11 +88,6 @@ bool spi_ll_ready(spi_t spi)
     return spi->spsr.bits.spif;
 }
 
-void spi_ll_wait_tx(spi_t spi)
-{
-    while(!spi->spsr.bits.spif);
-}
-
 void spi_ll_write_byte(spi_t spi, const uint8_t write)
 {
     spi->spdr = write;
@@ -77,4 +96,18 @@ void spi_ll_write_byte(spi_t spi, const uint8_t write)
 uint8_t spi_ll_read_byte(spi_t spi)
 {
     return spi->spdr;
+}
+
+void spi_ll_transfer(spi_t spi, const uint8_t * tx, uint8_t * rx, unsigned int len)
+{
+    xfer_data.tx = tx;
+    xfer_data.rx = rx;
+    xfer_data.length = len;
+    xfer_data.complete = false;
+
+    // Start transmission
+    spi->spcr.bits.spie = true;
+    spi->spdr = *(xfer_data.tx++);
+
+    while(!xfer_data.complete);
 }

@@ -42,6 +42,7 @@ int spi_device_enable(spi_device_t self)
 
     spi_bus_configure(self->bus, self->clock, self->mode);
     gpio_set(self->cs);
+
     return SPI_OK;
 }
 
@@ -50,10 +51,11 @@ int spi_device_disable(spi_device_t self)
     CHECK_NULL(self);
 
     gpio_reset(self->cs);
+
     return SPI_OK;
 }
 
-int spi_device_read_bytes(spi_device_t self, void * buffer, unsigned int len)
+int spi_device_transfer(spi_device_t self, const void * tx, void * rx, unsigned int len)
 {
     CHECK_NULL(self);
 
@@ -61,58 +63,11 @@ int spi_device_read_bytes(spi_device_t self, void * buffer, unsigned int len)
     unsigned int cnt = 0;
 
     ret += spi_device_enable(self);
-    cnt += spi_bus_read_bytes(self->bus, buffer, len);
+    cnt += spi_bus_transfer(self->bus, tx, rx, len);
     ret += spi_device_disable(self);
 
-    if (ret == SPI_OK && cnt == len)
-        return cnt;
-    else return -SPI_FAIL;
-}
+    if (ret != SPI_OK || cnt != len)
+        return -SPI_FAIL;
 
-int spi_device_read_byte(spi_device_t self, uint8_t * byte)
-{
-    CHECK_NULL(self);
-
-    int ret = SPI_OK;
-    unsigned int cnt = 0;
-
-    ret += spi_device_enable(self);
-    cnt += spi_bus_read_byte(self->bus, byte);
-    ret += spi_device_disable(self);
-
-    if (ret == SPI_OK && cnt == 1)
-        return cnt;
-    else return -SPI_FAIL;
-}
-
-int spi_device_transfer_bytes(spi_device_t self, void *buffer, unsigned int len)
-{
-    CHECK_NULL(self);
-
-    int ret = SPI_OK;
-    unsigned int cnt = 0;
-
-    ret += spi_device_enable(self);
-    cnt += spi_bus_transfer_bytes(self->bus, buffer, len);
-    ret += spi_device_disable(self);
-
-    if (ret == SPI_OK && cnt == len)
-        return cnt;
-    else return -SPI_FAIL;
-}
-
-int spi_device_transfer_byte(spi_device_t self, uint8_t byte, uint8_t *read)
-{
-    CHECK_NULL(self);
-
-    int ret = SPI_OK;
-    unsigned int cnt = 0;
-
-    ret += spi_device_enable(self);
-    cnt += spi_bus_transfer_byte(self->bus, byte, read);
-    ret += spi_device_disable(self);
-
-    if (ret == SPI_OK && cnt == 1)
-        return cnt;
-    else return -SPI_FAIL;
+    return cnt;
 }

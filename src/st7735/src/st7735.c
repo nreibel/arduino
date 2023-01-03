@@ -83,7 +83,7 @@ void st7735_destroy(st7735_t dev)
  * Object mehtods
  */
 
-void st7735_init_device(st7735_t self, spi_bus_t bus, gpio_t cs, gpio_t dc)
+void st7735_init(st7735_t self, spi_bus_t bus, gpio_t cs, gpio_t dc)
 {
     memset(self, 0, sizeof(*self));
 

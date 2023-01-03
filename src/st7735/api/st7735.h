@@ -40,13 +40,12 @@ typedef struct st7735_prv_s {
     int8_t                  offset_y;
 } * st7735_t;
 
-
 #if OS_MALLOC
 st7735_t st7735_create(void);
 void st7735_destroy(st7735_t dev);
 #endif // OS_MALLOC
 
-void st7735_init_device(st7735_t self, spi_bus_t bus, gpio_t cs, gpio_t dc);
+void st7735_init(st7735_t self, spi_bus_t bus, gpio_t cs, gpio_t dc);
 
 // Setters
 void st7735_set_foreground(st7735_t self, st7735_color_t c);

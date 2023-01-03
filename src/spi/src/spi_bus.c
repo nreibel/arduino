@@ -125,58 +125,13 @@ int spi_bus_configure(spi_bus_t self, spi_clock_t clock, spi_mode_t mode)
     return SPI_OK;
 }
 
-int spi_bus_read_bytes(spi_bus_t self, void * buffer, unsigned int len)
+int spi_bus_transfer(spi_bus_t self, const void * tx, void * rx, unsigned int len)
 {
     CHECK_NULL(self);
 
-    uint8_t * bytes = buffer;
-
-    for (unsigned int i = 0 ; i < len ; i++)
-    {
-        spi_ll_write_byte(self->bus, 0);
-        spi_ll_wait_tx(self->bus);
-        bytes[i] = spi_ll_read_byte(self->bus);
-    }
+    spi_ll_transfer(self->bus, tx, rx, len);
 
     return len;
-}
-
-int spi_bus_read_byte(spi_bus_t self, uint8_t * byte)
-{
-    CHECK_NULL(self);
-
-    spi_ll_write_byte(self->bus, 0);
-    spi_ll_wait_tx(self->bus);
-    *byte = spi_ll_read_byte(self->bus);
-
-    return 1;
-}
-
-int spi_bus_transfer_bytes(spi_bus_t self, void * buffer, unsigned int len)
-{
-    CHECK_NULL(self);
-
-    uint8_t * bytes = buffer;
-
-    for (unsigned int i = 0 ; i < len ; i++)
-    {
-        spi_ll_write_byte(self->bus, bytes[i]);
-        spi_ll_wait_tx(self->bus);
-        bytes[i] = spi_ll_read_byte(self->bus);
-    }
-
-    return len;
-}
-
-int spi_bus_transfer_byte(spi_bus_t self, uint8_t byte, uint8_t * read)
-{
-    CHECK_NULL(self);
-
-    spi_ll_write_byte(self->bus, byte);
-    spi_ll_wait_tx(self->bus);
-    if (read != NULL_PTR) *read = spi_ll_read_byte(self->bus);
-
-    return 1;
 }
 
 inline void spi_bus_write_fast(spi_bus_t self, const uint8_t byte)

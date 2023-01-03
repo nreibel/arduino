@@ -91,11 +91,11 @@ int max31865_init(max31865_t self, spi_bus_t bus, gpio_t cs, max31865_mode_t mod
 
     // Write config
     uint8_t data_wr[] = { MAX31865_REG_CONFIG | MAX31865_WRITE, configuration };
-    ret += spi_device_transfer_bytes( &self->dev, data_wr, sizeof(data_wr) );
+    ret += spi_device_transfer(&self->dev, data_wr, data_wr, sizeof(data_wr));
 
     // Read back config
     uint8_t data_rd[] = { MAX31865_REG_CONFIG | MAX31865_READ, 0 };
-    ret += spi_device_transfer_bytes(&self->dev, data_rd, sizeof(data_rd));
+    ret += spi_device_transfer(&self->dev, data_rd, data_rd, sizeof(data_rd));
 
     // Same config should be read back if communication is set up properly
     if (ret != 4 || data_rd[1] != configuration)
@@ -111,7 +111,7 @@ int max31865_read_rtd(max31865_t self, double *rtd)
     int ret = 0;
     uint8_t data[] = { MAX31865_REG_RTD_MSB | MAX31865_READ, 0, 0 };
 
-    ret = spi_device_transfer_bytes(&self->dev, data, 3);
+    ret = spi_device_transfer(&self->dev, data, data, 3);
     if (ret != 3) return -MAX31865_FAIL;
 
     const uint8_t msb = data[1];
@@ -149,7 +149,7 @@ int max31865_read_fault_status(max31865_t self, uint8_t *status)
     int ret = 0;
     uint8_t data[] = { MAX31865_REG_FAULT_STATUS | MAX31865_READ, 0 };
 
-    ret += spi_device_transfer_bytes(&self->dev, data, sizeof(data));
+    ret += spi_device_transfer(&self->dev, data, data, sizeof(data));
     if (ret != 2) return -MAX31865_FAIL;
 
     *status = data[1];
