@@ -15,16 +15,12 @@ static volatile bool tx_ready = true;
 static uint8_t serial_rx[16];
 static uint8_t serial_tx[64];
 
-
 /*
  * Static storage
  */
 
-static struct crc_data_s    crc_instance;
-static struct serial_s      serial_data;
-
-static crc_t    crc     = &crc_instance;
-static serial_t serial  = &serial_data;
+static crc_t    crc;
+static serial_t serial;
 
 enum {
     CRC32,
@@ -302,6 +298,9 @@ void app_init()
 {
     int err = 0;
     uint32_t out = 0;
+
+    serial = serial_create();
+    crc = crc_create();
 
     serial_init(serial, USART0, 19200);
     serial_set_line_terminator(serial, 0x0D);

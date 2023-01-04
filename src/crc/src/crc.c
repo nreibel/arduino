@@ -2,8 +2,23 @@
 #include "crc.h"
 #include "types.h"
 #include "bits.h"
+#include "os_cfg.h"
+#include "os_mem.h"
 
 static uint32_t reflect(uint32_t a, unsigned int len);
+
+#if OS_MALLOC
+crc_t crc_create(void)
+{
+    crc_t self = os_malloc(sizeof(*self));
+    return self;
+}
+
+void crc_destroy(crc_t self)
+{
+    os_free(self);
+}
+#endif // OS_MALLOC
 
 int crc_init(crc_t self, crc_config_s * cfg)
 {

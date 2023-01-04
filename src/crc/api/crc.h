@@ -2,6 +2,7 @@
 #define SRC_CRC_API_CRC_H_
 
 #include "types.h"
+#include "os_cfg.h"
 
 #define CRC32_CRC32Q_POLYNOMIAL 0x814141AB
 #define CRC32_CRC32Q_INIT       0
@@ -38,11 +39,16 @@ typedef const struct {
     bool            reflect_output;
 } crc_config_s;
 
-typedef struct crc_data_s {
+typedef struct crc_prv_s {
     uint32_t crc;       // Current value
     crc_config_s * cfg; // Config object
 
 } * crc_t;
+
+#if OS_MALLOC
+crc_t crc_create(void);
+void crc_destroy(crc_t self);
+#endif // OS_MALLOC
 
 int crc_init        (crc_t self, crc_config_s * cfg);
 int crc_reset       (crc_t self);

@@ -18,7 +18,7 @@ typedef uint16_t time_t;
 #define OS_MALLOC_NONE   0 // No malloc
 #define OS_MALLOC_SIMPLE 1 // Almost no overhead, but can't free memory
 #define OS_MALLOC_STDLIB 2 // Compiler/libc implementation of malloc
-#define OS_MALLOC OS_MALLOC_NONE
+#define OS_MALLOC OS_MALLOC_SIMPLE
 
 // Define heap size when using OS_MALLOC_SIMPLE
 #define OS_HEAP_SIZE 256
