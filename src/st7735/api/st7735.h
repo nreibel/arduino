@@ -48,6 +48,7 @@ void st7735_destroy(st7735_t dev);
 void st7735_init(st7735_t self, spi_bus_t bus, gpio_t cs, gpio_t dc);
 
 // Setters
+void st7735_set_colors(st7735_t self, st7735_color_t fg,st7735_color_t bg);
 void st7735_set_foreground(st7735_t self, st7735_color_t c);
 void st7735_set_background(st7735_t self, st7735_color_t c);
 void st7735_set_offset(st7735_t self, int offset_x, int offset_y);
