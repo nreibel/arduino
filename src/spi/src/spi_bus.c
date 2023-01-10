@@ -129,7 +129,13 @@ int spi_bus_transfer(spi_bus_t self, const void * tx, void * rx, unsigned int le
 {
     CHECK_NULL(self);
 
-    spi_ll_transfer(self->dev, tx, rx, len);
+    for (unsigned int i = 0 ; i < len ; i++)
+    {
+        spi_ll_write_byte(self->dev, PU8(tx)[i]);
+        while(!spi_ll_ready(self->dev));
+        if (!rx) continue;
+        PU8(rx)[i] = spi_ll_read_byte(self->dev);
+    }
 
     return len;
 }

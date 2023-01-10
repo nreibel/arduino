@@ -95,15 +95,9 @@ uint8_t spi_ll_read_byte(spi_t spi)
     return spi->spdr;
 }
 
-void spi_ll_transfer(spi_t spi, const void * tx, void * rx, unsigned int len)
+bool spi_ll_ready(spi_t spi)
 {
-    for (unsigned int i = 0 ; i < len ; i++)
-    {
-        spi->spdr = PU8(tx)[i];
-        while(!spi->spsr.bits.spif);
-        if (!rx) continue;
-        PU8(rx)[i] = spi->spdr;
-    }
+    return spi->spsr.bits.spif == 0x1;
 }
 
 /*

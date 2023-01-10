@@ -34,8 +34,8 @@ typedef union {
 } spsr_t;
 
 typedef struct {
-    spcr_t spcr;
-    spsr_t spsr;
+    spcr_t  spcr;
+    spsr_t  spsr;
     uint8_t spdr;
 } volatile * spi_t;
 
@@ -50,8 +50,8 @@ void    spi_ll_set_prescaler        (spi_t spi, uint8_t prescaler);
 void    spi_ll_set_double_speed     (spi_t spi, bool dbl);
 void    spi_ll_set_clock_polarity   (spi_t spi, bool polarity);
 void    spi_ll_set_clock_phase      (spi_t spi, bool phase);
-void    spi_ll_transfer             (spi_t spi, const void * tx, void * rx, unsigned int len);
 void    spi_ll_write_byte           (spi_t spi, uint8_t write);
+bool    spi_ll_ready                (spi_t spi);
 uint8_t spi_ll_read_byte            (spi_t spi);
 
 // Async transfers are typically slower
