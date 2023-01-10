@@ -194,6 +194,12 @@ void st7735_set_orientation(st7735_t self, st7735_orientation_t orientation)
     self->orientation = orientation;
 }
 
+void st7735_set_colors(st7735_t self, st7735_color_t fg,st7735_color_t bg)
+{
+    self->foreground_color = fg;
+    self->background_color = bg;
+}
+
 void st7735_set_background(st7735_t self, st7735_color_t c)
 {
     self->background_color = c;
