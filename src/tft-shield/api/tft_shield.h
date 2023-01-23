@@ -31,7 +31,7 @@ typedef enum {
 } tft_shield_key_t;
 
 #if OS_MALLOC
-tft_shield_t tft_shield_create(spi_bus_t spi, i2c_bus_t i2c, st7735_orientation_t orientation);
+tft_shield_t tft_shield_create(void);
 void tft_shield_destroy(tft_shield_t self);
 #endif // OS_MALLOC
 

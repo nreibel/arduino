@@ -40,24 +40,10 @@ static struct gpio_prv_s D8 = {
 };
 
 #if OS_MALLOC
-
-tft_shield_t tft_shield_create(spi_bus_t spi, i2c_bus_t i2c, st7735_orientation_t orientation)
+tft_shield_t tft_shield_create(void)
 {
     tft_shield_t self = os_malloc(sizeof(*self));
-
-    if (self == NULL_PTR)
-        goto exit;
-
-    if (tft_shield_init(self, spi, i2c, orientation) != 0)
-        goto cleanup;
-
     return self;
-
-    cleanup:
-        os_free(self);
-
-    exit:
-        return NULL_PTR;
 }
 
 void tft_shield_destroy(tft_shield_t self)
@@ -71,7 +57,6 @@ void tft_shield_destroy(tft_shield_t self)
 int tft_shield_init(tft_shield_t self, spi_bus_t spi, i2c_bus_t i2c, st7735_orientation_t orientation)
 {
     int err = I2C_OK;
-    uint8_t w = 160, h = 128;
 
     // Seesaw chip
     err += i2c_device_init(&self->seesaw, i2c, I2C_SEESAW);
@@ -81,20 +66,15 @@ int tft_shield_init(tft_shield_t self, spi_bus_t spi, i2c_bus_t i2c, st7735_orie
     {
         case ST7735_ORIENTATION_LANDSCAPE:
         case ST7735_ORIENTATION_LANDSCAPE_INV:
-            /* Nothing to do */
-            break;
-
         case ST7735_ORIENTATION_PORTRAIT:
         case ST7735_ORIENTATION_PORTRAIT_INV:
-            w = 128;
-            h = 160;
             break;
 
         default:
             return -TFT_SHIELD_ERR;
     }
 
-    st7735_init_device(&self->tft, spi, &D10, &D8, w, h);
+    st7735_init(&self->tft, spi, &D10, &D8);
     st7735_set_orientation(&self->tft, orientation);
 
     // Enable buttons and joystick as input with pullup
