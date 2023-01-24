@@ -13,8 +13,12 @@ static volatile struct {
     void *     param;
 } tasks[NUMBER_OF_OS_TASKS];
 
+static volatile struct {
+    deferred_task_t cbk;
+    void * args;
+} deferred;
 
-static volatile background_task background_tasks_list[NUMBER_OF_BACKGROUND_TASKS] = { /* TODO */ };
+static volatile background_task_t background_tasks_list[NUMBER_OF_BACKGROUND_TASKS] = { /* TODO */ };
 
 /*
  * Public functions
@@ -39,6 +43,17 @@ void os_task_disable(os_task_t task)
     tasks[task].enabled = false;
 }
 
+int os_task_defer(deferred_task_t routine, void * args)
+{
+    if (deferred.cbk)
+        return -EFAILED;
+
+    deferred.cbk = routine;
+    deferred.args = args;
+
+    return EOK;
+}
+
 void os_cyclic_tasks()
 {
     for(int i = 0; i < NUMBER_OF_OS_TASKS; i++)
@@ -54,6 +69,13 @@ void os_cyclic_tasks()
             tasks[i].last += tasks[i].interval;
             if (ret < 0) tasks[i].enabled = false;
         }
+    }
+
+    if (deferred.cbk)
+    {
+        deferred.cbk(deferred.args);
+        deferred.cbk = NULL_PTR;
+        deferred.args = NULL_PTR;
     }
 }
 

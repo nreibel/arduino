@@ -10,7 +10,9 @@
 
 #define HALT for(;;){}
 
-typedef int (*callback_t)(void*);
+typedef int  (*background_task_t) (void);
+typedef void (*deferred_task_t)   (void*);
+typedef int  (*callback_t)        (void*);
 
 enum {
     EOK,
@@ -32,7 +34,6 @@ typedef enum {
     OS_WATCHDOG_8S,
 } os_watchdog_t;
 
-typedef int (*background_task)(void);
 
 // App entry point
 extern void app_init(void);
@@ -55,6 +56,7 @@ time_t os_millis();
 void os_task_setup(os_task_t task, time_t interval, callback_t callback, void* param);
 void os_task_enable(os_task_t task);
 void os_task_disable(os_task_t task);
+int  os_task_defer(deferred_task_t routine, void * args);
 
 // HW Watchdog
 int os_watchdog_enable(os_watchdog_t wd);
