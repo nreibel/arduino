@@ -9,15 +9,14 @@
  * Public functions
  */
 
-void serial_rx_callback(serial_t self, serial_event_t event, const uint8_t * buffer, unsigned int length)
+void serial_rx_callback(serial_callback_args_t * args)
 {
-
-    switch(event)
+    switch(args->event)
     {
         case SERIAL_EVENT_RX_LINE:
         {
             serial_tp_response_t    rsp;
-            serial_tp_request_t *   req = TYPECAST(buffer, serial_tp_request_t*);
+            serial_tp_request_t *   req = TYPECAST(args->buffer, serial_tp_request_t*);
 
             rsp.length = 0;
 
@@ -25,18 +24,18 @@ void serial_rx_callback(serial_t self, serial_event_t event, const uint8_t * buf
             {
                 rsp.status = SERIAL_TP_RETCODE_INVALID_HEADER;
             }
-            else if ( req->length != length - 4 )
+            else if ( req->length != args->length - 4 )
             {
                 rsp.status = SERIAL_TP_RETCODE_INVALID_DATA_LEN;
             }
             else
             {
-                serial_tp_callback(self, req, &rsp);
+                serial_tp_callback(args->instance, req, &rsp);
             }
 
             rsp.data[rsp.length] = SERIAL_TP_FRAME_TERMINATOR;
 
-            serial_write_bytes(self, &rsp, rsp.length+3);
+            serial_write_bytes(args->instance, &rsp, rsp.length+3);
             break;
         }
 
