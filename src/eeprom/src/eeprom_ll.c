@@ -12,23 +12,32 @@ bool eeprom_ll_ready(eeprom_t self)
     return self->eecr.bits.eepe == 0;
 }
 
-void eeprom_ll_wait_ready(eeprom_t self)
-{
-    while(!eeprom_ll_ready(self)){}
-}
-
-void eeprom_ll_write_byte(eeprom_t self, uint16_t addr, uint8_t byte)
+void eeprom_ll_set_address(eeprom_t self, uint8_t addr)
 {
     self->eear = addr;
-    self->eedr = byte;
+}
 
+void eeprom_ll_set_data(eeprom_t self, uint8_t data)
+{
+    self->eedr = data;
+}
+
+uint8_t eeprom_ll_get_data(eeprom_t self)
+{
+    return self->eedr;
+}
+
+void eeprom_ll_master_prog_enable(eeprom_t self)
+{
     self->eecr.bits.eempe = 1;
+}
+
+void eeprom_ll_prog_enable(eeprom_t self)
+{
     self->eecr.bits.eepe = 1;
 }
 
-uint8_t eeprom_ll_read_byte(eeprom_t self, uint16_t addr)
+void eeprom_ll_read_enable(eeprom_t self)
 {
-    self->eear = addr;
     self->eecr.bits.eere = 1;
-    return self->eedr;
 }

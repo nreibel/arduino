@@ -31,11 +31,13 @@ typedef struct {
 
 #define EEPROM0 TYPECAST(0x3F, eeprom_t)
 
-void eeprom_ll_init(eeprom_t self);
-bool eeprom_ll_ready(eeprom_t self);
-void eeprom_ll_wait_ready(eeprom_t self);
-void eeprom_ll_erase_byte(eeprom_t self, uint16_t addr);
-void eeprom_ll_write_byte(eeprom_t self, uint16_t addr, uint8_t byte);
-uint8_t eeprom_ll_read_byte(eeprom_t self, uint16_t addr);
+void    eeprom_ll_init                  (eeprom_t self);
+bool    eeprom_ll_ready                 (eeprom_t self);
+void    eeprom_ll_set_address           (eeprom_t self, uint8_t addr);
+void    eeprom_ll_set_data              (eeprom_t self, uint8_t data);
+uint8_t eeprom_ll_get_data              (eeprom_t self);
+void    eeprom_ll_master_prog_enable    (eeprom_t self);
+void    eeprom_ll_read_enable           (eeprom_t self);
+void    eeprom_ll_prog_enable           (eeprom_t self);
 
 #endif /* __EEPROM_LL_H__ */

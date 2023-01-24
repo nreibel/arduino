@@ -4,65 +4,64 @@
 
 int eeprom_init(eeprom_t self)
 {
-    if (self == NULL_PTR)
-        return -EEPROM_ERROR_INSTANCE;
-
     eeprom_ll_init(self);
-
     return EEPROM_OK;
 }
 
 int eeprom_memset(eeprom_t self, uint16_t addr, uint8_t val, unsigned int length)
 {
-    if (self == NULL_PTR)
-        return -EEPROM_ERROR_INSTANCE;
-
     for (unsigned int i = 0 ; i < length ; i++)
     {
-        eeprom_ll_wait_ready(self);
-        eeprom_ll_write_byte(self, addr++, val);
+        eeprom_write_byte(self, addr+i, val);
+        while(!eeprom_ll_ready(self));
     }
 
     return length;
+}
+
+int eeprom_write_byte(eeprom_t self, uint16_t addr, uint8_t byte)
+{
+    eeprom_ll_set_address(self, addr);
+    eeprom_ll_set_data(self, byte);
+    eeprom_ll_master_prog_enable(self);
+    eeprom_ll_prog_enable(self);
+    return 1;
+}
+
+int eeprom_read_byte(eeprom_t self, uint16_t addr, uint8_t * data)
+{
+    eeprom_ll_set_address(self, addr);
+    eeprom_ll_read_enable(self);
+    *data = eeprom_ll_get_data(self);
+    return 1;
 }
 
 int eeprom_write(eeprom_t self, uint16_t addr, const void * data, unsigned int length)
 {
-    if (self == NULL_PTR)
-        return -EEPROM_ERROR_INSTANCE;
-
-    const uint8_t * bytes = data;
+    int written = 0;
 
     for (unsigned int i = 0 ; i < length ; i++)
     {
-        eeprom_ll_wait_ready(self);
-        eeprom_ll_write_byte(self, addr++, bytes[i]);
+        written += eeprom_write_byte(self, addr+i, PU8(data)[i]);
+        while(!eeprom_ll_ready(self));
     }
 
-    return length;
+    return written;
 }
 
-int eeprom_read(eeprom_t self, uint16_t addr, void* data, unsigned int length)
+int eeprom_read(eeprom_t self, uint16_t addr, void * data, unsigned int length)
 {
-    if (self == NULL_PTR)
-        return -EEPROM_ERROR_INSTANCE;
-
-    uint8_t * bytes = data;
-
-    eeprom_ll_wait_ready(self);
+    int read = 0;
 
     for (unsigned int i = 0 ; i < length ; i++)
     {
-        bytes[i] = eeprom_ll_read_byte(self, addr++);
+        read += eeprom_read_byte(self, addr+i, &PU8(data)[i]);
     }
 
-    return length;
+    return read;
 }
 
 int eeprom_erase(eeprom_t self, uint16_t addr, unsigned int length)
 {
-    if (self == NULL_PTR)
-        return -EEPROM_ERROR_INSTANCE;
-
     return eeprom_memset(self, addr, EEPROM_ERASE_VALUE, length);
 }
