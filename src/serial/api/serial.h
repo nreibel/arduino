@@ -20,10 +20,16 @@ typedef enum {
 
 typedef struct serial_prv_s * serial_t;
 
-typedef void (*serial_callback) (serial_t self, serial_event_t event, const uint8_t * buffer, unsigned int length);
+typedef struct serial_callback_args_s {
+    serial_t        instance;
+    serial_event_t  event;
+    const uint8_t * buffer;
+    unsigned int    length;
+} serial_callback_args_t;
 
-struct serial_prv_s
-{
+typedef void (*serial_callback) (serial_callback_args_t * args);
+
+struct serial_prv_s {
     usart_t             dev;
     char                ter;
     serial_callback     cbk;

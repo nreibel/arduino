@@ -18,20 +18,46 @@ void serial_rx_irq_handler(usart_t usart, void * context)
     if (data == self->ter)
     {
         self->rx.buf[self->rx.cnt] = 0;
-        self->cbk(self, SERIAL_EVENT_RX_LINE, self->rx.buf, self->rx.cnt);
+
+        serial_callback_args_t args = {
+            .instance   = self,
+            .event      = SERIAL_EVENT_RX_LINE,
+            .buffer     = self->rx.buf,
+            .length     = self->rx.cnt,
+        };
+
+        self->cbk(&args);
+
         self->rx.cnt = 0;
     }
     else if (self->rx.cnt >= self->rx.len-1)
     {
         self->rx.buf[self->rx.cnt] = 0;
-        self->cbk(self, SERIAL_EVENT_RX_OVERFLOW, self->rx.buf, self->rx.cnt);
+
+        serial_callback_args_t args = {
+            .instance   = self,
+            .event      = SERIAL_EVENT_RX_OVERFLOW,
+            .buffer     = self->rx.buf,
+            .length     = self->rx.cnt,
+        };
+
+        self->cbk(&args);
+
         self->rx.buf[0] = data;
         self->rx.cnt = 1;
     }
     else
     {
         self->rx.buf[self->rx.cnt++] = data;
-        self->cbk(self, SERIAL_EVENT_RX_CHAR, &data, 1);
+
+        serial_callback_args_t args = {
+            .instance   = self,
+            .event      = SERIAL_EVENT_RX_CHAR,
+            .buffer     = &data,
+            .length     = 1,
+        };
+
+        self->cbk(&args);
     }
 }
 
@@ -47,7 +73,13 @@ void serial_tx_irq_handler(usart_t usart, void * context)
     else
     {
         serial_ll_set_tx_irq(usart, false);
-        self->cbk(self, SERIAL_EVENT_TX_COMPLETE, NULL, 0);
+
+        serial_callback_args_t args = {
+            .instance   = self,
+            .event      = SERIAL_EVENT_TX_COMPLETE,
+        };
+
+        self->cbk(&args);
         self->tx.bsy = false;
     }
 }
