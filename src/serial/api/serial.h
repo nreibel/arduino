@@ -18,11 +18,11 @@ typedef enum {
     SERIAL_EVENT_TX_COMPLETE,
 } serial_event_t;
 
-typedef struct serial_s * serial_t;
+typedef struct serial_prv_s * serial_t;
 
 typedef void (*serial_callback) (serial_t self, serial_event_t event, const uint8_t * buffer, unsigned int length);
 
-struct serial_s
+struct serial_prv_s
 {
     usart_t             dev;
     char                ter;
