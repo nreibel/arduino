@@ -57,7 +57,7 @@ static void st7735_set_draw_window(st7735_t self, unsigned int x1, unsigned int 
 static st7735_color_t ST7735_RenderXbm(unsigned int x, unsigned int y, unsigned int w, unsigned int h, void *data);
 
 typedef struct {
-    st7735_xbm_t *bits;
+    const __flash uint8_t * data;
     st7735_color_t fg_color;
     st7735_color_t bg_color;
 } XbmRendererData;
@@ -350,24 +350,24 @@ void st7735_clear_chars(st7735_t self, unsigned int x, unsigned int y, int lengt
     }
 }
 
-static st7735_color_t ST7735_RenderXbm(unsigned int x, unsigned int y, unsigned int w, unsigned int h, void *data)
+static st7735_color_t ST7735_RenderXbm(unsigned int x, unsigned int y, unsigned int w, unsigned int h, void * data)
 {
     UNUSED(h);
-    UNUSED(w);
 
-    XbmRendererData *d = TYPECAST(data, XbmRendererData*);
+    XbmRendererData * d = data;
     uint8_t bw = (w+7)/8; // Number of bytes per line
-    uint8_t b = d->bits[y*bw + x/8];
+    uint8_t b = d->data[y*bw + x/8];
     return CHECK_BIT(b, x % 8) ? d->fg_color : d->bg_color;
 }
 
-void st7735_draw_xbm(st7735_t self, st7735_xbm_t *bits, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
+
+void st7735_draw_xbm(st7735_t self, st7735_xbm_t * xbm, unsigned int x, unsigned int y)
 {
-    XbmRendererData data = { bits, self->foreground_color, self->background_color };
-    st7735_render(self, x, y, w, h, ST7735_RenderXbm, &data);
+    XbmRendererData data = { xbm->data, self->foreground_color, self->background_color };
+    st7735_render(self, x, y, xbm->w, xbm->h, ST7735_RenderXbm, &data);
 }
 
-void st7735_render(st7735_t self, unsigned int px, unsigned int py, unsigned int w, unsigned int h, ST7735_Renderer renderer, void* param)
+void st7735_render(st7735_t self, unsigned int px, unsigned int py, unsigned int w, unsigned int h, ST7735_Renderer renderer, void * param)
 {
     //Set the drawing region
     spi_device_enable(&self->dev);

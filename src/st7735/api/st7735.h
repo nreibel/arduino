@@ -25,7 +25,12 @@ typedef union {
     uint16_t w;
 } st7735_color_t;
 
-typedef const __flash uint8_t st7735_xbm_t;
+typedef struct {
+    unsigned int w;
+    unsigned int h;
+    uint8_t data[];
+} const __flash st7735_xbm_t;
+
 // typedef char* st7735_xpm_t;
 typedef st7735_color_t (*ST7735_Renderer)(unsigned int x, unsigned int y, unsigned int w, unsigned int h, void* data);
 
@@ -76,7 +81,7 @@ void st7735_clear_chars (st7735_t self, unsigned int x, unsigned int y, int leng
 
 // Graphics
 void st7735_render(st7735_t self, unsigned int x, unsigned int y, unsigned int w, unsigned int h, ST7735_Renderer renderer, void* param);
-void st7735_draw_xbm(st7735_t self, st7735_xbm_t *bits, unsigned int x, unsigned int y, unsigned int w, unsigned int h);
+void st7735_draw_xbm(st7735_t self, st7735_xbm_t * xbm, unsigned int x, unsigned int y);
 
 // Valid for 16bits 565 mode
 #define ST7735_COLOR(_r, _g, _b) ((st7735_color_t){.c={.r=_r>>3,.g=_g>>2,.b=_b>>3}})
