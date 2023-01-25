@@ -15,10 +15,11 @@ void serial_rx_callback(serial_callback_args_t * args)
     {
         case SERIAL_EVENT_RX_LINE:
         {
-            serial_tp_response_t    rsp;
-            serial_tp_request_t *   req = TYPECAST(args->buffer, serial_tp_request_t*);
-
-            rsp.length = 0;
+            serial_tp_request_t * req = TYPECAST(args->buffer, serial_tp_request_t*);
+            serial_tp_response_t  rsp = {
+                .status = SERIAL_TP_RETCODE_FUNCTION_INVALID,
+                .length = 0,
+            };
 
             if ( req->header != SERIAL_TP_REQUEST_HEADER )
             {
