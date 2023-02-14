@@ -27,7 +27,7 @@ typedef struct tc74_prv_s {
 } * tc74_t;
 
 #if OS_MALLOC
-tc74_t tc74_create(i2c_bus_t bus, uint8_t addr);
+tc74_t tc74_create(void);
 void tc74_destroy(tc74_t self);
 #endif // OS_MALLOC
 

@@ -17,23 +17,10 @@ static const uint8_t TC74_REG_RWCR = 0x1;
  */
 
 #if OS_MALLOC
-tc74_t tc74_create(i2c_bus_t bus, uint8_t addr)
+tc74_t tc74_create(void)
 {
     tc74_t self = os_malloc(sizeof(*self));
-
-    if (self == NULL_PTR)
-        goto exit;
-
-    if (tc74_init(self, bus, addr) < 0)
-        goto cleanup;
-
     return self;
-
-    cleanup:
-        os_free(self);
-
-    exit:
-        return NULL_PTR;
 }
 
 void tc74_destroy(tc74_t self)
