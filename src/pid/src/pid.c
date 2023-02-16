@@ -10,21 +10,21 @@ int pid_init(pid_t self)
     return PID_OK;
 }
 
-int pid_setpoint(pid_t self, int setpoint)
+int pid_setpoint(pid_t self, pid_type_t setpoint)
 {
     self->setpoint = setpoint;
     return PID_OK;
 }
 
-int pid_process(pid_t self, int control)
+int pid_process(pid_t self, pid_type_t control)
 {
-    const int error = self->setpoint - control;
+    const pid_type_t error = self->setpoint - control;
 
-    const int proportional = error;
-    const int integral = self->accumulator + error;
-    const int derivative = error - self->last_error;
+    const pid_type_t proportional = error;
+    const pid_type_t integral = self->accumulator + error;
+    const pid_type_t derivative = error - self->last_error;
 
-    const int output = self->bias + (self->kp * proportional) + (self->ki * integral) + (self->kd * derivative);
+    const pid_type_t output = self->bias + (self->kp * proportional) + (self->ki * integral) + (self->kd * derivative);
 
     self->last_error = error;
 

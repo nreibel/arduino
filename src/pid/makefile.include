@@ -1,2 +1,3 @@
 INCLUDES += $(SRC_DIR)/pid/api
-SOURCES += $(SRC_DIR)/pid/src/pid.c
+INCLUDES += $(CFG_DIR)/pid
+SOURCES  += $(SRC_DIR)/pid/src/pid.c
